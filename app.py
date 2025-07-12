@@ -1,9 +1,7 @@
+# Solace Streamlit App (Enhanced Version)
+
 import os
 import streamlit as st
-
-
-
-
 import pandas as pd
 import numpy as np
 import pickle
@@ -18,7 +16,7 @@ MODEL_DIR = "models/"
 ASSETS_DIR = "assets/"
 LOGO_PATH = os.path.join(ASSETS_DIR, "Solace_logo.png")
 
-# === Load models and encoders with error handling ===
+# === Load models and encoders ===
 try:
     with open(os.path.join(MODEL_DIR, "low_custom.pkl"), "rb") as f:
         model_low = pickle.load(f)
@@ -41,7 +39,7 @@ except Exception as e:
 bert_model = SentenceTransformer('all-MiniLM-L6-v2')
 model_dict = {'low': model_low, 'mid': model_mid, 'high': model_high}
 
-# === Mistral API Key from Streamlit Secrets ===
+# === Mistral API Key ===
 mistral_api_key = st.secrets["mistral_api_key"]
 client = Mistral(api_key=mistral_api_key)
 
@@ -56,6 +54,16 @@ phase_mapping = {
     "Purch & Install": "VII. Purch & Install",
     "Construction": "VIII. Construction"
 }
+
+# === Sidebar ===
+with st.sidebar:
+    st.image(LOGO_PATH, width=120)
+    st.title("Solace")
+    st.markdown("🚧 *NYC School Construction Estimator*")
+    st.markdown("---")
+    st.markdown("Built by [Anushka Katiyar](https://www.linkedin.com/in/anushka-katiyar12/)")
+    st.markdown("🔗 [GitHub Repo](https://github.com/AnushkaKatiyar)")
+    st.markdown("💬 Powered by Mistral + ML Models")
 
 # === Helper Functions ===
 def get_detailed_plan_from_mistral(description):
@@ -106,29 +114,30 @@ def prepare_single_row(description, phase, duration_weeks):
     num_feats = scaler.transform(df[["duration_days"]])
     return np.hstack([embedding, cat_feats, num_feats])
 
-# === Streamlit UI ===
+# === Layout and Input ===
 st.set_page_config(page_title="Solace Estimator", layout="wide")
 logo = Image.open(LOGO_PATH)
 col1, col2 = st.columns([1, 6])
 with col1:
     st.image(logo, width=180)
 with col2:
-    st.markdown("<h2 style='margin-bottom: 0; color: #1E90FF;'> NYC School Construction Cost & Schedule Estimator</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='margin-bottom: 0; color: #1E90FF;'>NYC School Construction Cost & Schedule Estimator</h2>", unsafe_allow_html=True)
 
-description = st.text_area("Enter Project Description:", "New science lab construction for high school in Manhattan with latest equipment.")
-bucket = st.selectbox("Select Cost Bucket:", ["low", "mid", "high"])
+with st.expander("📝 Customize Project", expanded=True):
+    description = st.text_area("Enter Project Description:", "New science lab construction for high school in Manhattan with latest equipment.")
+    bucket = st.selectbox("Select Cost Bucket:", ["low", "mid", "high"])
 
+# === Estimation ===
 if st.button("Estimate Cost and Schedule", key="run_button"):
-    with st.spinner("Generating assistant output and predictions..."):
+    with st.spinner("⏳ Generating predictions and fetching plan..."):
         detailed_json = get_detailed_plan_from_mistral(description)
-
         try:
             json_start = detailed_json.find("[")
             json_end = detailed_json.rfind("]") + 1
             json_data = json.loads(detailed_json[json_start:json_end])
             detailed_df = pd.DataFrame(json_data)
         except Exception as e:
-            st.error(f"❌ Could not parse the detailed plan response: {e}")
+            st.error(f"❌ Could not parse response: {e}")
             st.code(detailed_json, language="json")
             st.stop()
 
@@ -153,26 +162,18 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
         tab1, tab2 = st.tabs(["📊 Cost & Duration", "📋 Detailed Plan"])
 
         with tab1:
-            st.subheader("🔍 Cost & Schedule Breakdown")
+            st.subheader("📊 Cost & Schedule Breakdown")
             st.dataframe(result_df, use_container_width=True)
-            st.success(f"💰 Total Estimated Cost: ${total_cost:,.2f}")
-            st.info(f"🕒 Total Estimated Duration: {total_duration:.1f} weeks")
 
-            fig1, ax1 = plt.subplots(figsize=(6, 6))
-            ax1.pie(result_df["Predicted Cost (USD)"], labels=result_df["Phase"], autopct='%1.1f%%')
-            ax1.set_title("Cost Distribution by Phase", fontsize=14)
-            st.pyplot(fig1)
+            colA, colB = st.columns(2)
+            colA.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
+            colB.metric("🕒 Total Duration", f"{total_duration:.1f} weeks")
 
-            fig2, ax2 = plt.subplots(figsize=(8, 4))
-            ax2.plot(result_df["Phase"], result_df["Predicted Duration (weeks)"], marker='o', linestyle='-', color='skyblue')
-            ax2.set_title("Predicted Duration by Phase", fontsize=14)
-            ax2.set_ylabel("Duration (weeks)", fontsize=12)
-            ax2.set_xlabel("Phase", fontsize=12)
-            ax2.tick_params(axis='x', rotation=45)
-            st.pyplot(fig2)
+            st.bar_chart(result_df.set_index("Phase")["Predicted Cost (USD)"])
+            st.line_chart(result_df.set_index("Phase")["Predicted Duration (weeks)"])
 
         with tab2:
-            st.subheader("📋 Detailed Construction Plan")
+            st.subheader("📋 Phase-wise Construction Plan")
             for _, row in detailed_df.iterrows():
                 with st.expander(f"{row['Phase']} – {row['Description']}"):
                     st.markdown("**Subtasks:**")
@@ -181,5 +182,3 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
                     st.markdown(f"**Permissions Required:** {', '.join(row.get('Permissions Required', []))}")
                     st.markdown(f"**Vendors:** {', '.join(row.get('Vendors', []))}")
                     st.markdown(f"**Estimated Labor:** {row.get('Estimated Labor', 'N/A')} workers")
-
-    
