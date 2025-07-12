@@ -10,6 +10,8 @@ from sentence_transformers import SentenceTransformer
 from mistralai import Mistral, UserMessage, SystemMessage
 from PIL import Image
 import json
+from streamlit_lottie import st_lottie
+import requests
 
 # === Paths ===
 MODEL_DIR = "models/"
@@ -55,19 +57,58 @@ phase_mapping = {
     "Construction": "VIII. Construction"
 }
 
-dark_mode = st.sidebar.toggle("🌙 Enable Dark Mode")
-if dark_mode:
-    st.markdown("<style>body { background-color: #0E1117; color: white; }</style>", unsafe_allow_html=True)
+# === Helper function to load Lottie animation ===
+def load_lottie_url(url: str):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
 
 # === Sidebar ===
 with st.sidebar:
     st.image(LOGO_PATH, width=120)
+
+    # Load and display Lottie animation
+    lottie_anim = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_jcikwtux.json")
+    if lottie_anim:
+        st_lottie(lottie_anim, speed=1, width=150, height=150, key="sidebar_anim")
+
     st.title("Solace")
     st.markdown("🚧 *NYC School Construction Estimator*")
     st.markdown("---")
     st.markdown("Built by [Anushka Katiyar](https://www.linkedin.com/in/anushka-katiyar12/)")
     st.markdown("🔗 [GitHub Repo](https://github.com/AnushkaKatiyar)")
     st.markdown("💬 Powered by Mistral + ML Models")
+
+# === Dark Mode Toggle & CSS Injection ===
+dark_mode = st.sidebar.checkbox("🌙 Enable Dark Mode")
+
+dark_css = """
+<style>
+    body, .css-18e3th9, .stApp {
+        background-color: #0E1117;
+        color: white;
+    }
+    .css-1d391kg, .css-1d391kg a, .css-1d391kg button {
+        color: white;
+    }
+    .stButton>button {
+        background-color: #1E90FF;
+        color: white;
+        border-radius: 5px;
+    }
+    .stDataFrame, .css-1v0mbdj {
+        background-color: #161b22;
+        color: white;
+    }
+</style>
+"""
+
+if dark_mode:
+    st.markdown(dark_css, unsafe_allow_html=True)
+else:
+    # Optionally reset styles or keep default light theme
+    st.markdown("<style>body, .stApp {background-color: white; color: black;}</style>", unsafe_allow_html=True)
 
 # === Helper Functions ===
 def get_detailed_plan_from_mistral(description):
