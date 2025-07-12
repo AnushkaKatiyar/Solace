@@ -5,6 +5,6 @@ st.markdown("""
 **Solace** is a cost and schedule prediction platform for NYC school construction projects.
 - Built using ML + Mistral
 - Visual breakdown by phase
-- Created by [Anushka Katiyar](https://www.linkedin.com/in/anushka-katiyar12/)
+- Created for Solace Technologies as part of USC Viterbi Summer Smasher program
 - Source code: [GitHub](https://github.com/AnushkaKatiyar)
 """)
