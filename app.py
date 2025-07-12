@@ -76,7 +76,7 @@ with st.sidebar:
     st.title("Solace")
     st.markdown("🚧 *NYC School Construction Estimator*")
     st.markdown("---")
-    st.markdown("Built by [Anushka Katiyar](https://www.linkedin.com/in/anushka-katiyar12/)")
+    st.markdown("Created for Solace Technologies")
     st.markdown("🔗 [GitHub Repo](https://github.com/AnushkaKatiyar)")
     st.markdown("💬 Powered by Mistral + ML Models")
 
