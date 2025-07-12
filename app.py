@@ -1,19 +1,7 @@
 import os
 import streamlit as st
 
-# Debug info on files and folders (helps ensure your app can see needed files)
-st.write("📁 Current working directory:", os.getcwd())
-st.write("📂 Files in current directory:", os.listdir())
 
-if os.path.exists("models"):
-    st.write("📂 Files in models folder:", os.listdir("models"))
-else:
-    st.write("⚠️ 'models' folder not found")
-    
-if os.path.exists("assets"):
-    st.write("📂 Files in assets folder:", os.listdir("assets"))
-else:
-    st.write("⚠️ 'assets' folder not found")
 
 
 import pandas as pd
