@@ -1,5 +1,5 @@
-streamlit
 matplotlib
+streamlit
 sentence-transformers
 mistralai
 pandas
@@ -8,3 +8,5 @@ scikit-learn
 xgboost
 optuna
 Pillow
+pyproject.toml
+Pipfile

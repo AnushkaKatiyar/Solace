@@ -194,4 +194,4 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
                     st.markdown(f"**Vendors:** {', '.join(row.get('Vendors', []))}")
                     st.markdown(f"**Estimated Labor:** {row.get('Estimated Labor', 'N/A')} workers")
 
-        
+    
