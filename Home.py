@@ -55,6 +55,10 @@ phase_mapping = {
     "Construction": "VIII. Construction"
 }
 
+dark_mode = st.sidebar.toggle("🌙 Enable Dark Mode")
+if dark_mode:
+    st.markdown("<style>body { background-color: #0E1117; color: white; }</style>", unsafe_allow_html=True)
+
 # === Sidebar ===
 with st.sidebar:
     st.image(LOGO_PATH, width=120)
