@@ -1,3 +1,4 @@
+streamlit-lottie
 matplotlib
 streamlit
 sentence-transformers
