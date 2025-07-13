@@ -1,6 +1,4 @@
-# Step 1: Open your README.md file in VS Code or any editor and paste the following content:
 
-cat > README.md <<EOF
 # 🏗️ Solace – NYC School Construction Estimator
 
 Solace is an intelligent, interactive Streamlit web application designed to estimate the **cost and schedule** of school construction projects in New York City. Powered by machine learning models and the Mistral LLM API, it delivers data-driven insights and detailed construction plans for all 8 project phases.
