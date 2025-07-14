@@ -83,37 +83,36 @@ with st.sidebar:
 # === Dark Mode Toggle & CSS Injection ===
 dark_mode = st.sidebar.checkbox("🌙 Enable Dark Mode")
 
-if dark_mode:
-    st.markdown("""
-    <style>
-        html, body, [class*="st-"] {
-            background-color: #0E1117;
-            color: white;
-        }
-        .stTextInput > div > div > input,
-        .stSelectbox > div > div > div {
-            background-color: #161b22;
-            color: white;
-        }
-        label, .stTextInput label, .stSelectbox label {
-            color: white !important;
-        }
-        .stButton > button {
-            background-color: #1E90FF;
-            color: white;
-            border-radius: 5px;
-        }
-        .stDataFrame, .stTable {
-            background-color: #161b22;
-            color: white;
-        }
-    </style>
-    """)
+dark_css = """
+<style>
+    html, body, [class*="st-"] {
+        background-color: #0E1117;
+        color: white;
+    }
+    .stTextInput > div > div > input,
+    .stSelectbox > div > div > div {
+        background-color: #161b22;
+        color: white;
+    }
+    label, .stTextInput label, .stSelectbox label {
+        color: white !important;
+    }
+    .stButton > button {
+        background-color: #1E90FF;
+        color: white;
+        border-radius: 5px;
+    }
+    .stDataFrame, .stTable {
+        background-color: #161b22;
+        color: white;
+    }
+</style>
+"""
 
 if dark_mode:
     st.markdown(dark_css, unsafe_allow_html=True)
 else:
-    # Optionally reset styles or keep default light theme
+    # Reset to light mode
     st.markdown("<style>body, .stApp {background-color: white; color: black;}</style>", unsafe_allow_html=True)
 
 # === Helper Functions ===
