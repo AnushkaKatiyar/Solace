@@ -101,6 +101,14 @@ dark_css = """
         background-color: #161b22;
         color: white;
     }
+    /* Fix input labels */
+    label, .css-1u0bxoo {
+        color: white !important;
+    }
+    /* Fix placeholder text */
+    input::placeholder, textarea::placeholder {
+        color: #bbb !important;
+    }
 </style>
 """
 
