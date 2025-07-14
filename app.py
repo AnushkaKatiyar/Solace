@@ -108,7 +108,7 @@ if dark_mode:
             color: white;
         }
     </style>
-    """
+    """)
 
 if dark_mode:
     st.markdown(dark_css, unsafe_allow_html=True)
