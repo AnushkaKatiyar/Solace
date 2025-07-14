@@ -83,34 +83,32 @@ with st.sidebar:
 # === Dark Mode Toggle & CSS Injection ===
 dark_mode = st.sidebar.checkbox("🌙 Enable Dark Mode")
 
-dark_css = """
-<style>
-    body, .css-18e3th9, .stApp {
-        background-color: #0E1117;
-        color: white;
-    }
-    .css-1d391kg, .css-1d391kg a, .css-1d391kg button {
-        color: white;
-    }
-    .stButton>button {
-        background-color: #1E90FF;
-        color: white;
-        border-radius: 5px;
-    }
-    .stDataFrame, .css-1v0mbdj {
-        background-color: #161b22;
-        color: white;
-    }
-    /* Fix input labels */
-    label, .css-1u0bxoo {
-        color: white !important;
-    }
-    /* Fix placeholder text */
-    input::placeholder, textarea::placeholder {
-        color: #bbb !important;
-    }
-</style>
-"""
+if dark_mode:
+    st.markdown("""
+    <style>
+        html, body, [class*="st-"] {
+            background-color: #0E1117;
+            color: white;
+        }
+        .stTextInput > div > div > input,
+        .stSelectbox > div > div > div {
+            background-color: #161b22;
+            color: white;
+        }
+        label, .stTextInput label, .stSelectbox label {
+            color: white !important;
+        }
+        .stButton > button {
+            background-color: #1E90FF;
+            color: white;
+            border-radius: 5px;
+        }
+        .stDataFrame, .stTable {
+            background-color: #161b22;
+            color: white;
+        }
+    </style>
+    """
 
 if dark_mode:
     st.markdown(dark_css, unsafe_allow_html=True)
