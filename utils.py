@@ -11,16 +11,15 @@ FEEDBACK_CSV = "feedback/feedback_data.csv"
 os.makedirs(os.path.dirname(LOGS_CSV), exist_ok=True)
 os.makedirs(os.path.dirname(FEEDBACK_CSV), exist_ok=True)
 
-def log_user_activity(user_id: str, page_name: str, action: str) -> None:
-    """Log user activity to CSV with timestamp."""
-    timestamp = datetime.utcnow().isoformat()
-    file_exists = os.path.isfile(LOGS_CSV)
-    
-    with open(LOGS_CSV, "a", newline="") as f:
-        writer = csv.writer(f)
-        if not file_exists:
-            writer.writerow(["timestamp", "user_id", "page_name", "action"])
-        writer.writerow([timestamp, user_id, page_name, action])
+def log_user_activity(action: str, details: str = ""):
+    os.makedirs("logs", exist_ok=True)
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_line = f"{timestamp},{action},{details}\n"
+    try:
+        with open("logs/activity_log.csv", "a") as f:
+            f.write(log_line)
+    except Exception as e:
+        print(f"⚠️ Error writing log: {e}")
 
 def save_feedback(user_id: str, email: str, feedback_text: str) -> None:
     """Save user feedback to CSV with timestamp."""
