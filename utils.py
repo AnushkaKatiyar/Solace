@@ -13,7 +13,7 @@ os.makedirs(os.path.dirname(FEEDBACK_CSV), exist_ok=True)
 
 def log_user_activity(action: str, details: str = ""):
     os.makedirs("logs", exist_ok=True)
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     log_line = f"{timestamp},{action},{details}\n"
     try:
         with open("logs/activity_log.csv", "a") as f:
