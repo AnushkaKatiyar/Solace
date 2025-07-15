@@ -218,7 +218,7 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
             result_df_formatted["Predicted Cost (USD)"] = result_df_formatted["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
             result_df_formatted["Predicted Duration (weeks)"] = result_df_formatted["Predicted Duration (weeks)"].apply(lambda x: f"{x:.1f} weeks")
 
-            st.dataframe(result_df, use_container_width=True)
+            st.dataframe(result_df_formatted, use_container_width=True)
 
             colA, colB = st.columns(2)
             colA.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
