@@ -119,7 +119,18 @@ else:
 def get_detailed_plan_from_mistral(description):
     prompt = f'''
 Generate a detailed construction plan for all 8 phases for the following project: "{description}"
-Each phase should include: a short description, 6–10 subtasks, required NYC government permissions (e.g., SCA, DoE, FDNY), 1–2 relevant vendors, and estimated labor size.
+Each phase should include: 
+- a short description, 
+- 6–10 subtasks, 
+- required NYC government permissions (e.g., SCA, DoE, FDNY), 
+- 1–2 relevant vendors, 
+- estimated labor size,
+- AND a "Subphase Breakdown" section, which is a list of subphases for that phase.
+Each subphase should have: 
+- "Name",
+- "Duration (weeks)",
+- "Cost (USD)".
+
 Return the result as a JSON list of 8 items in this format:
 [
   {{
@@ -128,7 +139,12 @@ Return the result as a JSON list of 8 items in this format:
     "Subtasks": ["task1", "task2", ...],
     "Permissions Required": ["SCA", "FDNY"],
     "Vendors": ["VendorX", "VendorY"],
-    "Estimated Labor": 12
+    "Estimated Labor": 12,
+    "Subphase Breakdown": [
+      {{"Name": "Subphase 1", "Duration (weeks)": 2.5, "Cost (USD)": 100000}},
+      {{"Name": "Subphase 2", "Duration (weeks)": 3.0, "Cost (USD)": 150000}},
+      ...
+    ]
   }},
   ...
 ]
@@ -264,17 +280,17 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
             x="Phase",
             y="Predicted Duration (weeks)",
             title="Duration per Phase",
-        )
+            )
 
-        fig.update_layout(
-            xaxis_title="Phase",
-            yaxis_title="Duration (weeks)",
-            xaxis_tickangle=45,        # Rotate x-axis labels 45 degrees
-            font=dict(size=16),        # Increase font size
-            margin=dict(l=40, r=40, t=40, b=80),  # Adjust margins if needed
-        )
+            fig.update_layout(
+                xaxis_title="Phase",
+                yaxis_title="Duration (weeks)",
+                xaxis_tickangle=45,        # Rotate x-axis labels 45 degrees
+                font=dict(size=16),        # Increase font size
+                margin=dict(l=40, r=40, t=40, b=80),  # Adjust margins if needed
+            )
 
-        st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True)
 
         with tab2:
             st.subheader("📋 Phase-wise Construction Plan")
@@ -286,3 +302,21 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
                     st.markdown(f"**Permissions Required:** {', '.join(row.get('Permissions Required', []))}")
                     st.markdown(f"**Vendors:** {', '.join(row.get('Vendors', []))}")
                     st.markdown(f"**Estimated Labor:** {row.get('Estimated Labor', 'N/A')} workers")
+            
+            # Insert your summary table code here:
+            rows = []
+            for phase in detailed_df.itertuples():
+                subphases = getattr(phase, "Subphase Breakdown", []) or []  # safer access
+                total_duration = sum(sp["Duration (weeks)"] for sp in subphases)
+                total_cost = sum(sp["Cost (USD)"] for sp in subphases)
+                rows.append({"Phase/Subphase": phase.Phase, "Duration (weeks)": total_duration, "Cost (USD)": total_cost})
+
+                for sp in subphases:
+                    rows.append({
+                        "Phase/Subphase": f"  {sp['Name']}",  # indent for clarity
+                        "Duration (weeks)": sp["Duration (weeks)"],
+                        "Cost (USD)": sp["Cost (USD)"]
+                    })
+
+            summary_df = pd.DataFrame(rows)
+            st.table(summary_df)
