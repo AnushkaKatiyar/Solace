@@ -213,6 +213,11 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
 
         with tab1:
             st.subheader("📊 Cost & Schedule Breakdown")
+            # Format the values
+            result_df_formatted = result_df.copy()
+            result_df_formatted["Predicted Cost (USD)"] = result_df_formatted["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
+            result_df_formatted["Predicted Duration (weeks)"] = result_df_formatted["Predicted Duration (weeks)"].apply(lambda x: f"{x:.1f} weeks")
+
             st.dataframe(result_df, use_container_width=True)
 
             colA, colB = st.columns(2)
