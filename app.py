@@ -128,7 +128,7 @@ Output should be a list of 8 phases. Each phase must include:
 - Description: (string),a short description,
 - Subtasks: (list of strings),6 to 10 detailed subtasks as part of a "Subphase Breakdown" list with name
 - Permissions Required: (list of strings),required NYC government permissions (e.g., SCA, DoE, FDNY),
-- Vendors: (list of strings),1–2 relevant vendors located in New York City for the specific {description},
+- Vendors: (list of strings),1–2 **actual NYC-based vendors or well-known relevant companies** (avoid placeholders like 'VendorX', 'VendorA'),
 - Estimated Labor: (integer)
 - Subphase Breakdown: (list of phases and subtasks(8 phases and 6-10 subtasks) from above as dicts). Each dict must have:
   - Name: (string)
@@ -142,7 +142,7 @@ Return ONLY valid JSON. Here's the format:
     "Description": "...",
     "Subtasks": ["task1", "task2"],
     "Permissions Required": ["SCA"],
-    "Vendors": ["VendorX"],
+    "Vendors": ["STV Group", "AECOM"],  
     "Estimated Labor": 10,
     "Subphase Breakdown": [
       {{
