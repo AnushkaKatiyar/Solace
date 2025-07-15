@@ -125,7 +125,7 @@ Generate a JSON construction plan for the following NYC school project:
 Output should be a list of 8 phases. Each phase must include:
 - Phase: (string) e.g. "I. Scope"
 - Description: (string)
-- Subtasks: (list of strings)
+- Subtasks: (list of strings about 6-10)
 - Permissions Required: (list of strings)
 - Vendors: (list of strings)
 - Estimated Labor: (integer)
