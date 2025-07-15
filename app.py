@@ -219,7 +219,7 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
             result_df_formatted["Predicted Duration (days)"] = (result_df["Predicted Duration (weeks)"] * 7).round().astype(int).astype(str) + " days"
 
             
-            st.write(result_df_formatted)
+            st.dataframe(result_df_formatted, use_container_width=True)
 
             colA, colB = st.columns(2)
             colA.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
