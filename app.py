@@ -217,12 +217,16 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
             # Create a copy and format for display
             result_df_formatted = result_df.copy()
             result_df_formatted["Predicted Cost (USD)"] = result_df_formatted["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
-            result_df_formatted["Predicted Duration (weeks)"] = result_df_formatted["Predicted Duration (weeks)"].apply(lambda x: f"{x:.1f} weeks")
-            result_df_formatted["Predicted Duration (days)"] = result_df["Predicted Duration (weeks)"].apply(lambda x: f"{int(round(x * 7))} days")
+            
+            def format_duration(weeks_float):
+                weeks = int(weeks_float)
+                days = int(round((weeks_float - weeks) * 7))
+                return f"{weeks} weeks {days} days"
+            result_df_formatted["Duration"] = result_df["Predicted Duration (weeks)"].apply(format_duration)
 
             # Display formatted table
-            st.write("🔍 Preview:")
-            st.write(result_df_formatted)
+            st.dataframe(result_df_formatted[["Phase", "Predicted Cost (USD)", "Duration"]], use_container_width=True)
+
 
             # Show metrics
             colA, colB = st.columns(2)
