@@ -130,7 +130,7 @@ Output should be a list of 8 phases. Each phase must include:
 - Permissions Required: (list of strings),required NYC government permissions (e.g., SCA, DoE, FDNY),
 - Vendors: (list of strings),1–2 relevant vendors,
 - Estimated Labor: (integer)
-- Subphase Breakdown: (list of phases and subtasks from above as dicts). Each dict must have:
+- Subphase Breakdown: (list of phases and subtasks(8 phases and 6-10 subtasks) from above as dicts). Each dict must have:
   - Name: (string)
   - Duration (weeks): (float)
   - Cost (USD): (float)
@@ -154,7 +154,17 @@ Return ONLY valid JSON. Here's the format:
         "Name": "Planning",
         "Duration (weeks)": 2.0,
         "Cost (USD)": 8000
-      }}
+      }},
+      {{
+        "Name": "Design",
+        "Duration (weeks)": 2.0,
+        "Cost (USD)": 8000
+      }},
+      {{
+        "Name": "Preperation",
+        "Duration (weeks)": 2.0,
+        "Cost (USD)": 8000
+      }},
     ]
   }},
   ...
