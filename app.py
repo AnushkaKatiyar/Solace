@@ -118,35 +118,42 @@ else:
 # === Helper Functions ===
 def get_detailed_plan_from_mistral(description):
     prompt = f'''
-Generate a detailed construction plan for all 8 phases for the following project: "{description}"
+Generate a JSON construction plan for the following NYC school project:
 
-Each phase should include:
-- A short description
-- 6–10 subtasks
-- NYC government permissions required (e.g., SCA, DoE, FDNY)
-- 1–2 relevant vendors
-- Estimated labor size
-- And a "Subphase Breakdown" list (2–4 subphases per phase), where each subphase includes:
-  - "Name"
-  - "Duration (weeks)" (float)
-  - "Cost (USD)" (float)
+"{description}"
 
-Return the result as a JSON list of 8 objects like:
+Output should be a list of 8 phases. Each phase must include:
+- Phase: (string) e.g. "I. Scope"
+- Description: (string)
+- Subtasks: (list of strings)
+- Permissions Required: (list of strings)
+- Vendors: (list of strings)
+- Estimated Labor: (integer)
+- Subphase Breakdown: (list of 2-4 dicts). Each dict must have:
+  - Name: (string)
+  - Duration (weeks): (float)
+  - Cost (USD): (float)
+
+Return ONLY valid JSON. Here's the format:
 [
   {{
     "Phase": "I. Scope",
     "Description": "...",
-    "Subtasks": ["task1", "task2", ...],
-    "Permissions Required": ["SCA", "FDNY"],
-    "Vendors": ["VendorX", "VendorY"],
-    "Estimated Labor": 12,
+    "Subtasks": ["task1", "task2"],
+    "Permissions Required": ["SCA"],
+    "Vendors": ["VendorX"],
+    "Estimated Labor": 10,
     "Subphase Breakdown": [
       {{
-        "Name": "Site Visit & Survey",
+        "Name": "Site Survey",
         "Duration (weeks)": 1.5,
         "Cost (USD)": 5000
       }},
-      ...
+      {{
+        "Name": "Planning",
+        "Duration (weeks)": 2.0,
+        "Cost (USD)": 8000
+      }}
     ]
   }},
   ...
@@ -309,6 +316,8 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
             # Insert your summary table code here:
             rows = []
             for phase in detailed_df.itertuples():
+                st.subheader("🛠️ Raw Mistral Output")
+                st.code(detailed_json, language="json")
                 subphases = getattr(phase, "Subphase Breakdown", []) or []  # safer access
                 total_duration = sum(sp["Duration (weeks)"] for sp in subphases)
                 total_cost = sum(sp["Cost (USD)"] for sp in subphases)
