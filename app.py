@@ -313,12 +313,11 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
                     st.markdown(f"**Vendors:** {', '.join(row.get('Vendors', []))}")
                     st.markdown(f"**Estimated Labor:** {row.get('Estimated Labor', 'N/A')} workers")
             
-            # Insert your summary table code here:
             st.subheader("📊 Summary Table: Duration & Cost by Phase + Subphase")
 
             rows = []
             for phase in detailed_df.itertuples():
-                subphases = getattr(phase, "Subphase Breakdown", [])
+                subphases = json_data[phase.Index].get("Subphase Breakdown", [])
                 total_duration = sum(sp.get("Duration (weeks)", 0) for sp in subphases)
                 total_cost = sum(sp.get("Cost (USD)", 0) for sp in subphases)
 
@@ -339,3 +338,4 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
 
             summary_df = pd.DataFrame(rows)
             st.table(summary_df)
+
