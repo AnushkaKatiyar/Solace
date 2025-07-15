@@ -235,7 +235,7 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
 
             # Charts still need numeric values
             
-            st.line_chart(result_df.set_index("Phase")["Predicted Duration (weeks)"])
+            
             import plotly.express as px
             fig = px.bar(
             result_df,
@@ -264,8 +264,6 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
             x="Phase",
             y="Predicted Duration (weeks)",
             title="Duration per Phase",
-            color="Duration",
-            color_continuous_scale='Viridis',
         )
 
         fig.update_layout(
@@ -274,7 +272,6 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
             xaxis_tickangle=45,        # Rotate x-axis labels 45 degrees
             font=dict(size=16),        # Increase font size
             margin=dict(l=40, r=40, t=40, b=80),  # Adjust margins if needed
-            coloraxis_colorbar=dict(title="Duration")
         )
 
         st.plotly_chart(fig, use_container_width=True)
