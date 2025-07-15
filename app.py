@@ -130,7 +130,7 @@ Output should be a list of 8 phases. Each phase must include:
 - Permissions Required: (list of strings),required NYC government permissions (e.g., SCA, DoE, FDNY),
 - Vendors: (list of strings),1–2 relevant vendors,
 - Estimated Labor: (integer)
-- Subphase Breakdown: (list of 2-4 dicts). Each dict must have:
+- Subphase Breakdown: (list of phases and subtasks from above as dicts). Each dict must have:
   - Name: (string)
   - Duration (weeks): (float)
   - Cost (USD): (float)
