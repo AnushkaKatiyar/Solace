@@ -316,12 +316,12 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
             
             
 
+            # --- Summary Table: Duration & Cost by Phase + Subphase ---
             st.subheader("📊 Summary Table: Duration & Cost by Phase + Subphase")
 
-            # Build summary rows
             rows = []
             for phase in detailed_df.itertuples():
-                subphases = getattr(phase, "Subphase Breakdown", []) or []
+                subphases = json_data[phase.Index].get("Subphase Breakdown", [])
                 total_duration = sum(sp.get("Duration (weeks)", 0) for sp in subphases)
                 total_cost = sum(sp.get("Cost (USD)", 0) for sp in subphases)
 
@@ -329,54 +329,61 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
                 rows.append({
                     "Phase/Subphase": phase.Phase,
                     "Duration (weeks)": round(total_duration, 2),
-                    "Cost (USD)": f"${total_cost:,.2f}",
-                    "is_total": True
+                    "Cost (USD)": total_cost
                 })
 
                 # Subphase rows
                 for sp in subphases:
                     rows.append({
                         "Phase/Subphase": f"   ↳ {sp['Name']}",
-                        "Duration (weeks)": round(sp.get("Duration (weeks)", 0), 2),
-                        "Cost (USD)": f"${sp.get('Cost (USD)', 0):,.2f}",
-                        "is_total": False
+                        "Duration (weeks)": round(sp["Duration (weeks)"], 2),
+                        "Cost (USD)": sp["Cost (USD)"]
                     })
 
-            # Create summary DataFrame
             summary_df = pd.DataFrame(rows)
 
-            # Apply bold formatting for total rows
-            summary_df["Phase/Subphase"] = summary_df.apply(
-                lambda row: f"**{row['Phase/Subphase']}**" if row["is_total"] else row["Phase/Subphase"],
-                axis=1
-            )
+            # Format Phase rows bold in st.dataframe using styler
+            def highlight_phase(row):
+                if not row["Phase/Subphase"].startswith("   ↳"):
+                    return ['font-weight: bold; background-color: #D9EAD3'] * len(row)
+                else:
+                    return [''] * len(row)
 
-            # Style table with background color for total rows
-            styled_df = summary_df.drop(columns=["is_total"]).style.apply(
-                lambda row: ['background-color: #e6f2ff'] * len(row) if '**' in str(row["Phase/Subphase"]) else [''] * len(row),
-                axis=1
-            )
+            summary_df_styled = summary_df.style.apply(highlight_phase, axis=1)\
+                .format({"Cost (USD)": "${:,.2f}"})
 
-            # Show styled table
-            st.dataframe(styled_df, use_container_width=True)
+            st.dataframe(summary_df_styled, use_container_width=True)
 
-            # Prepare clean export (remove markdown and helper column)
-            export_df = summary_df.copy()
-            export_df["Phase/Subphase"] = export_df["Phase/Subphase"].str.replace("**", "", regex=False)
-            export_df = export_df.drop(columns=["is_total"])
-
-            # Convert to Excel
+            # Add export to Excel button
             output = io.BytesIO()
             with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                export_df.to_excel(writer, index=False, sheet_name='Summary')
-                writer.save()
+                summary_df.to_excel(writer, sheet_name='Summary', index=False)
 
-            # Download button
+                workbook  = writer.book
+                worksheet = writer.sheets['Summary']
+
+                # Format header
+                header_format = workbook.add_format({'bold': True, 'bg_color': '#B7DEE8'})
+                for col_num, value in enumerate(summary_df.columns.values):
+                    worksheet.write(0, col_num, value, header_format)
+
+                # Format phase rows bold + background color
+                phase_format = workbook.add_format({'bold': True, 'bg_color': '#D9EAD3'})
+                for i, val in enumerate(summary_df["Phase/Subphase"]):
+                    if not val.startswith("   ↳"):
+                        worksheet.set_row(i + 1, None, phase_format)
+
+                # Format cost column as currency
+                currency_format = workbook.add_format({'num_format': '$#,##0.00'})
+                worksheet.set_column('C:C', 15, currency_format)
+
+                # Optionally format Duration column width
+                worksheet.set_column('B:B', 18)
+
+            output.seek(0)
             st.download_button(
                 label="📥 Download Summary as Excel",
-                data=output.getvalue(),
-                file_name="project_summary.xlsx",
+                data=output,
+                file_name="solace_summary.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
-
-
