@@ -236,6 +236,14 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
             # Charts still need numeric values
             st.bar_chart(result_df.set_index("Predicted Cost (USD)")["Phase"])
             st.line_chart(result_df.set_index("Phase")["Predicted Duration (weeks)"])
+            fig, ax = plt.subplots(figsize=(8, 5))
+            ax.barh(result_df['Phase'], result_df['Predicted Cost (USD)'], color='dodgerblue')
+            ax.set_xlabel('Predicted Cost (USD)')
+            ax.set_title('Cost by Phase')
+            import matplotlib.ticker as mtick
+            ax.xaxis.set_major_formatter(mtick.StrMethodFormatter('${x:,.0f}'))
+
+            st.pyplot(fig)
 
         with tab2:
             st.subheader("📋 Phase-wise Construction Plan")
