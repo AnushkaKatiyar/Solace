@@ -12,6 +12,7 @@ from PIL import Image
 import json
 from streamlit_lottie import st_lottie
 import requests
+import io
 
 # === Paths ===
 MODEL_DIR = "models/"
