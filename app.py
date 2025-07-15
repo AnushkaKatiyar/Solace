@@ -147,22 +147,22 @@ Return ONLY valid JSON. Here's the format:
     "Subphase Breakdown": [
       {{
         "Name": "Site Survey",
-        "Duration (weeks)": 1.5,
+        "Duration (weeks)": 1,
         "Cost (USD)": 5000
       }},
       {{
         "Name": "Planning",
-        "Duration (weeks)": 2.0,
+        "Duration (weeks)": 2,
         "Cost (USD)": 8000
       }},
       {{
         "Name": "Design",
-        "Duration (weeks)": 2.0,
+        "Duration (weeks)": 2,
         "Cost (USD)": 8000
       }},
       {{
         "Name": "Preperation",
-        "Duration (weeks)": 2.0,
+        "Duration (weeks)": 2,
         "Cost (USD)": 8000
       }},
     ]
@@ -329,6 +329,12 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
             # --- Summary Table: Duration & Cost by Phase + Subphase ---
             st.subheader("📊 Summary Table: Duration & Cost by Phase + Subphase")
 
+            def format_duration(val):
+            if val == int(val):
+                return str(int(val))  # no decimals if whole number
+            else:
+                return str(round(val, 2))  # up to 2 decimals if needed
+
             rows = []
             for phase in detailed_df.itertuples():
                 subphases = json_data[phase.Index].get("Subphase Breakdown", [])
@@ -338,7 +344,7 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
                 # Phase total row
                 rows.append({
                     "Phase/Subphase": phase.Phase,
-                    "Duration (weeks)": round(total_duration, 2),
+                    "Duration (weeks)": format_duration(total_duration),
                     "Cost (USD)": total_cost
                 })
 
@@ -346,7 +352,7 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
                 for sp in subphases:
                     rows.append({
                         "Phase/Subphase": f"   ↳ {sp['Name']}",
-                        "Duration (weeks)": round(sp["Duration (weeks)"], 2),
+                        "Duration (weeks)": format_duration(sp["Duration (weeks)"]),
                         "Cost (USD)": sp["Cost (USD)"]
                     })
 
