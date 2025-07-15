@@ -211,7 +211,7 @@ with col2:
     st.markdown("<h2 style='margin-bottom: 0; color: #1E90FF;'>NYC School Construction Cost & Schedule Estimator</h2>", unsafe_allow_html=True)
 
 with st.expander("📝 Customize Project", expanded=True):
-    description = st.text_area("Enter Project Description:", "New science lab construction for high school in Manhattan with latest equipment.")
+    description = st.text_area("Enter Project Description:", "Hi Solace, we are planning to build a new science lab for a high school in Manhattan with latest equipment, Can you create a detailed plan?")
     bucket = st.selectbox("Select Cost Bucket:", ["low", "mid", "high"])
 
 # === Estimation ===
