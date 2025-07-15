@@ -314,20 +314,27 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
                     st.markdown(f"**Estimated Labor:** {row.get('Estimated Labor', 'N/A')} workers")
             
             # Insert your summary table code here:
+            st.subheader("📊 Summary Table: Duration & Cost by Phase + Subphase")
+
             rows = []
             for phase in detailed_df.itertuples():
-                st.subheader("🛠️ Raw Mistral Output")
-                st.code(detailed_json, language="json")
-                subphases = getattr(phase, "Subphase Breakdown", []) or []  # safer access
-                total_duration = sum(sp["Duration (weeks)"] for sp in subphases)
-                total_cost = sum(sp["Cost (USD)"] for sp in subphases)
-                rows.append({"Phase/Subphase": phase.Phase, "Duration (weeks)": total_duration, "Cost (USD)": total_cost})
+                subphases = getattr(phase, "Subphase Breakdown", [])
+                total_duration = sum(sp.get("Duration (weeks)", 0) for sp in subphases)
+                total_cost = sum(sp.get("Cost (USD)", 0) for sp in subphases)
 
+                # Phase total row
+                rows.append({
+                    "Phase/Subphase": phase.Phase,
+                    "Duration (weeks)": round(total_duration, 2),
+                    "Cost (USD)": f"${total_cost:,.2f}"
+                })
+
+                # Subphase rows
                 for sp in subphases:
                     rows.append({
-                        "Phase/Subphase": f"  {sp['Name']}",  # indent for clarity
-                        "Duration (weeks)": sp["Duration (weeks)"],
-                        "Cost (USD)": sp["Cost (USD)"]
+                        "Phase/Subphase": f"   ↳ {sp['Name']}",
+                        "Duration (weeks)": round(sp["Duration (weeks)"], 2),
+                        "Cost (USD)": f"${sp['Cost (USD)']:,.2f}"
                     })
 
             summary_df = pd.DataFrame(rows)
