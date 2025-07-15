@@ -123,11 +123,11 @@ Generate a JSON construction plan for the following NYC school project:
 "{description}"
 
 Output should be a list of 8 phases. Each phase must include:
-- Phase: (string) e.g. "I. Scope"
-- Description: (string)
-- Subtasks: (list of strings about 6-10)
-- Permissions Required: (list of strings)
-- Vendors: (list of strings)
+- Phase: (string) e.g. "I. Scope",
+- Description: (string),a short description,
+- Subtasks: (list of strings),6 to 10 detailed subtasks as part of a "Subphase Breakdown" list with name
+- Permissions Required: (list of strings),required NYC government permissions (e.g., SCA, DoE, FDNY),
+- Vendors: (list of strings),1–2 relevant vendors,
 - Estimated Labor: (integer)
 - Subphase Breakdown: (list of 2-4 dicts). Each dict must have:
   - Name: (string)
