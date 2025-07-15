@@ -257,7 +257,7 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
                 height=400,
             )
 
-st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True)
             
             
             
