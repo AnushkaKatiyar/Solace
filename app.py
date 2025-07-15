@@ -330,10 +330,10 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
             st.subheader("📊 Summary Table: Duration & Cost by Phase + Subphase")
 
             def format_duration(val):
-            if val == int(val):
-                return str(int(val))  # no decimals if whole number
-            else:
-                return str(round(val, 2))  # up to 2 decimals if needed
+                if val == int(val):
+                    return str(int(val))  # no decimals if whole number
+                else:
+                    return str(round(val, 2))  # up to 2 decimals if needed
 
             rows = []
             for phase in detailed_df.itertuples():
