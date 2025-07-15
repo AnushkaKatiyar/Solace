@@ -234,8 +234,34 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
             colB.metric("🕒 Total Duration", f"{total_duration:.1f} weeks")
 
             # Charts still need numeric values
-            st.bar_chart(result_df.set_index("Predicted Cost (USD)")["Phase"])
+            
             st.line_chart(result_df.set_index("Phase")["Predicted Duration (weeks)"])
+            import plotly.express as px
+            fig = px.bar(
+            result_df,
+            x="Predicted Cost (USD)",
+            y="Phase",
+            orientation='h',  # horizontal bars
+            title="Cost per Phase",
+            labels={"Predicted Cost (USD)": "Cost (USD)", "Phase": "Project Phase"},
+            )
+
+            # Customize layout for font size and axes labels
+            fig.update_layout(
+                xaxis_title_font=dict(size=16),
+                yaxis_title_font=dict(size=16),
+                xaxis_tickangle=45,
+                xaxis_tickfont=dict(size=14),
+                yaxis_tickfont=dict(size=14),
+                margin=dict(l=100, r=40, t=50, b=50),
+                height=400,
+            )
+
+st.plotly_chart(fig, use_container_width=True)
+            
+            
+            
+            
             fig, ax = plt.subplots(figsize=(8, 5))
             ax.barh(result_df['Phase'], result_df['Predicted Cost (USD)'], color='dodgerblue')
             ax.set_xlabel('Predicted Cost (USD)')
