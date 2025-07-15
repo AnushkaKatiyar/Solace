@@ -234,7 +234,7 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
             colB.metric("🕒 Total Duration", f"{total_duration:.1f} weeks")
 
             # Charts still need numeric values
-            st.bar_chart(result_df.set_index("Phase")["Predicted Cost (USD)"])
+            st.bar_chart(result_df.set_index("Predicted Cost (USD)")["Phase"])
             st.line_chart(result_df.set_index("Phase")["Predicted Duration (weeks)"])
 
         with tab2:
