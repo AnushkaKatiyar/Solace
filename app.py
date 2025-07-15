@@ -119,19 +119,19 @@ else:
 def get_detailed_plan_from_mistral(description):
     prompt = f'''
 Generate a detailed construction plan for all 8 phases for the following project: "{description}"
-Each phase should include: 
-- a short description, 
-- 6–10 subtasks, 
-- required NYC government permissions (e.g., SCA, DoE, FDNY), 
-- 1–2 relevant vendors, 
-- estimated labor size,
-- AND a "Subphase Breakdown" section, which is a list of subphases for that phase.
-Each subphase should have: 
-- "Name",
-- "Duration (weeks)",
-- "Cost (USD)".
 
-Return the result as a JSON list of 8 items in this format:
+Each phase should include:
+- A short description
+- 6–10 subtasks
+- NYC government permissions required (e.g., SCA, DoE, FDNY)
+- 1–2 relevant vendors
+- Estimated labor size
+- And a "Subphase Breakdown" list (2–4 subphases per phase), where each subphase includes:
+  - "Name"
+  - "Duration (weeks)" (float)
+  - "Cost (USD)" (float)
+
+Return the result as a JSON list of 8 objects like:
 [
   {{
     "Phase": "I. Scope",
@@ -141,8 +141,11 @@ Return the result as a JSON list of 8 items in this format:
     "Vendors": ["VendorX", "VendorY"],
     "Estimated Labor": 12,
     "Subphase Breakdown": [
-      {{"Name": "Subphase 1", "Duration (weeks)": 2.5, "Cost (USD)": 100000}},
-      {{"Name": "Subphase 2", "Duration (weeks)": 3.0, "Cost (USD)": 150000}},
+      {{
+        "Name": "Site Visit & Survey",
+        "Duration (weeks)": 1.5,
+        "Cost (USD)": 5000
+      }},
       ...
     ]
   }},
