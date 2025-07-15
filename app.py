@@ -221,7 +221,8 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
             result_df_formatted["Predicted Duration (days)"] = result_df["Predicted Duration (weeks)"].apply(lambda x: f"{int(round(x * 7))} days")
 
             # Display formatted table
-            st.dataframe(result_df_formatted, use_container_width=True)
+            st.write("🔍 Preview:")
+            st.write(result_df_formatted)
 
             # Show metrics
             colA, colB = st.columns(2)
@@ -231,7 +232,7 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
             # Charts still need numeric values
             st.bar_chart(result_df.set_index("Phase")["Predicted Cost (USD)"])
             st.line_chart(result_df.set_index("Phase")["Predicted Duration (weeks)"])
-            
+
         with tab2:
             st.subheader("📋 Phase-wise Construction Plan")
             for _, row in detailed_df.iterrows():
