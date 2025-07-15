@@ -313,11 +313,14 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
                     st.markdown(f"**Vendors:** {', '.join(row.get('Vendors', []))}")
                     st.markdown(f"**Estimated Labor:** {row.get('Estimated Labor', 'N/A')} workers")
             
+            
+
             st.subheader("📊 Summary Table: Duration & Cost by Phase + Subphase")
 
+            # Build summary rows
             rows = []
             for phase in detailed_df.itertuples():
-                subphases = json_data[phase.Index].get("Subphase Breakdown", [])
+                subphases = getattr(phase, "Subphase Breakdown", []) or []
                 total_duration = sum(sp.get("Duration (weeks)", 0) for sp in subphases)
                 total_cost = sum(sp.get("Cost (USD)", 0) for sp in subphases)
 
@@ -325,17 +328,54 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
                 rows.append({
                     "Phase/Subphase": phase.Phase,
                     "Duration (weeks)": round(total_duration, 2),
-                    "Cost (USD)": f"${total_cost:,.2f}"
+                    "Cost (USD)": f"${total_cost:,.2f}",
+                    "is_total": True
                 })
 
                 # Subphase rows
                 for sp in subphases:
                     rows.append({
                         "Phase/Subphase": f"   ↳ {sp['Name']}",
-                        "Duration (weeks)": round(sp["Duration (weeks)"], 2),
-                        "Cost (USD)": f"${sp['Cost (USD)']:,.2f}"
+                        "Duration (weeks)": round(sp.get("Duration (weeks)", 0), 2),
+                        "Cost (USD)": f"${sp.get('Cost (USD)', 0):,.2f}",
+                        "is_total": False
                     })
 
+            # Create summary DataFrame
             summary_df = pd.DataFrame(rows)
-            st.table(summary_df)
+
+            # Apply bold formatting for total rows
+            summary_df["Phase/Subphase"] = summary_df.apply(
+                lambda row: f"**{row['Phase/Subphase']}**" if row["is_total"] else row["Phase/Subphase"],
+                axis=1
+            )
+
+            # Style table with background color for total rows
+            styled_df = summary_df.drop(columns=["is_total"]).style.apply(
+                lambda row: ['background-color: #e6f2ff'] * len(row) if '**' in str(row["Phase/Subphase"]) else [''] * len(row),
+                axis=1
+            )
+
+            # Show styled table
+            st.dataframe(styled_df, use_container_width=True)
+
+            # Prepare clean export (remove markdown and helper column)
+            export_df = summary_df.copy()
+            export_df["Phase/Subphase"] = export_df["Phase/Subphase"].str.replace("**", "", regex=False)
+            export_df = export_df.drop(columns=["is_total"])
+
+            # Convert to Excel
+            output = io.BytesIO()
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                export_df.to_excel(writer, index=False, sheet_name='Summary')
+                writer.save()
+
+            # Download button
+            st.download_button(
+                label="📥 Download Summary as Excel",
+                data=output.getvalue(),
+                file_name="project_summary.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+
 
