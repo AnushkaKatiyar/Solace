@@ -259,17 +259,25 @@ if st.button("Estimate Cost and Schedule", key="run_button"):
 
             st.plotly_chart(fig, use_container_width=True)
             
-            
-            
-            
-            fig, ax = plt.subplots(figsize=(8, 5))
-            ax.barh(result_df['Phase'], result_df['Predicted Cost (USD)'], color='dodgerblue')
-            ax.set_xlabel('Predicted Cost (USD)')
-            ax.set_title('Cost by Phase')
-            import matplotlib.ticker as mtick
-            ax.xaxis.set_major_formatter(mtick.StrMethodFormatter('${x:,.0f}'))
+            fig = px.line(
+            result_df,
+            x="Phase",
+            y="Predicted Duration (weeks)",
+            title="Duration per Phase",
+            color="Duration",
+            color_continuous_scale='Viridis',
+        )
 
-            st.pyplot(fig)
+        fig.update_layout(
+            xaxis_title="Phase",
+            yaxis_title="Duration (weeks)",
+            xaxis_tickangle=45,        # Rotate x-axis labels 45 degrees
+            font=dict(size=16),        # Increase font size
+            margin=dict(l=40, r=40, t=40, b=80),  # Adjust margins if needed
+            coloraxis_colorbar=dict(title="Duration")
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
 
         with tab2:
             st.subheader("📋 Phase-wise Construction Plan")
