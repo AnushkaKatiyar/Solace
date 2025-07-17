@@ -18,12 +18,22 @@ questions = [
 ]
 
 # Setup session state
+if "current_question" not in st.session_state:
+    st.session_state.current_question = 0
 if "answers" not in st.session_state:
     st.session_state.answers = [""] * len(questions)
 if "plan_json" not in st.session_state:
     st.session_state.plan_json = None
 if "loading" not in st.session_state:
     st.session_state.loading = False
+
+def next_question():
+    if st.session_state.current_question < len(questions) - 1:
+        st.session_state.current_question += 1
+
+def prev_question():
+    if st.session_state.current_question > 0:
+        st.session_state.current_question -= 1
 
 # Auto-reveal questions based on previous answers
 for i, q in enumerate(questions):
