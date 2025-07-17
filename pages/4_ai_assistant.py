@@ -24,22 +24,6 @@ if "plan_json" not in st.session_state:
     st.session_state.plan_json = None
 if "loading" not in st.session_state:
     st.session_state.loading = False
-st.subheader("Project Information")
-
-# === Show all previous questions and answers ===
-for i in range(st.session_state.current_question + 1):
-    st.markdown(f"**{questions[i]}**")
-    st.session_state.answers[i] = st.text_input("Your answer:", key=f"answer_{i}", value=st.session_state.answers[i])
-
-# === Next Question button ===
-if st.session_state.current_question < len(questions) - 1:
-    if st.button("Next Question"):
-        if st.session_state.answers[st.session_state.current_question].strip() == "":
-            st.warning("Please provide an answer before proceeding.")
-        else:
-            st.session_state.current_question += 1
-else:
-    st.success("All questions answered!")
 
 # Auto-reveal questions based on previous answers
 for i, q in enumerate(questions):
@@ -102,12 +86,46 @@ st.title("AI Assistant: NYC School Construction Cost & Schedule Plan")
 description = st.text_area("Enter a short project description", 
     value="Create a very detailed cost and scheduling plan for new school construction.")
 
+# Show the current question and input box
+st.markdown(f"### Question {st.session_state.current_question + 1} of {len(questions)}")
+answer = st.text_input(questions[st.session_state.current_question], 
+                       value=st.session_state.answers[st.session_state.current_question],
+                       key="answer_input")
 
+# Save the answer
+st.session_state.answers[st.session_state.current_question] = answer
 
 # Navigation buttons
-
+col1, col2, col3 = st.columns([1,1,2])
+with col1:
+    if st.button("Previous") and st.session_state.current_question > 0:
+        prev_question()
+with col2:
+    next_clicked = st.button("Next")
+    if next_clicked:
+        if answer.strip() == "":
+            st.warning("Please answer before continuing.")
+        else:
+            next_question()
             
-
+with col3:
+    if st.button("Submit All Answers"):
+        if any(not a.strip() for a in st.session_state.answers):
+            st.warning("Please answer all questions before submitting.")
+        else:
+            st.session_state.loading = True
+            with st.spinner("Generating detailed construction plan..."):
+                try:
+                    plan_text = generate_plan(description, st.session_state.answers)
+                    # Try parsing JSON safely
+                    json_start = plan_text.find("{")
+                    json_end = plan_text.rfind("}") + 1
+                    plan_json_str = plan_text[json_start:json_end]
+                    st.session_state.plan_json = json.loads(plan_json_str)
+                except Exception as e:
+                    st.error(f"Failed to generate or parse plan JSON: {e}")
+                    st.session_state.plan_json = None
+            st.session_state.loading = False
 
 
 # --- AFTER SUBMISSION: Display Table + Charts ---
@@ -203,5 +221,6 @@ if st.session_state.plan_json:
     st.markdown(f"### Total Estimated Duration: {total_duration} weeks")
 
     st.caption("🧪 Disclaimer: This is a prototype by Solace Technologies. Estimates are AI-generated and may not reflect actual costs.")
+
 
 
