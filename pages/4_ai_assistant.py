@@ -51,15 +51,15 @@ Answers to follow-up questions:
 
 Output a JSON with the following format (only JSON, no extra text):
 
-{ 
+{{ 
   "ConstructionPhases": [
-    {
+    {{
       "PhaseName": "string",
       "Description": "string",
       "EstimatedCost": number,
       "DurationEstimate": number,
       "Subtasks": [
-        {
+        {{
           "SubtaskName": "string",
           "Description": "string",
           "CostEstimate": number,
@@ -67,15 +67,15 @@ Output a JSON with the following format (only JSON, no extra text):
           "LaborCategories": [],
           "Vendors": [],
           "Permissions": []
-        }
+        }}
       ],
       "LaborCategories": [],
       "Vendors": [],
       "Permissions Required": []
-    }
+    }}
   ],
-  "Resources & Materials": {...} 
-}
+  "Resources & Materials": {{...}} 
+}}
 """
     messages = [
         SystemMessage(content="You are a helpful assistant for NYC school construction planning."),
