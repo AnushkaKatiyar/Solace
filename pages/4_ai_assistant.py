@@ -1,12 +1,16 @@
 import streamlit as st
 import json
+import pandas as pd
+import plotly.express as px
 from mistralai import Mistral, UserMessage, SystemMessage
 
-# === Mistral API Client Setup ===
+# --- SETUP ---
+st.set_page_config(page_title="AI Assistant Planning", layout="wide")
+
 mistral_api_key = st.secrets["mistral_api_key"]
 client = Mistral(api_key=mistral_api_key)
 
-# === Questions to ask one by one ===
+# --- STATE ---
 questions = [
     "Which part of NYC is the school located in?",
     "How many grades will the school have?",
@@ -24,144 +28,120 @@ if "plan_json" not in st.session_state:
 if "loading" not in st.session_state:
     st.session_state.loading = False
 
-def next_question():
-    if st.session_state.current_question < len(questions) - 1:
-        st.session_state.current_question += 1
-
-def prev_question():
-    if st.session_state.current_question > 0:
-        st.session_state.current_question -= 1
-
-def generate_plan(description, answers):
+# --- FUNCTIONS ---
+def ask_ai(project_description, answers):
     prompt = f"""
-You are an expert NYC school construction planner. 
-Based on the following information, generate a very detailed construction cost and scheduling plan including phases, subtasks, permissions, vendors, labor, materials, equipment categories, furniture, and labor categories.
+You are an expert school construction planner in New York City.
+Based on the following information, generate a very detailed cost and duration plan.
 
-Project description:
-{description}
+Project Description:
+{project_description}
 
-Answers to follow-up questions:
+Follow-up answers:
 1. Location: {answers[0]}
-2. Number of grades: {answers[1]}
+2. Grades: {answers[1]}
 3. Students per class: {answers[2]}
-4. Construction timeline (months): {answers[3]}
+4. Timeline: {answers[3]} months
 5. Special requirements: {answers[4]}
 
-Output a JSON with the following format (only JSON, no extra text):
-
-{{ 
-  "ConstructionPhases": [...], 
-  "Resources & Materials": {...} 
-}}
+Format your answer as a JSON object with the following:
+- A list called `phases`, where each phase contains:
+  - name, description, duration_weeks, estimated_cost
+  - subtasks: list of strings
+  - permissions: list of strings
+  - vendors: list of strings
+  - materials, labor, equipment, furniture: dicts (category -> details)
 """
     messages = [
-        SystemMessage(content="You are a helpful assistant for NYC school construction planning."),
-        UserMessage(content=prompt),
+        SystemMessage(content="You are a precise, expert-level construction cost planner."),
+        UserMessage(content=prompt)
     ]
-    response = client.chat.complete(model="mistral-medium", messages=messages)
-    return response.choices[0].message.content
+    response = client.chat(model="mistral-large-latest", messages=messages)
+    return json.loads(response.choices[0].message.content)
 
+# --- UI: DESCRIPTION ---
+st.title("AI Assistant: School Construction Plan")
+project_description = st.text_area("Describe the construction project:", height=150)
 
-st.title("AI Assistant: NYC School Construction Cost & Schedule Plan")
+# --- UI: Q&A Loop ---
+if st.session_state.plan_json is None:
+    q_num = st.session_state.current_question
+    st.subheader(f"Step {q_num + 1}: {questions[q_num]}")
+    st.text_input("Answer:", value=st.session_state.answers[q_num], key="answer_input")
 
-# Step 0: Get project description from user
-description = st.text_area("Enter a short project description", 
-    value="Create a very detailed cost and scheduling plan for new school construction.")
-
-# Show the current question and input box
-st.markdown(f"### Question {st.session_state.current_question + 1} of {len(questions)}")
-answer = st.text_input(questions[st.session_state.current_question], 
-                       value=st.session_state.answers[st.session_state.current_question],
-                       key="answer_input")
-
-# Save the answer
-st.session_state.answers[st.session_state.current_question] = answer
-
-# Navigation buttons
-col1, col2, col3 = st.columns([1,1,2])
-with col1:
-    if st.button("Previous") and st.session_state.current_question > 0:
-        prev_question()
-with col2:
-    if st.button("Next") and st.session_state.current_question < len(questions) - 1:
-        if answer.strip() == "":
-            st.warning("Please answer before continuing.")
-        else:
-            next_question()
-with col3:
-    if st.button("Submit All Answers"):
-        if any(not a.strip() for a in st.session_state.answers):
-            st.warning("Please answer all questions before submitting.")
-        else:
+    col1, col2, col3 = st.columns([1, 1, 2])
+    with col1:
+        if st.button("⬅️ Back", disabled=q_num == 0):
+            st.session_state.answers[q_num] = st.session_state["answer_input"]
+            st.session_state.current_question -= 1
+    with col2:
+        if st.button("➡️ Next", disabled=q_num == len(questions) - 1):
+            st.session_state.answers[q_num] = st.session_state["answer_input"]
+            st.session_state.current_question += 1
+    with col3:
+        if st.button("Generate Plan", type="primary", disabled="" in st.session_state.answers or not project_description):
+            st.session_state.answers[q_num] = st.session_state["answer_input"]
             st.session_state.loading = True
-            with st.spinner("Generating detailed construction plan..."):
+            with st.spinner("Generating plan from AI..."):
                 try:
-                    plan_text = generate_plan(description, st.session_state.answers)
-                    # Try parsing JSON safely
-                    json_start = plan_text.find("{")
-                    json_end = plan_text.rfind("}") + 1
-                    plan_json_str = plan_text[json_start:json_end]
-                    st.session_state.plan_json = json.loads(plan_json_str)
+                    plan = ask_ai(project_description, st.session_state.answers)
+                    st.session_state.plan_json = plan
                 except Exception as e:
-                    st.error(f"Failed to generate or parse plan JSON: {e}")
-                    st.session_state.plan_json = None
-            st.session_state.loading = False
+                    st.error(f"Something went wrong: {e}")
+                finally:
+                    st.session_state.loading = False
 
-# After submission, show the detailed plan nicely formatted
+# --- UI: RESULT ---
 if st.session_state.plan_json:
-    data = st.session_state.plan_json
-    
-    st.header("🗂 Construction Phases")
-    for i, phase in enumerate(data.get("ConstructionPhases", []), 1):
-        st.subheader(f"{i}. {phase.get('Phase', 'No phase name')} – {phase.get('Description', '')}")
+    st.success("✅ Plan generated successfully!")
+    phases = st.session_state.plan_json.get("phases", [])
 
-        st.markdown("**Subtasks:**")
-        subtasks = phase.get("Subtasks", [])
-        if subtasks and isinstance(subtasks[0], dict):
-            for st_idx, subtask in enumerate(subtasks, 1):
-                st.markdown(f"- **Subtask {st_idx}:**")
-                for key, val in subtask.items():
-                    if isinstance(val, list):
-                        # Join list items with commas, each nicely formatted
-                        val_str = ", ".join(str(x) for x in val)
-                    else:
-                        val_str = str(val)
-                    st.markdown(f"  - {key}: {val_str}")
-        else:
-            for st_idx, subtask in enumerate(subtasks, 1):
-                st.markdown(f"- {subtask}")
+    # Table of phases
+    df = pd.DataFrame([
+        {
+            "Phase": p["name"],
+            "Duration (weeks)": p["duration_weeks"],
+            "Estimated Cost ($)": p["estimated_cost"]
+        }
+        for p in phases
+    ])
+    st.dataframe(df, use_container_width=True)
 
-        # Permissions Required
-        perms = phase.get("Permissions Required") or phase.get("Permissions", [])
-        if perms:
-            st.markdown(f"**Permissions Required:** {', '.join(perms)}")
-        else:
-            st.markdown("**Permissions Required:** N/A")
+    # Pie chart (Cost Breakdown)
+    fig1 = px.pie(df, values="Estimated Cost ($)", names="Phase", title="Cost Distribution by Phase")
+    st.plotly_chart(fig1, use_container_width=True)
 
-        # Vendors
-        vendors = phase.get("Vendors", [])
-        if vendors:
-            st.markdown(f"**Vendors:** {', '.join(vendors)}")
-        else:
-            st.markdown("**Vendors:** N/A")
+    # Line chart (Duration per Phase)
+    fig2 = px.line(df, x="Phase", y="Duration (weeks)", markers=True, title="Duration by Phase")
+    st.plotly_chart(fig2, use_container_width=True)
 
-        # Estimated Labor
-        est_lab = phase.get("Estimated Labor")
-        if est_lab is not None:
-            st.markdown(f"**Estimated Labor:** {est_lab:,} workers")
-        else:
-            st.markdown("**Estimated Labor:** N/A workers")
+    # Expanders for each phase details
+    for p in phases:
+        with st.expander(f"📦 {p['name']} Details"):
+            st.markdown(f"**Description:** {p['description']}")
+            st.markdown("**Subtasks:**")
+            st.markdown("- " + "\n- ".join(p.get("subtasks", [])))
 
-        # Subphase Breakdown
-        subphases = phase.get("Subphase Breakdown", [])
-        if subphases:
-            st.markdown("**Subphase Breakdown:**")
-            for sp in subphases:
-                name = sp.get("Name", "Unknown")
-                duration = sp.get("Duration (weeks)", "N/A")
-                cost = sp.get("Cost (USD)", 0)
-                st.markdown(f"- {name}: {duration} weeks, Cost: ${cost:,.2f}")
-        else:
-            st.markdown("**Subphase Breakdown:** N/A")
+            st.markdown("**Permissions Needed:** " + ", ".join(p.get("permissions", [])))
+            st.markdown("**Vendors:** " + ", ".join(p.get("vendors", [])))
 
-        st.markdown("---")
+            def dict_to_md_table(d, title):
+                if not d:
+                    return f"_No {title.lower()} listed._"
+                table = "| Category | Details |\n|---|---|\n"
+                table += "\n".join([f"| {k} | {v} |" for k, v in d.items()])
+                return table
+
+            st.markdown("**Materials:**")
+            st.markdown(dict_to_md_table(p.get("materials", {}), "Materials"))
+
+            st.markdown("**Labor:**")
+            st.markdown(dict_to_md_table(p.get("labor", {}), "Labor"))
+
+            st.markdown("**Equipment:**")
+            st.markdown(dict_to_md_table(p.get("equipment", {}), "Equipment"))
+
+            st.markdown("**Furniture:**")
+            st.markdown(dict_to_md_table(p.get("furniture", {}), "Furniture"))
+
+    st.caption("🧪 Disclaimer: This is a prototype by Solace Technologies. Estimates are AI-generated and may not reflect actual costs.")
