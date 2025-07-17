@@ -216,12 +216,12 @@ if st.session_state.plan_json:
     gb.configure_columns(resizable=True)
     gridOptions = gb.build()
 
-AgGrid(
-    df,
-    gridOptions=gridOptions,
-    enable_enterprise_modules=False,
-    fit_columns_on_grid_load=True,
-)
+    AgGrid(
+        df,
+        gridOptions=gridOptions,
+        enable_enterprise_modules=False,
+        fit_columns_on_grid_load=True,
+    )
 
     # Charts
     if not df.empty:
