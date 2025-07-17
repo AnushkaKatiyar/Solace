@@ -11,3 +11,4 @@ optuna
 Pillow
 plotly
 XlsxWriter>=3.0.0
+streamlit-aggrid

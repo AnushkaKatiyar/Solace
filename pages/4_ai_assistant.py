@@ -3,6 +3,7 @@ import json
 import pandas as pd
 import plotly.express as px
 from mistralai import Mistral, UserMessage, SystemMessage
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 # === Mistral API Client Setup ===
 mistral_api_key = st.secrets["mistral_api_key"]
@@ -209,7 +210,18 @@ if st.session_state.plan_json:
         return ['font-weight: bold; background-color: #e6f2ff' if row.IsPhase else '' for _ in row]
 
     st.header("🗂 Construction Phases Summary")
-    st.dataframe(df.style.apply(highlight_phases, axis=1), use_container_width=700, height=1000)
+    gb = GridOptionsBuilder.from_dataframe(df)
+    gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=len(df))
+    gb.configure_grid_options(domLayout='autoHeight')
+    gb.configure_columns(resizable=True)
+    gridOptions = gb.build()
+
+AgGrid(
+    df,
+    gridOptions=gridOptions,
+    enable_enterprise_modules=False,
+    fit_columns_on_grid_load=True,
+)
 
     # Charts
     if not df.empty:
