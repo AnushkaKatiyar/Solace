@@ -166,16 +166,16 @@ if st.session_state.plan_json:
 
         # Add subtask rows (indented)
         for st_idx, stask in enumerate(subtasks, 1):
-            rows.append({
-                "Phase": f" {subtask.get('SubtaskName', stask.get('Subtask', f'Subtask {st_idx}'))}",
-                "Description": stask.get("Description", ""),
-                "Duration (weeks)": stask.get("Duration", "N/A"),
-                "Estimated Cost ($)": stask.get("Cost", "N/A"),
-                "Labor Categories": ", ".join(stask.get("LaborCategories", [])) if stask.get("LaborCategories") else "N/A",
-                "Vendors": ", ".join(stask.get("Vendors", [])) if stask.get("Vendors") else "N/A",
-                "Permissions": ", ".join(stask.get("Permissions", [])) if stask.get("Permissions") else "N/A",
-                "IsPhase": False
-            })
+        rows.append({
+            "Phase": f" {stask.get('SubtaskName', stask.get('Subtask', f'Subtask {st_idx}'))}",
+            "Description": stask.get("Description", ""),
+            "Duration (weeks)": stask.get("Duration", "N/A"),
+            "Estimated Cost ($)": stask.get("Cost", "N/A"),
+            "Labor Categories": ", ".join(stask.get("LaborCategories", [])) if stask.get("LaborCategories") else "N/A",
+            "Vendors": ", ".join(stask.get("Vendors", [])) if stask.get("Vendors") else "N/A",
+            "Permissions": ", ".join(stask.get("Permissions", [])) if stask.get("Permissions") else "N/A",
+            "IsPhase": False
+        })
 
     df = pd.DataFrame(rows)
 
