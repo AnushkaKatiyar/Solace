@@ -212,8 +212,8 @@ if st.session_state.plan_json:
     # Charts
     if not df.empty:
         # Filter only main phases for charts
-        phases_df["Estimated Cost ($)"] = pd.to_numeric(phases_df["Estimated Cost ($)"], errors="coerce").fillna(0)
         phases_df = df[df["IsPhase"] == True]
+        phases_df["Estimated Cost ($)"] = pd.to_numeric(phases_df["Estimated Cost ($)"], errors="coerce").fillna(0)
         fig_cost = px.pie(phases_df, values="Estimated Cost ($)", names="Phase", title="Cost Distribution by Phase")
         st.plotly_chart(fig_cost, use_container_width=True)
 
