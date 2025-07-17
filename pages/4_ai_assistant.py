@@ -9,7 +9,6 @@ from st_aggrid import AgGrid, GridOptionsBuilder
 mistral_api_key = st.secrets["mistral_api_key"]
 client = Mistral(api_key=mistral_api_key)
 
-# === Questions to ask one by one ===
 questions = [
     "Which part of NYC is the school located in?",
     "How many grades will the school have?",
@@ -18,8 +17,7 @@ questions = [
     "Are there any special facilities or requirements needed?"
 ]
 
-if "current_question" not in st.session_state:
-    st.session_state.current_question = 0
+# Setup session state
 if "answers" not in st.session_state:
     st.session_state.answers = [""] * len(questions)
 if "plan_json" not in st.session_state:
@@ -27,14 +25,10 @@ if "plan_json" not in st.session_state:
 if "loading" not in st.session_state:
     st.session_state.loading = False
 
-def next_question():
-    if st.session_state.current_question < len(questions) - 1:
-        st.session_state.current_question += 1
-
-def prev_question():
-    if st.session_state.current_question > 0:
-        st.session_state.current_question -= 1
-
+# Auto-reveal questions based on previous answers
+for i, q in enumerate(questions):
+    if i == 0 or all(st.session_state.answers[j] != "" for j in range(i)):
+        st.session_state.answers[i] = st.text_input(q, key=f"q_{i}")
 def generate_plan(description, answers):
     prompt = f"""
 You are an expert NYC school construction planner. 
