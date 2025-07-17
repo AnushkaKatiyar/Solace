@@ -142,64 +142,64 @@ if st.session_state.plan_json:
     total_duration = 0
 
     for i, phase in enumerate(phases, 1):
-    subtasks = phase.get("Subtasks", [])
-    
-    # Aggregate subtasks info
-    agg_duration = 0
-    agg_cost = 0
-    all_labor = set()
-    all_vendors = set()
-    all_permissions = set()
+        subtasks = phase.get("Subtasks", [])
+        
+        # Aggregate subtasks info
+        agg_duration = 0
+        agg_cost = 0
+        all_labor = set()
+        all_vendors = set()
+        all_permissions = set()
 
-    for stask in subtasks:
-        agg_duration += stask.get("DurationEstimate", 0) if isinstance(stask.get("DurationEstimate"), (int, float)) else 0
-        agg_cost += stask.get("CostEstimate", 0) if isinstance(stask.get("CostEstimate"), (int, float)) else 0
-        all_labor.update(stask.get("LaborCategories", []))
-        all_vendors.update(stask.get("Vendors", []))
-        all_permissions.update(stask.get("Permissions", []))
+        for stask in subtasks:
+            agg_duration += stask.get("DurationEstimate", 0) if isinstance(stask.get("DurationEstimate"), (int, float)) else 0
+            agg_cost += stask.get("CostEstimate", 0) if isinstance(stask.get("CostEstimate"), (int, float)) else 0
+            all_labor.update(stask.get("LaborCategories", []))
+            all_vendors.update(stask.get("Vendors", []))
+            all_permissions.update(stask.get("Permissions", []))
 
-    # Fallback to phase-level if no subtasks or aggregate zero
-    if agg_duration == 0:
-        agg_duration = phase.get("DurationEstimate", 0)
-    if agg_cost == 0:
-        agg_cost = phase.get("EstimatedCost", 0)
-    if not all_labor:
-        all_labor.update(phase.get("LaborCategories", []))
-    if not all_vendors:
-        all_vendors.update(phase.get("Vendors", []))
-    if not all_permissions:
-        all_permissions.update(phase.get("Permissions Required", []))
+        # Fallback to phase-level if no subtasks or aggregate zero
+        if agg_duration == 0:
+            agg_duration = phase.get("DurationEstimate", 0)
+        if agg_cost == 0:
+            agg_cost = phase.get("EstimatedCost", 0)
+        if not all_labor:
+            all_labor.update(phase.get("LaborCategories", []))
+        if not all_vendors:
+            all_vendors.update(phase.get("Vendors", []))
+        if not all_permissions:
+            all_permissions.update(phase.get("Permissions Required", []))
 
-    total_cost += agg_cost
-    try:
-        total_duration += float(agg_duration)
-    except (ValueError, TypeError):
-        pass  # skip if not a number
+        total_cost += agg_cost
+        try:
+            total_duration += float(agg_duration)
+        except (ValueError, TypeError):
+            pass  # skip if not a number
 
-    # Add main phase row
-    rows.append({
-        "Phase": f"{i}. {phase.get('PhaseName', 'Unnamed Phase')}",
-        "Description": phase.get("Description", ""),
-        "Duration (weeks)": agg_duration,
-        "Estimated Cost ($)": agg_cost,
-        "Labor Categories": ", ".join(sorted(all_labor)) if all_labor else "N/A",
-        "Vendors": ", ".join(sorted(all_vendors)) if all_vendors else "N/A",
-        "Permissions": ", ".join(sorted(all_permissions)) if all_permissions else "N/A",
-        "IsPhase": True
-    })
-
-    # Add subtask rows (indented)
-    for st_idx, stask in enumerate(subtasks, 1):
+        # Add main phase row
         rows.append({
-            "Phase": f" {stask.get('SubtaskName', f'Subtask {st_idx}')}",
-            "Description": stask.get("Description", ""),
-            "Duration (weeks)": stask.get("DurationEstimate", "N/A"),
-            "Estimated Cost ($)": stask.get("CostEstimate", "N/A"),
-            "Labor Categories": ", ".join(stask.get("LaborCategories", [])) if stask.get("LaborCategories") else "N/A",
-            "Vendors": ", ".join(stask.get("Vendors", [])) if stask.get("Vendors") else "N/A",
-            "Permissions": ", ".join(stask.get("Permissions", [])) if stask.get("Permissions") else "N/A",
-            "IsPhase": False
+            "Phase": f"{i}. {phase.get('PhaseName', 'Unnamed Phase')}",
+            "Description": phase.get("Description", ""),
+            "Duration (weeks)": agg_duration,
+            "Estimated Cost ($)": agg_cost,
+            "Labor Categories": ", ".join(sorted(all_labor)) if all_labor else "N/A",
+            "Vendors": ", ".join(sorted(all_vendors)) if all_vendors else "N/A",
+            "Permissions": ", ".join(sorted(all_permissions)) if all_permissions else "N/A",
+            "IsPhase": True
         })
+
+        # Add subtask rows (indented)
+        for st_idx, stask in enumerate(subtasks, 1):
+            rows.append({
+                "Phase": f" {stask.get('SubtaskName', f'Subtask {st_idx}')}",
+                "Description": stask.get("Description", ""),
+                "Duration (weeks)": stask.get("DurationEstimate", "N/A"),
+                "Estimated Cost ($)": stask.get("CostEstimate", "N/A"),
+                "Labor Categories": ", ".join(stask.get("LaborCategories", [])) if stask.get("LaborCategories") else "N/A",
+                "Vendors": ", ".join(stask.get("Vendors", [])) if stask.get("Vendors") else "N/A",
+                "Permissions": ", ".join(stask.get("Permissions", [])) if stask.get("Permissions") else "N/A",
+                "IsPhase": False
+            })
     df = pd.DataFrame(rows)
 
     # Show table with some styling for main phases vs subtasks
