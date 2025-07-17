@@ -209,7 +209,7 @@ if st.session_state.plan_json:
         return ['font-weight: bold; background-color: #e6f2ff' if row.IsPhase else '' for _ in row]
 
     st.header("🗂 Construction Phases Summary")
-    st.dataframe(df.style.apply(highlight_phases, axis=1), use_container_width=True, height=1000)
+    st.dataframe(df.style.apply(highlight_phases, axis=1), use_container_width=700, height=1000)
 
     # Charts
     if not df.empty:
