@@ -107,24 +107,7 @@ description = st.text_area("Enter a short project description",
 # Navigation buttons
 
             
-with col3:
-    if st.button("Submit All Answers"):
-        if any(not a.strip() for a in st.session_state.answers):
-            st.warning("Please answer all questions before submitting.")
-        else:
-            st.session_state.loading = True
-            with st.spinner("Generating detailed construction plan..."):
-                try:
-                    plan_text = generate_plan(description, st.session_state.answers)
-                    # Try parsing JSON safely
-                    json_start = plan_text.find("{")
-                    json_end = plan_text.rfind("}") + 1
-                    plan_json_str = plan_text[json_start:json_end]
-                    st.session_state.plan_json = json.loads(plan_json_str)
-                except Exception as e:
-                    st.error(f"Failed to generate or parse plan JSON: {e}")
-                    st.session_state.plan_json = None
-            st.session_state.loading = False
+
 
 
 # --- AFTER SUBMISSION: Display Table + Charts ---
