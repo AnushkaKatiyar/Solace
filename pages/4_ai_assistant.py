@@ -218,7 +218,7 @@ if st.session_state.plan_json:
     st.markdown("""
     <style>
     .ag-grid-container {
-        width: 900px;  /* adjust width as needed */
+        width: 1900px;  /* adjust width as needed */
         overflow-x: auto;
     }
     </style>
@@ -230,7 +230,7 @@ if st.session_state.plan_json:
         gridOptions=gridOptions,
         enable_enterprise_modules=False,
         fit_columns_on_grid_load=True,
-        height=800
+        height=1100
     )
     st.markdown('</div>', unsafe_allow_html=True)
 
