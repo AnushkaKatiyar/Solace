@@ -150,7 +150,10 @@ if st.session_state.plan_json:
             all_permissions.update(phase.get("Permissions Required", []))
 
         total_cost += agg_cost
-        total_duration += agg_duration
+        try:
+            total_duration += float(agg_duration)
+        except (ValueError, TypeError):
+            pass  # skip if not a number
 
         # Add main phase row
         rows.append({
