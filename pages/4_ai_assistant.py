@@ -210,29 +210,8 @@ if st.session_state.plan_json:
         return ['font-weight: bold; background-color: #e6f2ff' if row.IsPhase else '' for _ in row]
 
     st.header("🗂 Construction Phases Summary")
-    gb = GridOptionsBuilder.from_dataframe(df)
-    gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=len(df))
-    gb.configure_grid_options(domLayout='normal')
-    gb.configure_columns(resizable=True)
-    gridOptions = gb.build()
-    st.markdown("""
-    <style>
-    .ag-grid-container {
-        width: 1900px;  /* adjust width as needed */
-        overflow-x: auto;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    st.markdown('<div class="ag-grid-container">', unsafe_allow_html=True)
-    AgGrid(
-        df,
-        gridOptions=gridOptions,
-        enable_enterprise_modules=False,
-        fit_columns_on_grid_load=True,
-        height=1100
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.table(df.style.apply(highlight_phases, axis=1))
+   
 
    
 
