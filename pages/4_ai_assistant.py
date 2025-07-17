@@ -131,17 +131,33 @@ if st.session_state.plan_json:
         all_permissions = set()
 
         for stask in subtasks:
-            agg_duration += stask.get("Duration", 0) if isinstance(stask.get("Duration"), (int,float)) else 0
-            agg_cost += stask.get("Cost", 0) if isinstance(stask.get("Cost"), (int,float)) else 0
+            duration = stask.get("Duration", 0)
+            cost = stask.get("Cost", 0)
+
+            try:
+                agg_duration += float(duration) if isinstance(duration, (int, float, str)) else 0
+            except:
+                pass
+            try:
+                agg_cost += float(cost) if isinstance(cost, (int, float, str)) else 0
+            except:
+                pass
+
             all_labor.update(stask.get("LaborCategories", []))
             all_vendors.update(stask.get("Vendors", []))
             all_permissions.update(stask.get("Permissions", []))
         
         # Fallback to phase-level if no subtasks or aggregate zero
-        if agg_duration == 0:
-            agg_duration = phase.get("Duration", 0)
-        if agg_cost == 0:
-            agg_cost = phase.get("EstimatedCost", 0)
+        if not agg_duration:
+            try:
+                agg_duration = float(phase.get("Duration", 0))
+            except:
+                agg_duration = "N/A"
+        if not agg_cost:
+            try:
+                agg_cost = float(phase.get("EstimatedCost", 0))
+            except:
+                agg_cost = "N/A"
         if not all_labor:
             all_labor.update(phase.get("LaborCategories", []))
         if not all_vendors:
@@ -149,18 +165,21 @@ if st.session_state.plan_json:
         if not all_permissions:
             all_permissions.update(phase.get("Permissions Required", []))
 
-        total_cost += agg_cost
         try:
             total_duration += float(agg_duration)
-        except (ValueError, TypeError):
-            pass  # skip if not a number
+        except:
+            pass
+        try:
+            total_cost += float(agg_cost)
+        except:
+            pass
 
         # Add main phase row
         rows.append({
             "Phase": f"{i}. {phase.get('Phase','Unnamed Phase')}",
             "Description": phase.get("Description", ""),
-            "Duration (weeks)": agg_duration,
-            "Estimated Cost ($)": agg_cost,
+            "Duration (weeks)": agg_duration if agg_duration != 0 else "N/A",
+            "Estimated Cost ($)": agg_cost if agg_cost != 0 else "N/A",
             "Labor Categories": ", ".join(sorted(all_labor)) if all_labor else "N/A",
             "Vendors": ", ".join(sorted(all_vendors)) if all_vendors else "N/A",
             "Permissions": ", ".join(sorted(all_permissions)) if all_permissions else "N/A",
@@ -169,17 +188,18 @@ if st.session_state.plan_json:
 
         # Add subtask rows (indented)
         for st_idx, stask in enumerate(subtasks, 1):
+            sub_duration = stask.get("Duration", "N/A")
+            sub_cost = stask.get("Cost", "N/A")
             rows.append({
                 "Phase": f" {stask.get('SubtaskName', stask.get('Subtask', f'Subtask {st_idx}'))}",
                 "Description": stask.get("Description", ""),
-                "Duration (weeks)": stask.get("Duration", "N/A"),
-                "Estimated Cost ($)": stask.get("Cost", "N/A"),
+                "Duration (weeks)": sub_duration if sub_duration else "N/A",
+                "Estimated Cost ($)": sub_cost if sub_cost else "N/A",
                 "Labor Categories": ", ".join(stask.get("LaborCategories", [])) if stask.get("LaborCategories") else "N/A",
                 "Vendors": ", ".join(stask.get("Vendors", [])) if stask.get("Vendors") else "N/A",
                 "Permissions": ", ".join(stask.get("Permissions", [])) if stask.get("Permissions") else "N/A",
                 "IsPhase": False
             })
-
     df = pd.DataFrame(rows)
 
     # Show table with some styling for main phases vs subtasks
