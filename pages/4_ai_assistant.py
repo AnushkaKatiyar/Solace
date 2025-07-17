@@ -1,99 +1,228 @@
 import streamlit as st
-from mistralai.client import MistralClient
-from mistralai.models.chat_completion import ChatMessage
+import json
 import pandas as pd
+import plotly.express as px
+from mistralai import Mistral, UserMessage, SystemMessage
 
-# Initialize Mistral
-api_key = st.secrets["MISTRAL_API_KEY"]  # or manually: "sk-..."
-client = MistralClient(api_key=api_key)
-model = "mistral-small-latest"
+# === Mistral API Client Setup ===
+mistral_api_key = st.secrets["mistral_api_key"]
+client = Mistral(api_key=mistral_api_key)
 
-# Session state
-if "followups" not in st.session_state:
-    st.session_state.followups = []
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-if "final_plan" not in st.session_state:
-    st.session_state.final_plan = None
+# === Questions to ask one by one ===
+questions = [
+    "Which part of NYC is the school located in?",
+    "How many grades will the school have?",
+    "What is the average number of students per class?",
+    "What is the expected construction timeline (in months)?",
+    "Are there any special facilities or requirements needed?"
+]
 
-st.title("📋 AI Assistant for School Construction Planning")
+if "current_question" not in st.session_state:
+    st.session_state.current_question = 0
+if "answers" not in st.session_state:
+    st.session_state.answers = [""] * len(questions)
+if "plan_json" not in st.session_state:
+    st.session_state.plan_json = None
+if "loading" not in st.session_state:
+    st.session_state.loading = False
 
-# Step 1: User Input
-user_input = st.text_area("📝 Describe your construction project:", height=100)
+def next_question():
+    if st.session_state.current_question < len(questions) - 1:
+        st.session_state.current_question += 1
 
-# Step 2: Follow-up loop
-if user_input and not st.session_state.followups:
-    with st.spinner("🤖 Thinking of follow-up questions..."):
-        prompt = f"""You're a school construction planning AI. Based on the project description below, ask 4–5 specific follow-up questions that will help you generate a detailed plan including 8 phases, costs, durations, labor, vendors, permissions, materials, and equipment.
+def prev_question():
+    if st.session_state.current_question > 0:
+        st.session_state.current_question -= 1
+
+def generate_plan(description, answers):
+    prompt = f"""
+You are an expert NYC school construction planner. 
+Based on the following information, generate a very detailed construction cost and scheduling plan including phases, subtasks, permissions, vendors, labor, materials, equipment categories, furniture, and labor categories.
 
 Project description:
-{user_input}
+{description}
 
-Respond ONLY with numbered questions in plain English.
+Answers to follow-up questions:
+1. Location: {answers[0]}
+2. Number of grades: {answers[1]}
+3. Students per class: {answers[2]}
+4. Construction timeline (months): {answers[3]}
+5. Special requirements: {answers[4]}
+
+Output a JSON with the following format (only JSON, no extra text):
+
+{ 
+  "ConstructionPhases": [
+    {
+      "PhaseName": "string",
+      "Description": "string",
+      "EstimatedCost": number,
+      "DurationEstimate": number,
+      "Subtasks": [
+        {
+          "SubtaskName": "string",
+          "Description": "string",
+          "CostEstimate": number,
+          "DurationEstimate": number,
+          "LaborCategories": [],
+          "Vendors": [],
+          "Permissions": []
+        }
+      ],
+      "LaborCategories": [],
+      "Vendors": [],
+      "Permissions Required": []
+    }
+  ],
+  "Resources & Materials": {...} 
+}
 """
-        response = client.chat(
-            model=model,
-            messages=[ChatMessage(role="user", content=prompt)]
-        )
-        questions = response.choices[0].message.content.strip().split("\n")
-        st.session_state.followups = [q for q in questions if q.strip()]
+    messages = [
+        SystemMessage(content="You are a helpful assistant for NYC school construction planning."),
+        UserMessage(content=prompt),
+    ]
+    response = client.chat.complete(model="mistral-medium", messages=messages)
+    return response.choices[0].message.content
 
-# Step 3: Show and answer follow-ups
-answers = []
-if st.session_state.followups:
-    st.subheader("🔍 Follow-up Questions")
-    for i, q in enumerate(st.session_state.followups):
-        answer = st.text_input(f"{q}", key=f"answer_{i}")
-        answers.append(answer)
 
-# Step 4: Generate plan
-if st.button("🚀 Generate Plan"):
-    if not all(answers):
-        st.warning("Please answer all the follow-up questions before generating the plan.")
-    else:
-        with st.spinner("🛠️ Generating your detailed plan..."):
-            messages = [
-                ChatMessage(role="system", content="You are an expert school construction planning assistant."),
-                ChatMessage(role="user", content=f"Project: {user_input}"),
-            ]
-            for i, (q, a) in enumerate(zip(st.session_state.followups, answers)):
-                messages.append(ChatMessage(role="user", content=f"{q}\n{a}"))
+st.title("AI Assistant: NYC School Construction Cost & Schedule Plan")
 
-            messages.append(ChatMessage(role="user", content="""
-Now generate a detailed JSON output that includes the following for each of the 8 standard construction phases:
+# Step 0: Get project description from user
+description = st.text_area("Enter a short project description", 
+    value="Create a very detailed cost and scheduling plan for new school construction.")
 
-- PhaseName
-- Subtasks (6-10) with:
-    - SubtaskName
-    - EstimatedCostUSD (integer)
-    - EstimatedDurationWeeks (integer)
-    - LaborNeeded (list of roles)
-Make sure each Phase has a name and valid numeric cost/duration.
-"""))
+# Show the current question and input box
+st.markdown(f"### Question {st.session_state.current_question + 1} of {len(questions)}")
+answer = st.text_input(questions[st.session_state.current_question], 
+                       value=st.session_state.answers[st.session_state.current_question],
+                       key="answer_input")
 
-            final_response = client.chat(model=model, messages=messages)
-            try:
-                # Parse JSON from Mistral response
-                import json
-                plan_data = json.loads(final_response.choices[0].message.content)
-                st.session_state.final_plan = plan_data
-            except Exception as e:
-                st.error(f"❌ Failed to parse AI response as JSON: {e}")
-                st.stop()
+# Save the answer
+st.session_state.answers[st.session_state.current_question] = answer
 
-# Step 5: Show Output Table
-if st.session_state.final_plan:
-    st.subheader("📊 Detailed Construction Plan")
-    records = []
-    for idx, phase in enumerate(st.session_state.final_plan.get("Phases", []), start=1):
-        phase_name = phase.get("PhaseName", f"Phase {idx}")
-        for st_idx, subtask in enumerate(phase.get("Subtasks", []), start=1):
-            records.append({
-                "Phase": f"{phase_name}",
-                " Subtask": f" {subtask.get('SubtaskName', f'Subtask {st_idx}')}",
-                "Cost (USD)": subtask.get("EstimatedCostUSD", "N/A"),
-                "Duration (Weeks)": subtask.get("EstimatedDurationWeeks", "N/A"),
-                "Labor": ", ".join(subtask.get("LaborNeeded", []))
-            })
-    df = pd.DataFrame(records)
-    st.dataframe(df, use_container_width=True)
+# Navigation buttons
+col1, col2, col3 = st.columns([1,1,2])
+with col1:
+    if st.button("Previous") and st.session_state.current_question > 0:
+        prev_question()
+with col2:
+    if st.button("Next") and st.session_state.current_question < len(questions) - 1:
+        if answer.strip() == "":
+            st.warning("Please answer before continuing.")
+        else:
+            next_question()
+with col3:
+    if st.button("Submit All Answers"):
+        if any(not a.strip() for a in st.session_state.answers):
+            st.warning("Please answer all questions before submitting.")
+        else:
+            st.session_state.loading = True
+            with st.spinner("Generating detailed construction plan..."):
+                try:
+                    plan_text = generate_plan(description, st.session_state.answers)
+                    # Try parsing JSON safely
+                    json_start = plan_text.find("{")
+                    json_end = plan_text.rfind("}") + 1
+                    plan_json_str = plan_text[json_start:json_end]
+                    st.session_state.plan_json = json.loads(plan_json_str)
+                except Exception as e:
+                    st.error(f"Failed to generate or parse plan JSON: {e}")
+                    st.session_state.plan_json = None
+            st.session_state.loading = False
+
+
+# --- AFTER SUBMISSION: Display Table + Charts ---
+if st.session_state.plan_json:
+    data = st.session_state.plan_json
+    phases = data.get("ConstructionPhases", [])
+
+    # Prepare rows for DataFrame: main phase + subtasks each as a row
+    rows = []
+    total_cost = 0
+    total_duration = 0
+
+    for i, phase in enumerate(phases, 1):
+    subtasks = phase.get("Subtasks", [])
+    
+    # Aggregate subtasks info
+    agg_duration = 0
+    agg_cost = 0
+    all_labor = set()
+    all_vendors = set()
+    all_permissions = set()
+
+    for stask in subtasks:
+        agg_duration += stask.get("DurationEstimate", 0) if isinstance(stask.get("DurationEstimate"), (int, float)) else 0
+        agg_cost += stask.get("CostEstimate", 0) if isinstance(stask.get("CostEstimate"), (int, float)) else 0
+        all_labor.update(stask.get("LaborCategories", []))
+        all_vendors.update(stask.get("Vendors", []))
+        all_permissions.update(stask.get("Permissions", []))
+
+    # Fallback to phase-level if no subtasks or aggregate zero
+    if agg_duration == 0:
+        agg_duration = phase.get("DurationEstimate", 0)
+    if agg_cost == 0:
+        agg_cost = phase.get("EstimatedCost", 0)
+    if not all_labor:
+        all_labor.update(phase.get("LaborCategories", []))
+    if not all_vendors:
+        all_vendors.update(phase.get("Vendors", []))
+    if not all_permissions:
+        all_permissions.update(phase.get("Permissions Required", []))
+
+    total_cost += agg_cost
+    try:
+        total_duration += float(agg_duration)
+    except (ValueError, TypeError):
+        pass  # skip if not a number
+
+    # Add main phase row
+    rows.append({
+        "Phase": f"{i}. {phase.get('PhaseName', 'Unnamed Phase')}",
+        "Description": phase.get("Description", ""),
+        "Duration (weeks)": agg_duration,
+        "Estimated Cost ($)": agg_cost,
+        "Labor Categories": ", ".join(sorted(all_labor)) if all_labor else "N/A",
+        "Vendors": ", ".join(sorted(all_vendors)) if all_vendors else "N/A",
+        "Permissions": ", ".join(sorted(all_permissions)) if all_permissions else "N/A",
+        "IsPhase": True
+    })
+
+    # Add subtask rows (indented)
+    for st_idx, stask in enumerate(subtasks, 1):
+        rows.append({
+            "Phase": f" {stask.get('SubtaskName', f'Subtask {st_idx}')}",
+            "Description": stask.get("Description", ""),
+            "Duration (weeks)": stask.get("DurationEstimate", "N/A"),
+            "Estimated Cost ($)": stask.get("CostEstimate", "N/A"),
+            "Labor Categories": ", ".join(stask.get("LaborCategories", [])) if stask.get("LaborCategories") else "N/A",
+            "Vendors": ", ".join(stask.get("Vendors", [])) if stask.get("Vendors") else "N/A",
+            "Permissions": ", ".join(stask.get("Permissions", [])) if stask.get("Permissions") else "N/A",
+            "IsPhase": False
+        })
+    df = pd.DataFrame(rows)
+
+    # Show table with some styling for main phases vs subtasks
+    def highlight_phases(row):
+        return ['font-weight: bold; background-color: #e6f2ff' if row.IsPhase else '' for _ in row]
+
+    st.header("🗂 Construction Phases Summary")
+    st.dataframe(df.style.apply(highlight_phases, axis=1), use_container_width=True)
+
+    # Charts
+    if not df.empty:
+        # Filter only main phases for charts
+        phases_df["Estimated Cost ($)"] = pd.to_numeric(phases_df["Estimated Cost ($)"], errors="coerce").fillna(0)
+        phases_df = df[df["IsPhase"] == True]
+        fig_cost = px.pie(phases_df, values="Estimated Cost ($)", names="Phase", title="Cost Distribution by Phase")
+        st.plotly_chart(fig_cost, use_container_width=True)
+
+        fig_duration = px.line(phases_df, x="Phase", y="Duration (weeks)", markers=True, title="Duration by Phase")
+        st.plotly_chart(fig_duration, use_container_width=True)
+
+    st.markdown(f"### Total Estimated Cost: ${total_cost:,.2f}")
+    st.markdown(f"### Total Estimated Duration: {total_duration} weeks")
+
+    st.caption("🧪 Disclaimer: This is a prototype by Solace Technologies. Estimates are AI-generated and may not reflect actual costs.")
+
+
