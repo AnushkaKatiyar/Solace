@@ -66,30 +66,33 @@ project_description = st.text_area("Describe the construction project:", height=
 # --- UI: Q&A Loop ---
 if st.session_state.plan_json is None:
     q_num = st.session_state.current_question
-    st.subheader(f"Step {q_num + 1}: {questions[q_num]}")
-    st.text_input("Answer:", value=st.session_state.answers[q_num], key="answer_input")
 
-    col1, col2, col3 = st.columns([1, 1, 2])
-    with col1:
-        if st.button("⬅️ Back", disabled=q_num == 0):
-            st.session_state.answers[q_num] = st.session_state["answer_input"]
-            st.session_state.current_question -= 1
-    with col2:
-        if st.button("➡️ Next", disabled=q_num == len(questions) - 1):
-            st.session_state.answers[q_num] = st.session_state["answer_input"]
-            st.session_state.current_question += 1
-    with col3:
-        if st.button("Generate Plan", type="primary", disabled="" in st.session_state.answers or not project_description):
-            st.session_state.answers[q_num] = st.session_state["answer_input"]
-            st.session_state.loading = True
-            with st.spinner("Generating plan from AI..."):
-                try:
-                    plan = ask_ai(project_description, st.session_state.answers)
-                    st.session_state.plan_json = plan
-                except Exception as e:
-                    st.error(f"Something went wrong: {e}")
-                finally:
-                    st.session_state.loading = False
+    if q_num < len(questions):
+        st.subheader(f"Step {q_num + 1} of {len(questions)}: {questions[q_num]}")
+        answer_key = f"answer_{q_num}"
+        answer_input = st.text_input("Answer:", value=st.session_state.answers[q_num], key=answer_key)
+
+        col1, col2, col3 = st.columns([1, 1, 2])
+        with col1:
+            if st.button("⬅️ Back", disabled=q_num == 0):
+                st.session_state.answers[q_num] = answer_input
+                st.session_state.current_question -= 1
+        with col2:
+            if st.button("➡️ Next", disabled=answer_input.strip() == "" or q_num == len(questions) - 1):
+                st.session_state.answers[q_num] = answer_input
+                st.session_state.current_question += 1
+        with col3:
+            if st.button("🚀 Generate Plan", type="primary", disabled="" in st.session_state.answers or not project_description):
+                st.session_state.answers[q_num] = answer_input
+                st.session_state.loading = True
+                with st.spinner("Generating plan from AI..."):
+                    try:
+                        plan = ask_ai(project_description, st.session_state.answers)
+                        st.session_state.plan_json = plan
+                    except Exception as e:
+                        st.error(f"Something went wrong: {e}")
+                    finally:
+                        st.session_state.loading = False
 
 # --- UI: RESULT ---
 if st.session_state.plan_json:
@@ -105,7 +108,14 @@ if st.session_state.plan_json:
         }
         for p in phases
     ])
+    st.subheader("📊 Summary Table")
     st.dataframe(df, use_container_width=True)
+
+    # Totals
+    total_duration = df["Duration (weeks)"].sum()
+    total_cost = df["Estimated Cost ($)"].sum()
+    st.markdown(f"**🧮 Total Duration:** {total_duration} weeks")
+    st.markdown(f"**💸 Total Estimated Cost:** ${total_cost:,.0f}")
 
     # Pie chart (Cost Breakdown)
     fig1 = px.pie(df, values="Estimated Cost ($)", names="Phase", title="Cost Distribution by Phase")
@@ -118,12 +128,12 @@ if st.session_state.plan_json:
     # Expanders for each phase details
     for p in phases:
         with st.expander(f"📦 {p['name']} Details"):
-            st.markdown(f"**Description:** {p['description']}")
-            st.markdown("**Subtasks:**")
+            st.markdown(f"**📝 Description:** {p['description']}")
+            st.markdown("**✅ Subtasks:**")
             st.markdown("- " + "\n- ".join(p.get("subtasks", [])))
 
-            st.markdown("**Permissions Needed:** " + ", ".join(p.get("permissions", [])))
-            st.markdown("**Vendors:** " + ", ".join(p.get("vendors", [])))
+            st.markdown("**📜 Permissions Needed:** " + ", ".join(p.get("permissions", [])))
+            st.markdown("**🏢 Vendors:** " + ", ".join(p.get("vendors", [])))
 
             def dict_to_md_table(d, title):
                 if not d:
@@ -132,16 +142,16 @@ if st.session_state.plan_json:
                 table += "\n".join([f"| {k} | {v} |" for k, v in d.items()])
                 return table
 
-            st.markdown("**Materials:**")
+            st.markdown("**🏗️ Materials:**")
             st.markdown(dict_to_md_table(p.get("materials", {}), "Materials"))
 
-            st.markdown("**Labor:**")
+            st.markdown("**👷 Labor:**")
             st.markdown(dict_to_md_table(p.get("labor", {}), "Labor"))
 
-            st.markdown("**Equipment:**")
+            st.markdown("**🔧 Equipment:**")
             st.markdown(dict_to_md_table(p.get("equipment", {}), "Equipment"))
 
-            st.markdown("**Furniture:**")
+            st.markdown("**🪑 Furniture:**")
             st.markdown(dict_to_md_table(p.get("furniture", {}), "Furniture"))
 
     st.caption("🧪 Disclaimer: This is a prototype by Solace Technologies. Estimates are AI-generated and may not reflect actual costs.")
