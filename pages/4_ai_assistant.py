@@ -112,7 +112,7 @@ with col2:
             st.warning("Please answer before continuing.")
         else:
             next_question()
-            st.experimental_rerun()
+            
 with col3:
     if st.button("Submit All Answers"):
         if any(not a.strip() for a in st.session_state.answers):
