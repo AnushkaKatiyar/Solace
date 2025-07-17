@@ -113,23 +113,21 @@ if st.session_state.plan_json:
     
     st.header("🗂 Construction Phases")
     for i, phase in enumerate(data.get("ConstructionPhases", []), 1):
-        st.subheader(f"{i}. {phase.get('Phase','No phase name')} – {phase.get('Description','')}")
-        
+        st.subheader(f"{i}. {phase.get('Phase', 'No phase name')} – {phase.get('Description', '')}")
+
         st.markdown("**Subtasks:**")
         subtasks = phase.get("Subtasks", [])
-        # If subtasks are dicts, format keys nicely
         if subtasks and isinstance(subtasks[0], dict):
             for st_idx, subtask in enumerate(subtasks, 1):
                 st.markdown(f"- **Subtask {st_idx}:**")
                 for key, val in subtask.items():
-                    # If val is a list, join nicely, else show value
                     if isinstance(val, list):
+                        # Join list items with commas, each nicely formatted
                         val_str = ", ".join(str(x) for x in val)
                     else:
                         val_str = str(val)
                     st.markdown(f"  - {key}: {val_str}")
         else:
-            # Subtasks might just be strings
             for st_idx, subtask in enumerate(subtasks, 1):
                 st.markdown(f"- {subtask}")
 
