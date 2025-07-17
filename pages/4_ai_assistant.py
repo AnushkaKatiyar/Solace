@@ -112,42 +112,58 @@ if st.session_state.plan_json:
     data = st.session_state.plan_json
     
     st.header("🗂 Construction Phases")
-    for phase in data.get("ConstructionPhases", []):
-        st.subheader(f"{phase.get('Phase','')} – {phase.get('Description','')}")
+    for i, phase in enumerate(data.get("ConstructionPhases", []), 1):
+        st.subheader(f"{i}. {phase.get('Phase','No phase name')} – {phase.get('Description','')}")
+        
         st.markdown("**Subtasks:**")
-        for subtask in phase.get("Subtasks", []):
-            st.markdown(f"- {subtask}")
-        st.markdown(f"**Permissions Required:** {', '.join(phase.get('Permissions Required', []))}")
-        st.markdown(f"**Vendors:** {', '.join(phase.get('Vendors', []))}")
-        st.markdown(f"**Estimated Labor:** {phase.get('Estimated Labor', 'N/A')} workers")
+        subtasks = phase.get("Subtasks", [])
+        # If subtasks are dicts, format keys nicely
+        if subtasks and isinstance(subtasks[0], dict):
+            for st_idx, subtask in enumerate(subtasks, 1):
+                st.markdown(f"- **Subtask {st_idx}:**")
+                for key, val in subtask.items():
+                    # If val is a list, join nicely, else show value
+                    if isinstance(val, list):
+                        val_str = ", ".join(str(x) for x in val)
+                    else:
+                        val_str = str(val)
+                    st.markdown(f"  - {key}: {val_str}")
+        else:
+            # Subtasks might just be strings
+            for st_idx, subtask in enumerate(subtasks, 1):
+                st.markdown(f"- {subtask}")
 
-        st.markdown("**Subphase Breakdown:**")
-        for subphase in phase.get("Subphase Breakdown", []):
-            st.markdown(f"- {subphase.get('Name','')}: {subphase.get('Duration (weeks)', 'N/A')} weeks, Cost: ${subphase.get('Cost (USD)', 0):,.2f}")
+        # Permissions Required
+        perms = phase.get("Permissions Required") or phase.get("Permissions", [])
+        if perms:
+            st.markdown(f"**Permissions Required:** {', '.join(perms)}")
+        else:
+            st.markdown("**Permissions Required:** N/A")
+
+        # Vendors
+        vendors = phase.get("Vendors", [])
+        if vendors:
+            st.markdown(f"**Vendors:** {', '.join(vendors)}")
+        else:
+            st.markdown("**Vendors:** N/A")
+
+        # Estimated Labor
+        est_lab = phase.get("Estimated Labor")
+        if est_lab is not None:
+            st.markdown(f"**Estimated Labor:** {est_lab:,} workers")
+        else:
+            st.markdown("**Estimated Labor:** N/A workers")
+
+        # Subphase Breakdown
+        subphases = phase.get("Subphase Breakdown", [])
+        if subphases:
+            st.markdown("**Subphase Breakdown:**")
+            for sp in subphases:
+                name = sp.get("Name", "Unknown")
+                duration = sp.get("Duration (weeks)", "N/A")
+                cost = sp.get("Cost (USD)", 0)
+                st.markdown(f"- {name}: {duration} weeks, Cost: ${cost:,.2f}")
+        else:
+            st.markdown("**Subphase Breakdown:** N/A")
 
         st.markdown("---")
-
-    st.header("🛠 Resources & Materials")
-    res = data.get("Resources & Materials", {})
-
-    st.subheader("Materials Needed")
-    for mat, qty in res.get("Materials Needed", {}).items():
-        st.markdown(f"- {mat}: {qty:,}")
-
-    st.subheader("Equipment (by category)")
-    for category, items in res.get("Equipment (by category)", {}).items():
-        st.markdown(f"**{category}:**")
-        for item in items:
-            st.markdown(f"  - {item}")
-
-    st.subheader("Furniture Needed")
-    for furn, qty in res.get("Furniture Needed", {}).items():
-        st.markdown(f"- {furn}: {qty}")
-
-    st.subheader("Labor Categories")
-    for labor in res.get("Labor Categories", []):
-        st.markdown(f"- {labor}")
-
-    st.subheader("Special Notes")
-    for note in res.get("Special Notes", []):
-        st.markdown(f"- {note}")
