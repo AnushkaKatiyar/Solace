@@ -35,10 +35,7 @@ def prev_question():
     if st.session_state.current_question > 0:
         st.session_state.current_question -= 1
 
-# Auto-reveal questions based on previous answers
-for i, q in enumerate(questions):
-    if i == 0 or all(st.session_state.answers[j] != "" for j in range(i)):
-        st.session_state.answers[i] = st.text_input(q, key=f"q_{i}")
+
 def generate_plan(description, answers):
     prompt = f"""
 You are an expert NYC school construction planner. 
@@ -95,6 +92,11 @@ st.title("AI Assistant: NYC School Construction Cost & Schedule Plan")
 # Step 0: Get project description from user
 description = st.text_area("Enter a short project description", 
     value="Create a very detailed cost and scheduling plan for new school construction.")
+
+# Auto-reveal questions based on previous answers
+for i, q in enumerate(questions):
+    if i == 0 or all(st.session_state.answers[j] != "" for j in range(i)):
+        st.session_state.answers[i] = st.text_input(q, key=f"q_{i}")
 
 # Show the current question and input box
 st.markdown(f"### Question {st.session_state.current_question + 1} of {len(questions)}")
