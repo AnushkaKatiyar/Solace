@@ -212,16 +212,29 @@ if st.session_state.plan_json:
     st.header("🗂 Construction Phases Summary")
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=len(df))
-    gb.configure_grid_options(domLayout='autoHeight')
+    gb.configure_grid_options(domLayout='normal')
     gb.configure_columns(resizable=True)
     gridOptions = gb.build()
+    st.markdown("""
+    <style>
+    .ag-grid-container {
+        width: 900px;  /* adjust width as needed */
+        overflow-x: auto;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
+    st.markdown('<div class="ag-grid-container">', unsafe_allow_html=True)
     AgGrid(
         df,
         gridOptions=gridOptions,
         enable_enterprise_modules=False,
         fit_columns_on_grid_load=True,
+        height=800
     )
+    st.markdown('</div>', unsafe_allow_html=True)
+
+   
 
     # Charts
     if not df.empty:
