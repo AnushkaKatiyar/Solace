@@ -106,11 +106,13 @@ with col1:
     if st.button("Previous") and st.session_state.current_question > 0:
         prev_question()
 with col2:
-    if st.button("Next") and st.session_state.current_question < len(questions) - 1:
+    next_clicked = st.button("Next")
+    if next_clicked:
         if answer.strip() == "":
             st.warning("Please answer before continuing.")
         else:
             next_question()
+            st.experimental_rerun()
 with col3:
     if st.button("Submit All Answers"):
         if any(not a.strip() for a in st.session_state.answers):
