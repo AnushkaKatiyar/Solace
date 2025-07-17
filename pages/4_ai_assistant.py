@@ -1,126 +1,153 @@
-# ai_assistant.py
-
 import streamlit as st
+import json
 from mistralai import Mistral, UserMessage, SystemMessage
 
-# === Setup ===
-st.set_page_config(page_title="AI Assistant", layout="wide")
-st.title("🧠 AI Assistant — NYC School Construction Planner")
-
+# === Mistral API Client Setup ===
 mistral_api_key = st.secrets["mistral_api_key"]
 client = Mistral(api_key=mistral_api_key)
 
-# === Session state ===
-if "stage" not in st.session_state:
-    st.session_state.stage = "initial_input"
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-if "follow_up_questions" not in st.session_state:
-    st.session_state.follow_up_questions = []
+# === Questions to ask one by one ===
+questions = [
+    "Which part of NYC is the school located in?",
+    "How many grades will the school have?",
+    "What is the average number of students per class?",
+    "What is the expected construction timeline (in months)?",
+    "Are there any special facilities or requirements needed?"
+]
+
+if "current_question" not in st.session_state:
+    st.session_state.current_question = 0
 if "answers" not in st.session_state:
-    st.session_state.answers = []
+    st.session_state.answers = [""] * len(questions)
+if "plan_json" not in st.session_state:
+    st.session_state.plan_json = None
+if "loading" not in st.session_state:
+    st.session_state.loading = False
 
-# === Stage 1: Initial User Prompt ===
-if st.session_state.stage == "initial_input":
-    user_input = st.chat_input("Describe your school construction project...")
+def next_question():
+    if st.session_state.current_question < len(questions) - 1:
+        st.session_state.current_question += 1
 
-    if user_input:
-        st.session_state.chat_history.append({"role": "user", "content": user_input})
+def prev_question():
+    if st.session_state.current_question > 0:
+        st.session_state.current_question -= 1
 
-        followup_prompt = f"""
-You are a helpful and expert assistant specializing in NYC public school construction planning. A user has just described their project, and your task is to ask 4–5 intelligent follow-up questions that will help you generate a complete, phase-by-phase cost and schedule plan.
+def generate_plan(description, answers):
+    prompt = f"""
+You are an expert NYC school construction planner. 
+Based on the following information, generate a very detailed construction cost and scheduling plan including phases, subtasks, permissions, vendors, labor, materials, equipment categories, furniture, and labor categories.
 
-The questions should help clarify:
-- The type and size of the school
-- Location-specific constraints
-- Facility needs
-- Student/grade information
-- Timeline or budget expectations
+Project description:
+{description}
 
-Be concise, and ask all questions in one message. Here's the user’s input:
+Answers to follow-up questions:
+1. Location: {answers[0]}
+2. Number of grades: {answers[1]}
+3. Students per class: {answers[2]}
+4. Construction timeline (months): {answers[3]}
+5. Special requirements: {answers[4]}
 
-\"{user_input}\"
+Output a JSON with the following format (only JSON, no extra text):
 
-Ask 4–5 questions before you begin planning.
+{{ 
+  "ConstructionPhases": [...], 
+  "Resources & Materials": {...} 
+}}
 """
+    messages = [
+        SystemMessage(content="You are a helpful assistant for NYC school construction planning."),
+        UserMessage(content=prompt),
+    ]
+    response = client.chat.complete(model="mistral-medium", messages=messages)
+    return response.choices[0].message.content
 
-        response = client.chat.complete(
-            model="mistral-medium",
-            messages=[
-                SystemMessage(content="You are a helpful assistant."),
-                UserMessage(content=followup_prompt),
-            ]
-        )
-        questions = response.choices[0].message.content
-        st.session_state.follow_up_questions = questions.strip().split("\n")
-        st.session_state.stage = "collecting_answers"
 
-# === Stage 2: Ask Follow-Up Questions ===
-if st.session_state.stage == "collecting_answers":
-    st.markdown("### 📋 Please answer the following questions:")
-    with st.form("followup_form"):
-        inputs = []
-        for i, q in enumerate(st.session_state.follow_up_questions):
-            answer = st.text_input(label=q, key=f"answer_{i}")
-            inputs.append(answer)
-        submitted = st.form_submit_button("Submit Answers")
+st.title("AI Assistant: NYC School Construction Cost & Schedule Plan")
 
-    if submitted:
-        st.session_state.answers = inputs
-        st.session_state.stage = "generating_plan"
+# Step 0: Get project description from user
+description = st.text_area("Enter a short project description", 
+    value="Create a very detailed cost and scheduling plan for new school construction.")
 
-# === Stage 3: Generate Final Plan ===
-if st.session_state.stage == "generating_plan":
-    st.info("⏳ Generating detailed plan from AI...")
+# Show the current question and input box
+st.markdown(f"### Question {st.session_state.current_question + 1} of {len(questions)}")
+answer = st.text_input(questions[st.session_state.current_question], 
+                       value=st.session_state.answers[st.session_state.current_question],
+                       key="answer_input")
 
-    # Combine user input + answers
-    original_input = [msg["content"] for msg in st.session_state.chat_history if msg["role"] == "user"][0]
-    combined_info = f"User description: {original_input}\n\nFollow-up Answers:\n"
-    for q, a in zip(st.session_state.follow_up_questions, st.session_state.answers):
-        combined_info += f"- {q.strip()}: {a.strip()}\n"
+# Save the answer
+st.session_state.answers[st.session_state.current_question] = answer
 
-    final_prompt = f"""
-You are a helpful construction planning assistant for NYC public school projects. Based on the details below, generate a complete JSON construction plan.
+# Navigation buttons
+col1, col2, col3 = st.columns([1,1,2])
+with col1:
+    if st.button("Previous") and st.session_state.current_question > 0:
+        prev_question()
+with col2:
+    if st.button("Next") and st.session_state.current_question < len(questions) - 1:
+        if answer.strip() == "":
+            st.warning("Please answer before continuing.")
+        else:
+            next_question()
+with col3:
+    if st.button("Submit All Answers"):
+        if any(not a.strip() for a in st.session_state.answers):
+            st.warning("Please answer all questions before submitting.")
+        else:
+            st.session_state.loading = True
+            with st.spinner("Generating detailed construction plan..."):
+                try:
+                    plan_text = generate_plan(description, st.session_state.answers)
+                    # Try parsing JSON safely
+                    json_start = plan_text.find("{")
+                    json_end = plan_text.rfind("}") + 1
+                    plan_json_str = plan_text[json_start:json_end]
+                    st.session_state.plan_json = json.loads(plan_json_str)
+                except Exception as e:
+                    st.error(f"Failed to generate or parse plan JSON: {e}")
+                    st.session_state.plan_json = None
+            st.session_state.loading = False
 
-Use the following details to prepare a plan:
-{combined_info}
+# After submission, show the detailed plan nicely formatted
+if st.session_state.plan_json:
+    data = st.session_state.plan_json
+    
+    st.header("🗂 Construction Phases")
+    for phase in data.get("ConstructionPhases", []):
+        st.subheader(f"{phase.get('Phase','')} – {phase.get('Description','')}")
+        st.markdown("**Subtasks:**")
+        for subtask in phase.get("Subtasks", []):
+            st.markdown(f"- {subtask}")
+        st.markdown(f"**Permissions Required:** {', '.join(phase.get('Permissions Required', []))}")
+        st.markdown(f"**Vendors:** {', '.join(phase.get('Vendors', []))}")
+        st.markdown(f"**Estimated Labor:** {phase.get('Estimated Labor', 'N/A')} workers")
 
-Output format (valid JSON only):
-A list of 8 construction phases. For each phase, include:
-- "Phase": Name (e.g. "I. Scope")
-- "Description": Short summary
-- "Subtasks": List of 6–10 detailed subtasks
-- "Permissions Required": List of NYC-specific agencies (e.g., SCA, DOE, DOB, FDNY)
-- "Vendors": List of 1–2 NYC-based vendors (real or commonly known)
-- "Estimated Labor": Integer (number of workers)
-- "Subphase Breakdown": List of dicts with:
-  - "Name"
-  - "Duration (weeks)"
-  - "Cost (USD)"
+        st.markdown("**Subphase Breakdown:**")
+        for subphase in phase.get("Subphase Breakdown", []):
+            st.markdown(f"- {subphase.get('Name','')}: {subphase.get('Duration (weeks)', 'N/A')} weeks, Cost: ${subphase.get('Cost (USD)', 0):,.2f}")
 
-Also include a second section (same JSON output) titled **"Resources & Materials"**:
-- "Materials Needed": List of quantities for bricks, concrete, steel, glass, etc.
-- "Equipment (by category)": Electrical, plumbing, bathroom, classroom, outdoors
-- "Furniture Needed": Desks, chairs, boards, storage, etc.
-- "Labor Categories": Types of workers required (e.g., electricians, plumbers, masons)
-- "Special Notes": Anything else that would impact cost or schedule.
+        st.markdown("---")
 
-Do not include any explanations, just return valid JSON only.
-"""
+    st.header("🛠 Resources & Materials")
+    res = data.get("Resources & Materials", {})
 
-    response = client.chat.complete(
-        model="mistral-medium",
-        messages=[
-            SystemMessage(content="You are a helpful school construction assistant."),
-            UserMessage(content=final_prompt),
-        ]
-    )
+    st.subheader("Materials Needed")
+    for mat, qty in res.get("Materials Needed", {}).items():
+        st.markdown(f"- {mat}: {qty:,}")
 
-    plan_output = response.choices[0].message.content
-    st.session_state.chat_history.append({"role": "assistant", "content": plan_output})
-    st.session_state.stage = "display_plan"
+    st.subheader("Equipment (by category)")
+    for category, items in res.get("Equipment (by category)", {}).items():
+        st.markdown(f"**{category}:**")
+        for item in items:
+            st.markdown(f"  - {item}")
 
-# === Stage 4: Show Plan ===
-if st.session_state.stage == "display_plan":
-    st.markdown("### ✅ AI-Generated Construction Plan")
-    st.code(st.session_state.chat_history[-1]["content"], language="json")
+    st.subheader("Furniture Needed")
+    for furn, qty in res.get("Furniture Needed", {}).items():
+        st.markdown(f"- {furn}: {qty}")
+
+    st.subheader("Labor Categories")
+    for labor in res.get("Labor Categories", []):
+        st.markdown(f"- {labor}")
+
+    st.subheader("Special Notes")
+    for note in res.get("Special Notes", []):
+        st.markdown(f"- {note}")
