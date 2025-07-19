@@ -1,13 +1,11 @@
 import streamlit as st
-from mistralai.client import MistralClient
 from mistralai import Mistral, UserMessage, SystemMessage
 import json
 import os
 
 # Load your Mistral API key securely
-MISTRAL_API_KEY = os.getenv("mistral_api_key")
-
-client = MistralClient(api_key=MISTRAL_API_KEY)
+mistral_api_key = st.secrets["mistral_api_key"]
+client = Mistral(api_key=mistral_api_key)
 
 st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
 st.title("🛠️ AI Assistant for NYC School Construction")
