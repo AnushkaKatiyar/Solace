@@ -5,7 +5,7 @@ import json
 import os
 
 # Load your Mistral API key securely
-MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
+MISTRAL_API_KEY = os.getenv("mistral_api_key")
 
 client = MistralClient(api_key=MISTRAL_API_KEY)
 
