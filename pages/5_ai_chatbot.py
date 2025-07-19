@@ -171,12 +171,13 @@ if st.session_state.final_plan:
 
 ###Rendering the json on UI
 
-try:
-    parsed_json = json.loads(st.session_state.final_plan)
-    st.session_state.final_plan = parsed_json
-except json.JSONDecodeError:
-    st.error("Failed to parse JSON. Please make sure the AI returned valid JSON.")
-    st.stop()
+if isinstance(st.session_state.final_plan, str):
+    try:
+        parsed_json = json.loads(st.session_state.final_plan)
+        st.session_state.final_plan = parsed_json
+    except json.JSONDecodeError:
+        st.error("Failed to parse JSON. Please make sure the AI returned valid JSON.")
+        st.stop()
 
 import pandas as pd
 
