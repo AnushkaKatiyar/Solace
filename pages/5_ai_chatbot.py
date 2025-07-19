@@ -167,6 +167,14 @@ No extra explanation.
 if st.session_state.final_plan:
     st.subheader("📦 Final Construction Plan")
     st.code(st.session_state.final_plan, language="json")
+try:
+    parsed_json = json.loads(final_json)
+    st.session_state.final_plan = parsed_json
+except json.JSONDecodeError:
+    st.error("Failed to parse JSON. Please make sure the AI returned valid JSON.")
+    st.stop()
+
+render_construction_output(parsed_json)
 
 import streamlit as st
 import pandas as pd
@@ -263,4 +271,5 @@ def render_construction_output(parsed_json):
     st.subheader("📌 Summary")
     st.markdown(f"**Total Duration:** {format_duration(total_duration)}")
     st.markdown(f"**Total Estimated Cost:** {format_money(total_cost)}")
+
 
