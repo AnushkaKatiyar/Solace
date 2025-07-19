@@ -114,6 +114,19 @@ if next_key is None:
         summary_prompt = f"""
 Using the collected info, generate a detailed construction plan in JSON format with phases, subtasks, vendors, permissions, materials, and labor.
 
+Output should be a list of 8-10 phases, depending on the user inputs. Each phase must include:
+- Phase: (string) e.g. "I. Scope",
+- Description: (string),a short description,
+- Subphase Breakdown: (list of phases and subtasks(8-10 phases and 5-10 subtasks) from above as dicts). Each dict must have:
+  - Name: (string)
+  - Description(string)
+  - Cost (USD): (number)
+  - Labor Category
+  - Vendor: (list of strings),1–2 **actual NYC-based vendors or well-known relevant companies** (avoid placeholders like 'VendorX', 'VendorA'),
+  - Permission if needed: (list of strings),required NYC government permissions (e.g., SCA, DoE, FDNY),
+  - Duration (weeks): (number)
+  
+
 Collected info:
 {json.dumps(st.session_state.collected_info, indent=2)}
 
@@ -169,8 +182,8 @@ def clean_json_string(raw_json):
     
 
 # Display final plan JSON if exists
-if st.session_state.final_plan:
-    st.subheader("📦 Final Construction Plan")
+# if st.session_state.final_plan:
+#     st.subheader("📦 Final Construction Plan")
     # st.code(
     #     st.session_state.final_plan
     #     if isinstance(st.session_state.final_plan, str)
