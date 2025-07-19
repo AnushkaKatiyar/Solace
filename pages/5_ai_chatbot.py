@@ -3,6 +3,7 @@ from mistralai import Mistral, UserMessage, SystemMessage
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
+import re
 
 # Load API key from Streamlit secrets
 mistral_api_key = st.secrets["mistral_api_key"]
@@ -167,6 +168,16 @@ No extra explanation.
 if st.session_state.final_plan:
     st.subheader("📦 Final Construction Plan")
     st.code(st.session_state.final_plan if isinstance(st.session_state.final_plan, str) else json.dumps(st.session_state.final_plan, indent=2), language="json")
+
+#Trying to render the UI
+
+
+def clean_json_string(json_str):
+    # Remove markdown triple backticks and language hints (like ```json)
+    json_str = re.sub(r"^```(json)?\n", "", json_str)  # remove starting ```
+    json_str = re.sub(r"\n```$", "", json_str)         # remove ending ```
+    return json_str.strip()
+
 
 # Parse JSON string if needed
 if isinstance(st.session_state.final_plan, str):
