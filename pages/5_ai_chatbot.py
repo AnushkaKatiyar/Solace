@@ -138,7 +138,15 @@ Only output JSON with this structure:
       "Permissions Required": []
     }}
   ],
-  "Resources & Materials": {{...}} 
+  "Resources & Materials": {{
+    "CategoryName": [
+      {{
+        "Item": "string",
+        "QuantityEstimate": number,
+        "EstimatedCost": number
+      }}
+    ]
+  }}
 }}
 No extra explanation.
 """
