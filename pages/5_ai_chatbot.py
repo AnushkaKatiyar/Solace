@@ -125,7 +125,7 @@ No extra explanation.
             SystemMessage(content="You summarize the project info and generate the final JSON plan."),
             UserMessage(content=summary_prompt),
         ]
-        response = client.chat(
+        response = client.chat.complete(
             model="mistral-medium",
             messages=messages,
         )
