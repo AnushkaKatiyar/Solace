@@ -2,13 +2,6 @@ import streamlit as st
 from mistralai import Mistral, UserMessage, SystemMessage
 import json
 
-# Load API key from Streamlit secrets
-mistral_api_key = st.secrets["mistral_api_key"]
-client = Mistral(api_key=mistral_api_key)
-
-st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
-st.title("🛠️ AI Assistant for NYC School Construction")
-
 # Define the questions to ask sequentially
 questions = [
     ("Location", "Which part of NYC is the school located in?"),
@@ -33,70 +26,79 @@ if "chat_history" not in st.session_state:
 if "final_plan" not in st.session_state:
     st.session_state.final_plan = None
 
-# Find next unanswered question key and text
+# Track the last asked question key so we know where to save answer
+if "last_question_key" not in st.session_state:
+    st.session_state.last_question_key = None
+
+# Function to find the next unanswered question
 def get_next_question():
     for key, question in questions:
-        if st.session_state.collected_info[key] is None:
+        if st.session_state.collected_info[key] in [None, ""]:
             return key, question
     return None, None
 
-# On user input, save answer to current question and append messages
+client = Mistral(api_key=st.secrets["mistral_api_key"])
+
+# Capture user input
 user_input = st.chat_input("Type your answer here...")
 
 if user_input:
-    # Append user message
+    # Save user input as answer to the last asked question
+    if st.session_state.last_question_key is not None:
+        st.session_state.collected_info[st.session_state.last_question_key] = user_input
+
+    # Append user message to chat history
     st.session_state.chat_history.append(UserMessage(content=user_input))
-    
-    # Find which question to assign this answer to
-    current_key, current_question = get_next_question()
-    if current_key is not None:
-        st.session_state.collected_info[current_key] = user_input
-    
-    # Compose system prompt reminding assistant of its role and data so far
 
-    # Find next unanswered question key and text
-    def get_next_question():
-        for key, question in questions:
-            if st.session_state.collected_info[key] is None:
-                return key, question
-        return None, None
-
+    # Find the next question to ask
     next_key, next_question = get_next_question()
+    st.session_state.last_question_key = next_key
 
-    system_prompt = f"""
-    You are an expert NYC school construction planner assistant.
-    The user has provided some information: {json.dumps(st.session_state.collected_info, indent=2)}.
+    # Compose system prompt with current collected info and next question to ask
+    if next_question:
+        system_prompt = f"""
+You are an expert NYC school construction planner assistant.
 
-    Please only ask the next missing question, which is:
-    "{next_question}"
+Current collected info:
+{json.dumps(st.session_state.collected_info, indent=2)}
 
-    Wait for the user's answer before asking anything else.
-    If no questions remain, say 'Thank you, all information collected. You can now ask me to generate the plan.'
-    """
+Ask only the next missing question once.
+Do NOT repeat previous questions or user answers.
+Wait for user's answer before asking anything else.
+If all questions are answered, tell the user that all info is collected and they can ask to generate the plan.
+
+Next question:
+{next_question}
+"""
+    else:
+        system_prompt = f"""
+You have collected all the necessary project information:
+{json.dumps(st.session_state.collected_info, indent=2)}
+
+Inform the user that all info is collected and ask if they want to generate the construction plan.
+"""
+
+    # Compose messages to send to the model
     messages = [SystemMessage(content=system_prompt)] + st.session_state.chat_history
-    
-    response = client.chat.complete(
+
+    # Call the Mistral model
+    response = client.chat(
         model="mistral-medium",
         messages=messages,
     )
     assistant_reply = response.choices[0].message.content.strip()
-    
-    # Append assistant response
+
+    # Append assistant reply to chat history
     st.session_state.chat_history.append(SystemMessage(content=assistant_reply))
 
-# Display conversation history
+# Display the full chat history
 for msg in st.session_state.chat_history:
     role = "user" if isinstance(msg, UserMessage) else "assistant"
     with st.chat_message(role):
         st.markdown(msg.content)
 
-# Show next question automatically if any
-next_key, next_question = get_next_question()
-if next_question:
-    with st.chat_message("assistant"):
-        st.markdown(next_question)
-
 # When all questions answered, show button to generate plan
+next_key, next_question = get_next_question()
 if next_key is None:
     if st.button("🚧 Generate Construction Plan"):
         summary_prompt = f"""
@@ -116,7 +118,7 @@ No extra explanation.
             SystemMessage(content="You summarize the project info and generate the final JSON plan."),
             UserMessage(content=summary_prompt),
         ]
-        response = client.chat.complete(
+        response = client.chat(
             model="mistral-medium",
             messages=messages,
         )
