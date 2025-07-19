@@ -1,6 +1,8 @@
 import streamlit as st
 from mistralai import Mistral, UserMessage, SystemMessage
 import json
+import pandas as pd
+import matplotlib.pyplot as plt
 
 # Load API key from Streamlit secrets
 mistral_api_key = st.secrets["mistral_api_key"]
@@ -165,3 +167,100 @@ No extra explanation.
 if st.session_state.final_plan:
     st.subheader("📦 Final Construction Plan")
     st.code(st.session_state.final_plan, language="json")
+
+import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def format_money(value):
+    return f"${int(value):,}"
+
+def format_duration(value):
+    return f"{int(value)} weeks"
+
+def render_construction_output(parsed_json):
+    phases = parsed_json["ConstructionPhases"]
+    materials = parsed_json.get("Resources & Materials", {})
+    
+    total_duration = 0
+    total_cost = 0
+
+    st.subheader("📋 Construction Plan Overview")
+
+    for phase in phases:
+        st.markdown(f"### 🔹 {phase['PhaseName']}")
+        st.markdown(f"**Description:** {phase['Description']}")
+        st.markdown(f"**Duration:** {format_duration(phase['DurationEstimate'])}")
+        st.markdown(f"**Cost:** {format_money(phase['EstimatedCost'])}")
+
+        total_duration += phase["DurationEstimate"]
+        total_cost += phase["EstimatedCost"]
+
+        # Phase-level metadata
+        st.markdown("**Vendors:** " + ", ".join(phase["Vendors"]))
+        st.markdown("**Permissions Required:** " + ", ".join(phase["Permissions Required"]))
+        st.markdown("**Labor Categories:** " + ", ".join(phase["LaborCategories"]))
+
+        # Subtasks Table
+        if phase["Subtasks"]:
+            sub_df = pd.DataFrame([
+                {
+                    "Subtask": s["SubtaskName"],
+                    "Description": s["Description"],
+                    "Duration": format_duration(s["DurationEstimate"]),
+                    "Cost": format_money(s["CostEstimate"]),
+                    "Vendors": ", ".join(s["Vendors"]),
+                    "Permissions": ", ".join(s["Permissions"]),
+                    "Labor": ", ".join(s["LaborCategories"])
+                }
+                for s in phase["Subtasks"]
+            ])
+            st.markdown("**Subtasks:**")
+            st.dataframe(sub_df, use_container_width=True)
+
+    # Resources & Materials Section
+    st.markdown("---")
+    st.subheader("🛠️ Resources & Materials")
+
+    if materials:
+        for category, items in materials.items():
+            st.markdown(f"**{category}**")
+            if isinstance(items, list):
+                st.write(", ".join(items))
+            elif isinstance(items, dict):
+                mat_df = pd.DataFrame([{"Item": k, "Details": v} for k, v in items.items()])
+                st.dataframe(mat_df, use_container_width=True)
+            else:
+                st.write(items)
+    else:
+        st.write("No materials info available.")
+
+    # Charts
+    st.markdown("---")
+    st.subheader("📊 Duration and Cost Charts")
+
+    chart_df = pd.DataFrame([
+        {
+            "Phase": p["PhaseName"],
+            "Duration (weeks)": p["DurationEstimate"],
+            "Cost ($)": p["EstimatedCost"]
+        }
+        for p in phases
+    ])
+
+    # Duration Line Chart
+    st.markdown("**⏱️ Duration per Phase**")
+    st.line_chart(chart_df.set_index("Phase")["Duration (weeks)"])
+
+    # Cost Pie Chart
+    st.markdown("**💸 Cost Distribution**")
+    fig, ax = plt.subplots()
+    ax.pie(chart_df["Cost ($)"], labels=chart_df["Phase"], autopct='%1.0f%%', startangle=140)
+    st.pyplot(fig)
+
+    # Summary
+    st.markdown("---")
+    st.subheader("📌 Summary")
+    st.markdown(f"**Total Duration:** {format_duration(total_duration)}")
+    st.markdown(f"**Total Estimated Cost:** {format_money(total_cost)}")
+
