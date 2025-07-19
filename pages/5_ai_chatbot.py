@@ -167,15 +167,20 @@ No extra explanation.
 # Display final plan JSON if exists
 if st.session_state.final_plan:
     st.subheader("📦 Final Construction Plan")
-    st.code(st.session_state.final_plan if isinstance(st.session_state.final_plan, str) else json.dumps(st.session_state.final_plan, indent=2), language="json")
+    st.code(
+        st.session_state.final_plan
+        if isinstance(st.session_state.final_plan, str)
+        else json.dumps(st.session_state.final_plan, indent=2),
+        language="json",
+    )
 
-#Trying to render the UI
+# Trying to render the UI
 
 
 def clean_json_string(json_str):
     # Remove markdown triple backticks and language hints (like ```json)
     json_str = re.sub(r"^```(json)?\n", "", json_str)  # remove starting ```
-    json_str = re.sub(r"\n```$", "", json_str)         # remove ending ```
+    json_str = re.sub(r"\n```$", "", json_str)  # remove ending ```
     return json_str.strip()
 
 
@@ -190,15 +195,11 @@ if isinstance(st.session_state.final_plan, str):
 
 if "final_plan" in st.session_state and st.session_state.final_plan is not None:
     plan = st.session_state.final_plan
-
     phases = plan.get("ConstructionPhases", [])
-
     st.subheader("📋 Construction Phases & Subtasks")
-
     for phase in phases:
         st.markdown(f"### 🏗️ {phase['PhaseName']}")
         st.markdown(f"**Description:** {phase.get('Description', '')}")
-
         phase_data = {
             "Phase": phase["PhaseName"],
             "Description": phase.get("Description", ""),
@@ -208,35 +209,34 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
             "Permissions": ", ".join(phase.get("Permissions Required", [])),
         }
         st.table(pd.DataFrame([phase_data]))
-
         # Subtasks Table
         st.markdown("#### 🔧 Subtasks")
         subtask_rows = []
         for sub in phase.get("Subtasks", []):
-            subtask_rows.append({
-                "Subtask": sub.get("SubtaskName", ""),
-                "Description": sub.get("Description", ""),
-                "Duration (weeks)": f"{int(round(sub.get('DurationEstimate', 0)))} weeks",
-                "Cost ($)": "${:,.0f}".format(sub.get("CostEstimate", 0)),
-                "Labor": ", ".join(sub.get("LaborCategories", [])),
-                "Vendors": ", ".join(sub.get("Vendors", [])),
-                "Permissions": ", ".join(sub.get("Permissions", [])),
-            })
+            subtask_rows.append(
+                {
+                    "Subtask": sub.get("SubtaskName", ""),
+                    "Description": sub.get("Description", ""),
+                    "Duration (weeks)": f"{int(round(sub.get('DurationEstimate', 0)))} weeks",
+                    "Cost ($)": "${:,.0f}".format(sub.get("CostEstimate", 0)),
+                    "Labor": ", ".join(sub.get("LaborCategories", [])),
+                    "Vendors": ", ".join(sub.get("Vendors", [])),
+                    "Permissions": ", ".join(sub.get("Permissions", [])),
+                }
+            )
         st.table(pd.DataFrame(subtask_rows))
-
     st.subheader("🧱 Resources & Materials")
     resources = plan.get("Resources & Materials", {})
-
     if resources:
-        # Convert resources dict into a table with 'Resource' and 'Quantity'
-        materials_df = pd.DataFrame([
-            {"Resource": key, "Quantity": f"{value:,}"}  # adds comma separators to numbers
-            for key, value in resources.items()
-        ])
+        # Corrected this part to handle list of dicts per category
+        materials_list = []
+        for category, items in resources.items():
+            items_str = ", ".join([item.get("Item", "") for item in items])
+            materials_list.append({"Category": category, "Items": items_str})
+        materials_df = pd.DataFrame(materials_list)
         st.table(materials_df)
     else:
         st.info("No resources or materials specified.")
-
     # Display unique labor categories used across all phases and subtasks
     all_labors = set()
     for phase in phases:
@@ -267,18 +267,20 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
     # Cost Pie Chart
     st.subheader("💰 Cost Distribution")
     fig1, ax1 = plt.subplots()
-    ax1.pie(phase_costs, labels=phase_labels, autopct='%1.1f%%', startangle=140)
-    ax1.axis('equal')
+    ax1.pie(phase_costs, labels=phase_labels, autopct="%1.1f%%", startangle=140)
+    ax1.axis("equal")
     st.pyplot(fig1)
 
     # Duration Line Chart
     st.subheader("⏱ Duration by Phase")
     fig2, ax2 = plt.subplots()
-    ax2.plot(phase_labels, phase_durations, marker='o')
+    ax2.plot(phase_labels, phase_durations, marker="o")
     ax2.set_ylabel("Duration (weeks)")
     ax2.set_title("Duration by Phase")
     st.pyplot(fig2)
 
     st.subheader("📊 Summary Totals")
     st.markdown(f"**Total Estimated Cost:** ${total_cost:,.0f}")
-    st.markdown(f"**Total Estimated Duration:** {int(round(total_duration))} weeks (~{int(round(total_duration / 4))} months)")
+    st.markdown(
+        f"**Total Estimated Duration:** {int(round(total_duration))} weeks (~{int(round(total_duration / 4))} months)"
+    )
