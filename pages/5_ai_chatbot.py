@@ -115,9 +115,30 @@ Collected info:
 {json.dumps(st.session_state.collected_info, indent=2)}
 
 Only output JSON with this structure:
-{{
-  "ConstructionPhases": [...],
-  "Resources & Materials": {{...}}
+{{ 
+  "ConstructionPhases": [
+    {{
+      "PhaseName": "string",
+      "Description": "string",
+      "EstimatedCost": number,
+      "DurationEstimate": number,
+      "Subtasks": [
+        {{
+          "SubtaskName": "string",
+          "Description": "string",
+          "CostEstimate": number,
+          "DurationEstimate": number,
+          "LaborCategories": [],
+          "Vendors": [],
+          "Permissions": []
+        }}
+      ],
+      "LaborCategories": [],
+      "Vendors": [],
+      "Permissions Required": []
+    }}
+  ],
+  "Resources & Materials": {{...}} 
 }}
 No extra explanation.
 """
