@@ -2,6 +2,13 @@ import streamlit as st
 from mistralai import Mistral, UserMessage, SystemMessage
 import json
 
+# Load API key from Streamlit secrets
+mistral_api_key = st.secrets["mistral_api_key"]
+client = Mistral(api_key=mistral_api_key)
+
+st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
+st.title("🛠️ AI Assistant for NYC School Construction")
+
 # Define the questions to ask sequentially
 questions = [
     ("Location", "Which part of NYC is the school located in?"),
@@ -82,9 +89,9 @@ Inform the user that all info is collected and ask if they want to generate the 
     messages = [SystemMessage(content=system_prompt)] + st.session_state.chat_history
 
     # Call the Mistral model
-    response = client.chat(
-        model="mistral-medium",
-        messages=messages,
+    response = client.chat.completions.create(
+    model="mistral-medium",
+    messages=messages,
     )
     assistant_reply = response.choices[0].message.content.strip()
 
