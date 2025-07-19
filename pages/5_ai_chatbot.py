@@ -89,9 +89,9 @@ Inform the user that all info is collected and ask if they want to generate the 
     messages = [SystemMessage(content=system_prompt)] + st.session_state.chat_history
 
     # Call the Mistral model
-    response = client.chat.completions.create(
-    model="mistral-medium",
-    messages=messages,
+    response = client.chat.complete(
+        model="mistral-medium",
+        messages=messages,
     )
     assistant_reply = response.choices[0].message.content.strip()
 
