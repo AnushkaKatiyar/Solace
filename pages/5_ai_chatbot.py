@@ -164,6 +164,10 @@ No extra explanation.
         final_json = response.choices[0].message.content.strip()
         st.session_state.final_plan = final_json
 
+def clean_json_string(raw_json):
+    return raw_json.strip().removeprefix("```json").removesuffix("```").strip()
+    
+
 # Display final plan JSON if exists
 if st.session_state.final_plan:
     st.subheader("📦 Final Construction Plan")
@@ -173,8 +177,6 @@ if st.session_state.final_plan:
         else json.dumps(st.session_state.final_plan, indent=2),
         language="json",
     )
-    def clean_json_string(raw_json):
-    return raw_json.strip().removeprefix("```json").removesuffix("```").strip()
     
     if isinstance(st.session_state.final_plan, str):
         st.write("Raw JSON string:", st.session_state.final_plan)    
