@@ -179,10 +179,9 @@ if isinstance(st.session_state.final_plan, str):
         st.error("Failed to parse JSON. Please make sure the AI returned valid JSON.")
         st.stop()
 
-import pandas as pd
-
-if "final_plan" in st.session_state:
+if "final_plan" in st.session_state and st.session_state.final_plan is not None:
     plan = st.session_state.final_plan
+   
     phases = plan.get("ConstructionPhases", [])
 
     st.subheader("📋 Construction Phases & Subtasks")
