@@ -175,11 +175,14 @@ if st.session_state.final_plan:
     )
 if isinstance(st.session_state.final_plan, str):
     st.write("Raw JSON string:", st.session_state.final_plan)
+    
+    # Clean the string once here
     cleaned = clean_json_string(st.session_state.final_plan)
     st.write("Cleaned JSON string:", cleaned)
+
     try:
         parsed_json = json.loads(cleaned)
-        st.session_state.final_plan = parsed_json
+        st.session_state.final_plan = parsed_json  # store parsed dict for later use
     except json.JSONDecodeError as e:
         st.error(f"JSON parse error: {e}")
         st.stop()
