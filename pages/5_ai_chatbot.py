@@ -53,16 +53,26 @@ if user_input:
         st.session_state.collected_info[current_key] = user_input
     
     # Compose system prompt reminding assistant of its role and data so far
+
+    # Find next unanswered question key and text
+    def get_next_question():
+        for key, question in questions:
+            if st.session_state.collected_info[key] is None:
+                return key, question
+        return None, None
+
+    next_key, next_question = get_next_question()
+
     system_prompt = f"""
-You are an expert NYC school construction planner assistant.
-Use the collected information below to generate helpful responses and plan a construction schedule and cost.
+    You are an expert NYC school construction planner assistant.
+    The user has provided some information: {json.dumps(st.session_state.collected_info, indent=2)}.
 
-Current collected info:
-{json.dumps(st.session_state.collected_info, indent=2)}
+    Please only ask the next missing question, which is:
+    "{next_question}"
 
-Only ask for more info if something is missing. If all info is collected, wait for the user to ask to generate the plan.
-"""
-
+    Wait for the user's answer before asking anything else.
+    If no questions remain, say 'Thank you, all information collected. You can now ask me to generate the plan.'
+    """
     messages = [SystemMessage(content=system_prompt)] + st.session_state.chat_history
     
     response = client.chat.complete(
