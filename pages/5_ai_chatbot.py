@@ -166,11 +166,9 @@ No extra explanation.
 # Display final plan JSON if exists
 if st.session_state.final_plan:
     st.subheader("📦 Final Construction Plan")
-    st.code(st.session_state.final_plan, language="json")
+    st.code(st.session_state.final_plan if isinstance(st.session_state.final_plan, str) else json.dumps(st.session_state.final_plan, indent=2), language="json")
 
-
-###Rendering the json on UI
-
+# Parse JSON string if needed
 if isinstance(st.session_state.final_plan, str):
     try:
         parsed_json = json.loads(st.session_state.final_plan)
@@ -181,97 +179,95 @@ if isinstance(st.session_state.final_plan, str):
 
 if "final_plan" in st.session_state and st.session_state.final_plan is not None:
     plan = st.session_state.final_plan
-   
+
     phases = plan.get("ConstructionPhases", [])
 
     st.subheader("📋 Construction Phases & Subtasks")
 
     for phase in phases:
         st.markdown(f"### 🏗️ {phase['PhaseName']}")
-        st.markdown(f"**Description:** {phase['Description']}")
+        st.markdown(f"**Description:** {phase.get('Description', '')}")
 
         phase_data = {
             "Phase": phase["PhaseName"],
-            "Description": phase["Description"],
-            "Duration (weeks)": f"{int(round(phase['DurationEstimate']))} weeks",
-            "Cost ($)": "${:,.0f}".format(phase["EstimatedCost"]),
-            "Vendors": ", ".join(phase["Vendors"]),
-            "Permissions": ", ".join(phase["Permissions Required"]),
+            "Description": phase.get("Description", ""),
+            "Duration (weeks)": f"{int(round(phase.get('DurationEstimate', 0)))} weeks",
+            "Cost ($)": "${:,.0f}".format(phase.get("EstimatedCost", 0)),
+            "Vendors": ", ".join(phase.get("Vendors", [])),
+            "Permissions": ", ".join(phase.get("Permissions Required", [])),
         }
         st.table(pd.DataFrame([phase_data]))
 
         # Subtasks Table
         st.markdown("#### 🔧 Subtasks")
         subtask_rows = []
-        for sub in phase["Subtasks"]:
+        for sub in phase.get("Subtasks", []):
             subtask_rows.append({
-                "Subtask": sub["SubtaskName"],
-                "Description": sub["Description"],
-                "Duration (weeks)": f"{int(round(sub['DurationEstimate']))} weeks",
-                "Cost ($)": "${:,.0f}".format(sub["CostEstimate"]),
-                "Labor": ", ".join(sub["LaborCategories"]),
-                "Vendors": ", ".join(sub["Vendors"]),
-                "Permissions": ", ".join(sub["Permissions"]),
+                "Subtask": sub.get("SubtaskName", ""),
+                "Description": sub.get("Description", ""),
+                "Duration (weeks)": f"{int(round(sub.get('DurationEstimate', 0)))} weeks",
+                "Cost ($)": "${:,.0f}".format(sub.get("CostEstimate", 0)),
+                "Labor": ", ".join(sub.get("LaborCategories", [])),
+                "Vendors": ", ".join(sub.get("Vendors", [])),
+                "Permissions": ", ".join(sub.get("Permissions", [])),
             })
         st.table(pd.DataFrame(subtask_rows))
 
-st.subheader("🧱 Resources & Materials")
-resources = plan.get("Resources & Materials", {})
+    st.subheader("🧱 Resources & Materials")
+    resources = plan.get("Resources & Materials", {})
 
-if resources:
-    materials_df = pd.DataFrame([
-        {"Category": key, "Items": ", ".join(value)} for key, value in resources.items()
-    ])
-    st.table(materials_df)
-else:
-    st.info("No resources or materials specified.")
+    if resources:
+        # Convert resources dict into a table with 'Resource' and 'Quantity'
+        materials_df = pd.DataFrame([
+            {"Resource": key, "Quantity": f"{value:,}"}  # adds comma separators to numbers
+            for key, value in resources.items()
+        ])
+        st.table(materials_df)
+    else:
+        st.info("No resources or materials specified.")
 
-# Optional: Display unique labor categories used across all phases
-all_labors = set()
-for phase in phases:
-    all_labors.update(phase.get("LaborCategories", []))
-    for sub in phase["Subtasks"]:
-        all_labors.update(sub.get("LaborCategories", []))
+    # Display unique labor categories used across all phases and subtasks
+    all_labors = set()
+    for phase in phases:
+        all_labors.update(phase.get("LaborCategories", []))
+        for sub in phase.get("Subtasks", []):
+            all_labors.update(sub.get("LaborCategories", []))
 
-if all_labors:
-    st.subheader("👷 Labor Categories")
-    st.markdown(", ".join(sorted(all_labors)))
+    if all_labors:
+        st.subheader("👷 Labor Categories")
+        st.markdown(", ".join(sorted(all_labors)))
 
-import matplotlib.pyplot as plt
+    # Summary charts
+    total_cost = 0
+    total_duration = 0
+    phase_labels = []
+    phase_costs = []
+    phase_durations = []
 
-# For summary values
-total_cost = 0
-total_duration = 0
-phase_labels = []
-phase_costs = []
-phase_durations = []
+    for phase in phases:
+        phase_labels.append(phase["PhaseName"])
+        cost = phase.get("EstimatedCost", 0)
+        duration = phase.get("DurationEstimate", 0)
+        total_cost += cost
+        total_duration += duration
+        phase_costs.append(cost)
+        phase_durations.append(duration)
 
-for phase in phases:
-    phase_labels.append(phase["PhaseName"])
-    cost = phase["EstimatedCost"]
-    duration = phase["DurationEstimate"]
-    total_cost += cost
-    total_duration += duration
-    phase_costs.append(cost)
-    phase_durations.append(duration)
+    # Cost Pie Chart
+    st.subheader("💰 Cost Distribution")
+    fig1, ax1 = plt.subplots()
+    ax1.pie(phase_costs, labels=phase_labels, autopct='%1.1f%%', startangle=140)
+    ax1.axis('equal')
+    st.pyplot(fig1)
 
-# Cost Pie Chart
-st.subheader("💰 Cost Distribution")
-fig1, ax1 = plt.subplots()
-ax1.pie(phase_costs, labels=phase_labels, autopct='%1.1f%%', startangle=140)
-ax1.axis('equal')
-st.pyplot(fig1)
+    # Duration Line Chart
+    st.subheader("⏱ Duration by Phase")
+    fig2, ax2 = plt.subplots()
+    ax2.plot(phase_labels, phase_durations, marker='o')
+    ax2.set_ylabel("Duration (weeks)")
+    ax2.set_title("Duration by Phase")
+    st.pyplot(fig2)
 
-# Duration Line Chart
-st.subheader("⏱ Duration by Phase")
-fig2, ax2 = plt.subplots()
-ax2.plot(phase_labels, phase_durations, marker='o')
-ax2.set_ylabel("Duration (weeks)")
-ax2.set_title("Duration by Phase")
-st.pyplot(fig2)
-
-st.subheader("📊 Summary Totals")
-
-st.markdown(f"**Total Estimated Cost:** ${total_cost:,.0f}")
-st.markdown(f"**Total Estimated Duration:** {int(round(total_duration))} weeks (~{int(round(total_duration / 4))} months)")
-
+    st.subheader("📊 Summary Totals")
+    st.markdown(f"**Total Estimated Cost:** ${total_cost:,.0f}")
+    st.markdown(f"**Total Estimated Duration:** {int(round(total_duration))} weeks (~{int(round(total_duration / 4))} months)")
