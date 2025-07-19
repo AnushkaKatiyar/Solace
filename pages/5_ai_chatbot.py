@@ -1,104 +1,119 @@
 import streamlit as st
 from mistralai import Mistral, UserMessage, SystemMessage
 import json
-import os
 
-# Load your Mistral API key securely
+# Load API key from Streamlit secrets
 mistral_api_key = st.secrets["mistral_api_key"]
 client = Mistral(api_key=mistral_api_key)
 
 st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
 st.title("🛠️ AI Assistant for NYC School Construction")
 
-# Initialize session states
+# Define the questions to ask sequentially
+questions = [
+    ("Location", "Which part of NYC is the school located in?"),
+    ("Grades", "How many grades will the school have?"),
+    ("StudentsPerClass", "What is the average number of students per class?"),
+    ("Timeline", "What is the expected construction timeline (in months)?"),
+    ("SpecialReqs", "Are there any special facilities or requirements needed?"),
+    ("SquareFootage", "What is the square footage of the construction?"),
+    ("Floors", "How many floors will the building have?"),
+    ("DemolitionNeeded", "Is demolition needed?"),
+    ("LotAvailable", "If a feature, is the lot already available?"),
+    ("Basement", "Is a basement needed?"),
+]
+
+# Initialize session state for collected info and chat history
+if "collected_info" not in st.session_state:
+    st.session_state.collected_info = {key: None for key, _ in questions}
+
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-
-if "collected_info" not in st.session_state:
-    st.session_state.collected_info = {
-        "Location": None,
-        "Grades": None,
-        "StudentsPerClass": None,
-        "Timeline": None,
-        "SpecialReqs": None,
-        "SquareFootage": None,
-        "Floors": None,
-        "DemolitionNeeded": None,
-        "LotAvailable": None,
-        "Basement": None,
-    }
 
 if "final_plan" not in st.session_state:
     st.session_state.final_plan = None
 
-# Capture user input
-user_input = st.chat_input("Ask me anything about your school construction project...")
+# Find next unanswered question key and text
+def get_next_question():
+    for key, question in questions:
+        if st.session_state.collected_info[key] is None:
+            return key, question
+    return None, None
+
+# On user input, save answer to current question and append messages
+user_input = st.chat_input("Type your answer here...")
 
 if user_input:
+    # Append user message
     st.session_state.chat_history.append(UserMessage(content=user_input))
+    
+    # Find which question to assign this answer to
+    current_key, current_question = get_next_question()
+    if current_key is not None:
+        st.session_state.collected_info[current_key] = user_input
+    
+    # Compose system prompt reminding assistant of its role and data so far
+    system_prompt = f"""
+You are an expert NYC school construction planner assistant.
+Use the collected information below to generate helpful responses and plan a construction schedule and cost.
 
-    # System prompt
-    system_prompt = """
-You are an expert NYC school construction planner assistant. 
-Extract relevant planning details from the conversation and store them. 
-Once you have enough information, generate a structured construction plan in JSON, with phases, subtasks, vendors, permissions, materials, and labor. 
-Wait to respond with a plan until user has provided sufficient detail.
+Current collected info:
+{json.dumps(st.session_state.collected_info, indent=2)}
 
-When generating the plan, follow this format:
-{
-  "ConstructionPhases": [...],
-  "Resources & Materials": {...}
-}
-Only return JSON when asked to "generate plan".
+Only ask for more info if something is missing. If all info is collected, wait for the user to ask to generate the plan.
 """
 
-    # Compose messages
     messages = [SystemMessage(content=system_prompt)] + st.session_state.chat_history
-
-    # Call the model with .complete()
+    
     response = client.chat.complete(
         model="mistral-medium",
         messages=messages,
     )
     assistant_reply = response.choices[0].message.content.strip()
+    
+    # Append assistant response
     st.session_state.chat_history.append(SystemMessage(content=assistant_reply))
 
-# Display conversation
+# Display conversation history
 for msg in st.session_state.chat_history:
     role = "user" if isinstance(msg, UserMessage) else "assistant"
     with st.chat_message(role):
         st.markdown(msg.content)
 
-# Generate Construction Plan button
-if st.button("🚧 Generate Construction Plan"):
-    user_conversation = "\n".join(
-        msg.content for msg in st.session_state.chat_history if isinstance(msg, UserMessage)
-    )
-    summary_prompt = f"""
-Here is the full conversation. Extract all relevant project info and return a structured JSON plan.
+# Show next question automatically if any
+next_key, next_question = get_next_question()
+if next_question:
+    with st.chat_message("assistant"):
+        st.markdown(next_question)
 
-Conversation:
-{user_conversation}
+# When all questions answered, show button to generate plan
+if next_key is None:
+    if st.button("🚧 Generate Construction Plan"):
+        summary_prompt = f"""
+Using the collected info, generate a detailed construction plan in JSON format with phases, subtasks, vendors, permissions, materials, and labor.
 
-Follow this structure exactly:
+Collected info:
+{json.dumps(st.session_state.collected_info, indent=2)}
+
+Only output JSON with this structure:
 {{
   "ConstructionPhases": [...],
   "Resources & Materials": {{...}}
 }}
-Only return JSON, no explanation.
+No extra explanation.
 """
-    messages = [
-        SystemMessage(content="You summarize the conversation and generate the final JSON plan."),
-        UserMessage(content=summary_prompt),
-    ]
-    response = client.chat.complete(
-        model="mistral-medium",
-        messages=messages,
-    )
-    final_json = response.choices[0].message.content.strip()
-    st.session_state.final_plan = final_json
+        messages = [
+            SystemMessage(content="You summarize the project info and generate the final JSON plan."),
+            UserMessage(content=summary_prompt),
+        ]
+        response = client.chat.complete(
+            model="mistral-medium",
+            messages=messages,
+        )
+        final_json = response.choices[0].message.content.strip()
+        st.session_state.final_plan = final_json
 
-# Show final plan
+# Display final plan JSON if exists
 if st.session_state.final_plan:
     st.subheader("📦 Final Construction Plan")
     st.code(st.session_state.final_plan, language="json")
