@@ -1,6 +1,6 @@
 import streamlit as st
 from mistralai.client import MistralClient
-from mistralai.models.chat_completion import ChatMessage
+from mistralai import Mistral, UserMessage, SystemMessage
 import json
 import os
 
@@ -12,6 +12,7 @@ client = MistralClient(api_key=MISTRAL_API_KEY)
 st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
 st.title("🛠️ AI Assistant for NYC School Construction")
 
+# Initialize session states
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
@@ -32,12 +33,13 @@ if "collected_info" not in st.session_state:
 if "final_plan" not in st.session_state:
     st.session_state.final_plan = None
 
+# Capture user input
 user_input = st.chat_input("Ask me anything about your school construction project...")
 
 if user_input:
-    st.session_state.chat_history.append(ChatMessage(role="user", content=user_input))
+    st.session_state.chat_history.append(UserMessage(content=user_input))
 
-    # Keep prompt smart and dynamic
+    # System prompt
     system_prompt = """
 You are an expert NYC school construction planner assistant. 
 Extract relevant planning details from the conversation and store them. 
@@ -52,23 +54,33 @@ When generating the plan, follow this format:
 Only return JSON when asked to "generate plan".
 """
 
-    chat_messages = [ChatMessage(role="system", content=system_prompt)] + st.session_state.chat_history
-    response = client.chat(model="mistral-medium", messages=chat_messages)
-    assistant_reply = response.choices[0].message.content.strip()
-    st.session_state.chat_history.append(ChatMessage(role="assistant", content=assistant_reply))
+    # Compose messages
+    messages = [SystemMessage(content=system_prompt)] + st.session_state.chat_history
 
-# Display chat
+    # Call the model
+    response = client.chat(
+        model="mistral-medium",
+        messages=messages,
+    )
+    assistant_reply = response.choices[0].message.content.strip()
+    st.session_state.chat_history.append(SystemMessage(content=assistant_reply))
+
+# Display conversation
 for msg in st.session_state.chat_history:
-    with st.chat_message(msg.role):
+    role = "user" if isinstance(msg, UserMessage) else "assistant"
+    with st.chat_message(role):
         st.markdown(msg.content)
 
-# Add Generate Button
+# Generate Construction Plan button
 if st.button("🚧 Generate Construction Plan"):
+    user_conversation = "\n".join(
+        msg.content for msg in st.session_state.chat_history if isinstance(msg, UserMessage)
+    )
     summary_prompt = f"""
 Here is the full conversation. Extract all relevant project info and return a structured JSON plan.
 
 Conversation:
-{[msg.content for msg in st.session_state.chat_history if msg.role == "user"]}
+{user_conversation}
 
 Follow this structure exactly:
 {{
@@ -77,13 +89,15 @@ Follow this structure exactly:
 }}
 Only return JSON, no explanation.
 """
-    response = client.chat(model="mistral-medium", messages=[
-        ChatMessage(role="system", content="You summarize the conversation and generate the final JSON plan."),
-        ChatMessage(role="user", content=summary_prompt),
-    ])
+    messages = [
+        SystemMessage(content="You summarize the conversation and generate the final JSON plan."),
+        UserMessage(content=summary_prompt),
+    ]
+    response = client.chat(model="mistral-medium", messages=messages)
     final_json = response.choices[0].message.content.strip()
     st.session_state.final_plan = final_json
 
+# Show final plan
 if st.session_state.final_plan:
     st.subheader("📦 Final Construction Plan")
     st.code(st.session_state.final_plan, language="json")
