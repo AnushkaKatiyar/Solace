@@ -55,8 +55,8 @@ Only return JSON when asked to "generate plan".
     # Compose messages
     messages = [SystemMessage(content=system_prompt)] + st.session_state.chat_history
 
-    # Call the model
-    response = client.chat(
+    # Call the model with .complete()
+    response = client.chat.complete(
         model="mistral-medium",
         messages=messages,
     )
@@ -91,7 +91,10 @@ Only return JSON, no explanation.
         SystemMessage(content="You summarize the conversation and generate the final JSON plan."),
         UserMessage(content=summary_prompt),
     ]
-    response = client.chat(model="mistral-medium", messages=messages)
+    response = client.chat.complete(
+        model="mistral-medium",
+        messages=messages,
+    )
     final_json = response.choices[0].message.content.strip()
     st.session_state.final_plan = final_json
 
