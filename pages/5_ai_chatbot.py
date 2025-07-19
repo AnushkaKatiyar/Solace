@@ -190,11 +190,11 @@ if st.session_state.final_plan:
 # # Trying to render the UI
 
 
-def clean_json_string(json_str):
-    # Remove markdown triple backticks and language hints (like ```json)
-    json_str = re.sub(r"^```(json)?\n", "", json_str)  # remove starting ```
-    json_str = re.sub(r"\n```$", "", json_str)  # remove ending ```
-    return json_str.strip()
+    def clean_json_string(json_str):
+        # Remove markdown triple backticks and language hints (like ```json)
+        json_str = re.sub(r"^```(json)?\n", "", json_str)  # remove starting ```
+        json_str = re.sub(r"\n```$", "", json_str)  # remove ending ```
+        return json_str.strip()
 
 
 # # Parse JSON string if needed
