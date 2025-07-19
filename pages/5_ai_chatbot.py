@@ -171,42 +171,25 @@ def clean_json_string(raw_json):
 # Display final plan JSON if exists
 if st.session_state.final_plan:
     st.subheader("📦 Final Construction Plan")
-    st.code(
-        st.session_state.final_plan
-        if isinstance(st.session_state.final_plan, str)
-        else json.dumps(st.session_state.final_plan, indent=2),
-        language="json",
-    )
+    # st.code(
+    #     st.session_state.final_plan
+    #     if isinstance(st.session_state.final_plan, str)
+    #     else json.dumps(st.session_state.final_plan, indent=2),
+    #     language="json",
+    # )
     
-    if isinstance(st.session_state.final_plan, str):
-        st.write("Raw JSON string:", st.session_state.final_plan)    
-        cleaned = clean_json_string(st.session_state.final_plan)
-        st.write("Cleaned JSON string:", cleaned)
-        try:
-            parsed_json = json.loads(cleaned)
-            st.session_state.final_plan = parsed_json
-        except json.JSONDecodeError as e:
-            st.error(f"JSON decode failed: {e}")
-            st.stop()
-    else:
-        st.write("Parsed plan (dict):", st.session_state.final_plan)
-
-# # # Trying to render the UI
-#     def clean_json_string(json_str):
-#         # Remove markdown triple backticks and language hints (like ```json)
-#         json_str = re.sub(r"^```(json)?\n", "", json_str)  # remove starting ```
-#         json_str = re.sub(r"\n```$", "", json_str)  # remove ending ```
-#         return json_str.strip()
-
-
-# # Parse JSON string if needed
-# if isinstance(st.session_state.final_plan, str):
-#     try:
-#         parsed_json = json.loads(st.session_state.final_plan)
-#         st.session_state.final_plan = parsed_json
-#     except json.JSONDecodeError:
-#         st.error("Failed to parse JSON. Please make sure the AI returned valid JSON.")
-#         st.stop()
+    # if isinstance(st.session_state.final_plan, str):
+    #     st.write("Raw JSON string:", st.session_state.final_plan)    
+    #     cleaned = clean_json_string(st.session_state.final_plan)
+    #     st.write("Cleaned JSON string:", cleaned)
+    #     try:
+    #         parsed_json = json.loads(cleaned)
+    #         st.session_state.final_plan = parsed_json
+    #     except json.JSONDecodeError as e:
+    #         st.error(f"JSON decode failed: {e}")
+    #         st.stop()
+    # else:
+    #     st.write("Parsed plan (dict):", st.session_state.final_plan)
 
 if "final_plan" in st.session_state and st.session_state.final_plan is not None:
     plan = st.session_state.final_plan
