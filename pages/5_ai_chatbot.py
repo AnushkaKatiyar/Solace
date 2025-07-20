@@ -185,6 +185,12 @@ No extra explanation.
 def clean_json_string(raw_json):
     return raw_json.strip().removeprefix("```json").removesuffix("```").strip()
 
+def safe_format_cost(x):
+    try:
+        return "${:,.0f}".format(float(x))
+    except (ValueError, TypeError):
+        return str(x)
+
 if st.session_state.final_plan:
     # Optional: Add a header
     st.subheader("📦 Final Construction Plan")
@@ -266,7 +272,7 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
                 })
 
             df_phase = pd.DataFrame(rows)
-            df_phase["Estimated Cost ($)"] = df_phase["Estimated Cost ($)"].apply(lambda x: "${:,.0f}".format(x))
+            df_phase["Estimated Cost ($)"] = df_phase["Estimated Cost ($)"].apply(safe_format_cost)
 
             st.dataframe(df_phase, use_container_width=True)
     # # Iterate through each phase
