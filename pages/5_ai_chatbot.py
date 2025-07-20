@@ -546,10 +546,10 @@ elif project_type == "🛠 Repair & Maintenance":
         - "Permissions Required": JSON array of strings
 
         3. "ResourcesAndMaterials" — a JSON array of raw materials. Each item must include:
-        - "Category": string
-        - "Item": string
-        - "QuantityEstimate": string (include units, e.g., "5 metric tonnes")
-        - "EstimatedCost": number (USD)
+        - "Category": string (Name the phase in which material will be used)
+        - "Item": string (ONLY include relevant items based on user request. eg. if user mentions minor electrical repairs, DO NOT include unrelated construction materials like steel, concrete, or wood)
+        - "QuantityEstimate": string (include units, e.g., "5 metric tonnes" or quantity whatever relevant, eg. if its light fixtre then estimate how many will be needed based on user prompt)
+        - "EstimatedCost": number (USD) (estimate based on material and quantity)
 
         ❗ JSON Formatting Rules:
         - DO NOT use numeric keys like "0": {{...}}, "1": {{...}}. Use JSON arrays (square brackets []) instead.
