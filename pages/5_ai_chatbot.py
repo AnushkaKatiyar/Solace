@@ -614,7 +614,7 @@ elif project_type == "🚧 Upgrades":
         st.plotly_chart(fig, use_container_width=True)
 
         st.markdown(f"**Total Estimated Cost:** ${int(df_chart['Cost'].sum()):,}")
-       def parse_duration_to_weeks(duration_str):
+        def parse_duration_to_weeks(duration_str):
             if isinstance(duration_str, str):
                 match = re.search(r"(\d+)", duration_str)
                 if match:
