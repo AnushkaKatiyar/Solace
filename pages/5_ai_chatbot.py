@@ -285,8 +285,7 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
             )
         st.table(pd.DataFrame(subtask_rows))
 #####################################################################
-
-        st.subheader("📋 Project Plan Overview (by Phase)")
+    st.subheader("📋 Project Plan Overview (by Phase)")
 
         for phase in phases:
             phase_name = phase["PhaseName"]
@@ -316,6 +315,8 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
                 df_phase["Estimated Cost ($)"] = df_phase["Estimated Cost ($)"].apply(lambda x: "${:,.0f}".format(x))
 
                 st.dataframe(df_phase, use_container_width=True)
+
+        
 ####################################################################    
     st.subheader("🧱 Resources & Materials")
     resources = plan.get("Resources & Materials", {})
