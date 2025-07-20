@@ -5,13 +5,28 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.express as px
 import re
+import time
 
 # Load API key from Streamlit secrets
 mistral_api_key = st.secrets["mistral_api_key"]
 client = Mistral(api_key=mistral_api_key)
 
+
 st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
 st.title("🛠️ AI Assistant for NYC School Construction")
+
+def animated_typing(message, delay=0.03):
+    placeholder = st.empty()
+    full_text = ""
+    for char in message:
+        full_text += char
+        placeholder.markdown(f"**{full_text}**")
+        time.sleep(delay)
+
+if "has_seen_welcome" not in st.session_state:
+    st.session_state.has_seen_welcome = True
+    with st.chat_message("assistant"):
+        animated_typing("Hi, Welcome to Solace NYC School Construction Demo 👋\n\nI'm your project manager assistant. Can I help you create a plan for school construction in NYC?")
 
 # Define the questions to ask sequentially
 questions = [
