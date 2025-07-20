@@ -563,10 +563,9 @@ elif project_type == "🛠 Repair & Maintenance":
     if st.session_state.repair_plan:
         # Clean and parse
         raw_json_str = st.session_state.repair_plan_raw.strip().removeprefix("```json").removesuffix("```").strip()
-      
 
         try:
-            parsed = json.loads(raw_json)
+            parsed = json.loads(raw_json_str)
             st.session_state.repair_plan = parsed
         except Exception as e:
             st.error("Invalid JSON: " + str(e))
@@ -574,6 +573,7 @@ elif project_type == "🛠 Repair & Maintenance":
 
         final = st.session_state.repair_plan
         st.subheader("🧰 Final Repair Plan")
+        st.json(final)
 
         # --- Phases Table ---
         phases = final.get("ConstructionPhases", [])
