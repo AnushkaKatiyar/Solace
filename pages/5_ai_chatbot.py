@@ -614,15 +614,29 @@ elif project_type == "🚧 Upgrades":
         st.plotly_chart(fig, use_container_width=True)
 
         st.markdown(f"**Total Estimated Cost:** ${int(df_chart['Cost'].sum()):,}")
-        if "Duration" in df_chart.columns and pd.api.types.is_numeric_dtype(df_chart["Duration"]):
-            total_duration = int(df_chart["Duration"].sum())
-            st.markdown(f"**Total Estimated Duration:** {total_duration} weeks")
+       def parse_duration_to_weeks(duration_str):
+            if isinstance(duration_str, str):
+                match = re.search(r"(\d+)", duration_str)
+                if match:
+                    num = int(match.group(1))
+                    if "month" in duration_str.lower():
+                        return num * 4
+                    elif "week" in duration_str.lower():
+                        return num
+                    elif "day" in duration_str.lower():
+                        return round(num / 7, 2)
+            return None
+
+        df_chart["Duration_Weeks"] = df_chart["Duration"].apply(parse_duration_to_weeks)
+        valid_durations = df_chart["Duration_Weeks"].dropna()
+
+        if not valid_durations.empty:
+            st.markdown(f"**Total Estimated Duration:** {int(valid_durations.sum())} weeks")
         else:
             st.warning("⚠️ No valid duration data found.")
-        st.write("🧪 df_chart columns:", df_chart.columns.tolist())
-        st.dataframe(df_chart.head())
+        st.bar_chart(df_chart.set_index("Phase")[["Duration_Weeks"]])
 
-        # st.markdown(f"**Total Estimated Duration:** {int(df_chart['Duration'].sum())} weeks")
+       
 ###############################################################
 ###############################################################
 ###############################################################
