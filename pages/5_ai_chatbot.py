@@ -401,35 +401,228 @@ if project_type == "🏗 New Construction":
             )
         else:
             st.info("No construction phases data available.")
-
+###############################################################
+###############################################################
+###############################################################
+###############################################################
+###############################################################
+###############################################################
 elif project_type == "🚧 Upgrades":
     st.subheader("Upgrade Planning")
     st.info("🚧 Upgrade planning assistant coming soon!")
-
+###############################################################
+###############################################################
+###############################################################
+###############################################################
+###############################################################
+###############################################################
 elif project_type == "🛠 Repair & Maintenance":
-    st.subheader("Repair & Maintenance Tasks")
-    st.info("🛠 Repair planner assistant coming soon!")
-    st.markdown("### Repair / Maintenance Examples")
-    st.markdown("""
-    - Boiler Repair (e.g., leaking or outdated boilers)  
-    - Roof Leak Repair  
-    - Fire Alarm System Fix  
-    - Mold Remediation  
-    - Broken Window Replacement  
-    - Elevator Repair  
-    - Pest Control & Infestation Treatment  
-    - Asbestos Abatement  
-    - Cracked Sidewalk/Playground Pavement Repair  
-    - Ceiling Tile Replacement after water damage  
-    - Emergency Plumbing Fixes (burst pipes, clogged sewage)  
-    - Heating System Maintenance  
-    - Lead Paint Stabilization  
-    - Lighting Fixture Repairs  
-    - HVAC System Repairs (furnace, ductwork leaks)  
-    - Water Heater Repair or Replacement  
-    - Electrical System Troubleshooting and Repairs  
-    - Playground Surface Repairs  
-    - Security System Repairs (alarms, sensors)  
-    - Drainage System Maintenance
-    """)
-        
+    st.subheader("Repair / Maintenance Planning")
+
+    def animated_typing(message, delay=0.03):
+        placeholder = st.empty()
+        full_text = ""
+        for char in message:
+            full_text += char
+            placeholder.markdown(f"**{full_text}**")
+            time.sleep(delay)
+
+    if "has_seen_repair_welcome" not in st.session_state:
+        st.session_state.has_seen_repair_welcome = True
+        with st.chat_message("assistant"):
+            animated_typing("Hi there 👋\n\nI'm here to help you plan your school repair or maintenance project.\n\nHere are a few examples to get you started:")
+
+            st.markdown("""
+            **Examples:**
+            - Boiler Repair (leaking or outdated)
+            - Roof Leak Repair
+            - Mold Remediation
+            - Broken Window Replacement
+            - Fire Alarm System Fix
+            - Pest Control
+            - Elevator Repair
+            - Emergency Plumbing (e.g., burst pipes)
+            - Lead Paint Stabilization
+            - Cracked Sidewalk Repair
+            - Ceiling Tile Replacement
+            - Lighting Fixture Repairs
+            - HVAC Maintenance
+            - Asbestos Abatement
+            """)
+
+    # Define repair questions
+    repair_questions = [
+        ("RepairDescription", "What kind of repair or maintenance is needed?"),
+        ("Location", "Which area of the school is affected (e.g., cafeteria, roof, classroom)?"),
+        ("Urgency", "Is this an emergency repair or scheduled maintenance?"),
+        ("BuildingStatus", "Is the building currently occupied or vacant?"),
+        ("AccessConstraints", "Are there access or safety concerns (e.g., asbestos, confined spaces)?"),
+        ("Timeline", "What is your desired timeline (in weeks)?"),
+    ]
+
+    # Init state
+    if "repair_info" not in st.session_state:
+        st.session_state.repair_info = {key: None for key, _ in repair_questions}
+    if "repair_chat" not in st.session_state:
+        st.session_state.repair_chat = []
+    if "repair_last_q" not in st.session_state:
+        st.session_state.repair_last_q = None
+    if "repair_plan" not in st.session_state:
+        st.session_state.repair_plan = None
+
+    # Ask next unanswered question
+    def get_next_repair_question():
+        for key, q in repair_questions:
+            if st.session_state.repair_info[key] in [None, ""]:
+                return key, q
+        return None, None
+
+    # Chat input
+    repair_input = st.chat_input("Describe your repair project...")
+
+    if repair_input:
+        if st.session_state.repair_last_q:
+            st.session_state.repair_info[st.session_state.repair_last_q] = repair_input
+        st.session_state.repair_chat.append(UserMessage(content=repair_input))
+        next_key, next_q = get_next_repair_question()
+        st.session_state.repair_last_q = next_key
+
+        if next_q:
+            prompt = f"""
+            You are an expert NYC school repair planner.
+
+            Collected so far:
+            {json.dumps(st.session_state.repair_info, indent=2)}
+
+            Ask only the next missing question:
+            {next_q}
+            """
+        else:
+            prompt = f"""
+            All necessary repair info collected:
+            {json.dumps(st.session_state.repair_info, indent=2)}
+
+            Inform the user and ask if you'd like to generate a detailed plan with phases, subtasks, vendors, costs, labor, and materials.
+            """
+
+        messages = [SystemMessage(content=prompt)] + st.session_state.repair_chat
+        reply = client.chat.complete(model="mistral-medium", messages=messages)
+        reply_text = reply.choices[0].message.content.strip()
+        st.session_state.repair_chat.append(SystemMessage(content=reply_text))
+
+    # Render chat
+    for msg in st.session_state.repair_chat:
+        role = "user" if isinstance(msg, UserMessage) else "assistant"
+        with st.chat_message(role):
+            st.markdown(msg.content)
+
+    # Plan generation
+    next_key, _ = get_next_repair_question()
+    if next_key is None:
+        if st.button("🛠 Generate Repair Plan"):
+            repair_summary_prompt = f"""
+            You are an expert NYC school repair planning assistant.
+
+            Generate a detailed repair/maintenance project plan in JSON format based on the following input:
+
+            {json.dumps(st.session_state.repair_info, indent=2)}
+
+            The plan must include:
+            - 5–8 Phases (e.g., Inspection, Material Procurement, Execution)
+            - For each phase:
+              - PhaseName
+              - Description
+              - EstimatedCost (USD)
+              - DurationEstimate (weeks)
+              - Subtasks (with SubtaskName, Description, DurationEstimate, CostEstimate, Vendors, LaborCategories, Permissions)
+              - LaborCategories
+              - Vendors (NYC-based or known names)
+              - Permissions Required (e.g., DOE, SCA)
+            - Resources & Materials section:
+              - Category
+              - Item
+              - QuantityEstimate
+              - EstimatedCost
+
+            Only return valid JSON with the structure described.
+            """
+
+            messages = [
+                SystemMessage(content="You summarize the project info and generate the final JSON plan."),
+                UserMessage(content=repair_summary_prompt),
+            ]
+            response = client.chat.complete(model="mistral-medium", messages=messages)
+            st.session_state.repair_plan = response.choices[0].message.content.strip()
+
+    # Render final plan if exists
+    if st.session_state.repair_plan:
+        # Clean and parse
+        raw_json = st.session_state.repair_plan.strip().removeprefix("```json").removesuffix("```").strip()
+        try:
+            parsed = json.loads(raw_json)
+            st.session_state.repair_plan = parsed
+        except Exception as e:
+            st.error("Invalid JSON: " + str(e))
+            st.stop()
+
+        final = st.session_state.repair_plan
+        st.subheader("🧰 Final Repair Plan")
+
+        # --- Phases Table ---
+        phases = final.get("ConstructionPhases", [])
+        for phase in phases:
+            with st.expander(f"📌 {phase['PhaseName']}", expanded=True):
+                rows = [{
+                    "Task": phase["PhaseName"],
+                    "Description": phase.get("Description", ""),
+                    "Estimated Cost ($)": safe_format_cost(phase.get("EstimatedCost", 0)),
+                    "Duration (weeks)": phase.get("DurationEstimate", 0),
+                    "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
+                    "Vendors": ", ".join(phase.get("Vendors", [])),
+                    "Permissions": ", ".join(phase.get("Permissions Required", [])),
+                }]
+                for sub in phase.get("Subtasks", []):
+                    rows.append({
+                        "Task": f"  ↳ {sub.get('SubtaskName', '')}",
+                        "Description": sub.get("Description", ""),
+                        "Estimated Cost ($)": safe_format_cost(sub.get("CostEstimate", 0)),
+                        "Duration (weeks)": sub.get("DurationEstimate", 0),
+                        "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
+                        "Vendors": ", ".join(sub.get("Vendors", [])),
+                        "Permissions": ", ".join(sub.get("Permissions", [])),
+                    })
+                st.dataframe(pd.DataFrame(rows), use_container_width=True)
+
+        # --- Materials Table ---
+        st.subheader("🧱 Resources & Materials")
+        resources = final.get("Resources & Materials", {})
+        mat_rows = []
+        for category, items in resources.items():
+            for item in items:
+                mat_rows.append({
+                    "Category": category,
+                    "Item": item.get("Item", ""),
+                    "Quantity Estimate": item.get("QuantityEstimate", "N/A"),
+                    "Estimated Cost": safe_format_cost(item.get("EstimatedCost", 0)),
+                })
+        st.dataframe(pd.DataFrame(mat_rows))
+
+        # --- Summary Chart ---
+        df_chart = pd.DataFrame({
+            "Phase": [p["PhaseName"] for p in phases],
+            "Cost": [p.get("EstimatedCost", 0) for p in phases],
+            "Duration": [p.get("DurationEstimate", 0) for p in phases],
+        })
+
+        st.subheader("💰 Cost Distribution")
+        fig = px.pie(df_chart, names="Phase", values="Cost", title="Cost by Phase", hole=0.4)
+        fig.update_traces(textposition="outside", textinfo="percent+label")
+        st.plotly_chart(fig, use_container_width=True)
+
+        st.subheader("⏱ Duration by Phase")
+        fig2 = px.line(df_chart, x="Phase", y="Duration", markers=True)
+        fig2.update_layout(yaxis_title="Weeks", xaxis_tickangle=-45)
+        st.plotly_chart(fig2, use_container_width=True)
+
+        st.markdown(f"**Total Estimated Cost:** ${int(df_chart['Cost'].sum()):,}")
+        st.markdown(f"**Total Estimated Duration:** {int(df_chart['Duration'].sum())} weeks")
