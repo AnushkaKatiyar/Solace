@@ -140,32 +140,29 @@ if project_type == "🏗 New Construction":
             summary_prompt = f"""
     Using the collected info, generate a detailed construction plan in JSON format with phases, subtasks, vendors, permissions, materials, and labor.
 
-    Output should be a list of 5-10 phases based on user inputs. Each phase must include:
-    - PhaseName: (string) e.g. "I. Scope"
-    - Description: (string), a short description
-    - EstimatedCost: (number, USD)
-    - DurationEstimate: (number, weeks)
-    - Subtasks: list of 5-10 subtasks within the phase. Each subtask must include:
-    - SubtaskName: (string)
-    - Description: (string)
-    - CostEstimate: (number, USD)
-    - DurationEstimate: (number, weeks)
-    - LaborCategories: list of strings
-    - Vendors: list of 1–2 actual NYC-based vendors or well-known relevant companies (no placeholders)
-    - Permissions: list of required NYC government permissions (e.g., SCA, DOE, FDNY)
-
-    Include a ResourcesAndMaterials section listing raw materials used, where each entry includes:
-    - Category: (string)
-    - Item: (string)
-    - QuantityEstimate: (string with units, e.g., "5 metric tonnes", "200 feet")
-    - EstimatedCost: (number, USD)
+    Output should be a list of 5-10 phases, depending on the user inputs. Each phase must include:
+    - Phase: (string) e.g. "I. Scope",
+    - Description: (string),a short description,
+    - Subphases/subtaskes: 5-10 sub tasks within the phases
+    - Subphase Breakdown: (list of phases and subtasks(5-10 phases and 5-10 subtasks) from above as dicts). Each dict must have:
+    - Name: (string)
+    - Description(string)
+    - Cost (USD): (number)
+    - Labor Category
+    - Vendor: (list of strings),1–2 **actual NYC-based vendors or well-known relevant companies** (avoid placeholders like 'VendorX', 'VendorA'),
+    - Permission if needed: (list of strings),required NYC government permissions (e.g., SCA, DoE, FDNY),
+    - Duration (weeks): (number)
+    - Resources & Material-Raw materials used in construction
+    - Item-should have the name and describe for which phases and subtask it is needed
+    - Quantity-in correct units e.g-metric tonne, feet etc
+    - Cost (USD): (number)
+    
 
     Collected info:
     {json.dumps(st.session_state.collected_info, indent=2)}
 
-    Output only JSON matching this exact structure (no extra text or markdown):
-
-    {{
+    Only output JSON with this structure:
+    {{ 
     "ConstructionPhases": [
         {{
         "PhaseName": "string",
@@ -178,25 +175,27 @@ if project_type == "🏗 New Construction":
             "Description": "string",
             "CostEstimate": number,
             "DurationEstimate": number,
-            "LaborCategories": ["string"],
-            "Vendors": ["string"],
-            "Permissions": ["string"]
+            "LaborCategories": [],
+            "Vendors": [],
+            "Permissions": []
             }}
         ],
-        "LaborCategories": ["string"],
-        "Vendors": ["string"],
-        "Permissions Required": ["string"]
+        "LaborCategories": [],
+        "Vendors": [],
+        "Permissions Required": []
         }}
     ],
-    "ResourcesAndMaterials": [
+    "Resources & Materials": {{
+        "CategoryName": [
         {{
-        "Category": "string",
-        "Item": "string",
-        "QuantityEstimate": "string",
-        "EstimatedCost": number
+            "Item": "string",
+            "QuantityEstimate": string,
+            "EstimatedCost": number
         }}
-    ]
+        ]
     }}
+    }}
+    No extra explanation.
     """
             messages = [
                 SystemMessage(content="You summarize the project info and generate the final JSON plan."),
@@ -522,31 +521,72 @@ elif project_type == "🛠 Repair & Maintenance":
     if next_key is None:
         if st.button("🛠 Generate Repair Plan"):
             repair_summary_prompt = f"""
-            You are an expert NYC school repair planning assistant.
+            Using the collected info, generate a detailed construction plan in JSON format with phases, subtasks, vendors, permissions, materials, and labor.
 
-            Generate a detailed repair/maintenance project plan in JSON format based on the following input:
+            Output should be a list of 5-10 phases based on user inputs. Each phase must include:
+            - PhaseName: (string) e.g. "I. Scope"
+            - Description: (string), a short description
+            - EstimatedCost: (number, USD)
+            - DurationEstimate: (number, weeks)
+            - Subtasks: list of 5-10 subtasks within the phase. Each subtask must include:
+            - SubtaskName: (string)
+            - Description: (string)
+            - CostEstimate: (number, USD)
+            - DurationEstimate: (number, weeks)
+            - LaborCategories: list of strings
+            - Vendors: list of 1–2 actual NYC-based vendors or well-known relevant companies (no placeholders)
+            - Permissions: list of required NYC government permissions (e.g., SCA, DOE, FDNY)
 
-            {json.dumps(st.session_state.repair_info, indent=2)}
+            Include a ResourcesAndMaterials section listing raw materials used, where each entry includes:
+            - Category: (string)
+            - Item: (string)
+            - QuantityEstimate: (string with units, e.g., "5 metric tonnes", "200 feet")
+            - EstimatedCost: (number, USD)
 
-            The plan must include:
-            - 5–8 Phases (e.g., Inspection, Material Procurement, Execution)
-            - For each phase:
-              - PhaseName
-              - Description
-              - EstimatedCost (USD)
-              - DurationEstimate (weeks)
-              - Subtasks (with SubtaskName, Description, DurationEstimate, CostEstimate, Vendors, LaborCategories, Permissions)
-              - LaborCategories
-              - Vendors (NYC-based or known names)
-              - Permissions Required (e.g., DOE, SCA)
-            - Resources & Materials section:
-              - Category
-              - Item
-              - QuantityEstimate
-              - EstimatedCost
+            Collected info:
+            {json.dumps(st.session_state.collected_info, indent=2)}
 
-            Only return valid JSON with the structure described.
-            """
+            Output only JSON matching this exact structure (no extra text or markdown):
+
+            {{
+            "ConstructionPhases": [
+                {{
+                "PhaseName": "string",
+                "Description": "string",
+                "EstimatedCost": number,
+                "DurationEstimate": number,
+                "Subtasks": [
+                    {{
+                    "SubtaskName": "string",
+                    "Description": "string",
+                    "CostEstimate": number,
+                    "DurationEstimate": number,
+                    "LaborCategories": ["string"],
+                    "Vendors": ["string"],
+                    "Permissions": ["string"]
+                    }}
+                ],
+                "LaborCategories": ["string"],
+                "Vendors": ["string"],
+                "Permissions Required": ["string"]
+                }}
+            ],
+            "ResourcesAndMaterials": [
+                {{
+                "Category": "string",
+                "Item": "string",
+                "QuantityEstimate": "string",
+                "EstimatedCost": number
+                }}
+            ]
+            }}
+            IMPORTANT: Output valid JSON only.
+            - Use JSON arrays for lists (i.e., square brackets `[]` enclosing comma-separated objects).
+            - Do NOT use numeric keys like "0": {...} or "1": {...} inside arrays.
+            - Arrays must be proper JSON arrays without explicit keys.
+            - Each list (like "Phases", "Subtasks", "Resources & Materials") must be formatted as JSON arrays.
+            - Do not include any extra text or explanation outside the JSON.
+                        """
 
             messages = [
                 SystemMessage(content="You summarize the project info and generate the final JSON plan."),
@@ -577,7 +617,7 @@ elif project_type == "🛠 Repair & Maintenance":
         st.json(final)
 
         # --- Phases Table ---
-        phases = final.get("Phases", [])
+        phases = final.get("ProjectPlan", {}).get("Phases", [])
         for phase in phases:
             with st.expander(f"📌 {phase['PhaseName']}", expanded=True):
                 rows = [{
@@ -587,7 +627,7 @@ elif project_type == "🛠 Repair & Maintenance":
                     "Duration (weeks)": phase.get("DurationEstimate", 0),
                     "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
                     "Vendors": ", ".join(phase.get("Vendors", [])),
-                    "Permissions": ", ".join(phase.get("PermissionsRequired", [])),
+                    "Permissions": ", ".join(phase.get("Permissions", [])),
                 }]
                 for sub in phase.get("Subtasks", []):
                     rows.append({
@@ -597,13 +637,13 @@ elif project_type == "🛠 Repair & Maintenance":
                         "Duration (weeks)": sub.get("DurationEstimate", 0),
                         "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
                         "Vendors": ", ".join(sub.get("Vendors", [])),
-                        "Permissions": ", ".join(sub.get("Permissions", [])),
+                        "Permissions": ", ".join(phase.get("Permissions", [])),
                     })
                 st.dataframe(pd.DataFrame(rows), use_container_width=True)
 
         # --- Materials Table ---
         st.subheader("🧱 Resources & Materials")
-        resources = final.get("ResourcesAndMaterials", [])
+        resources = final.get("ProjectPlan", {}).get("ResourcesAndMaterials", [])
         mat_rows = []
         for item in resources:
             mat_rows.append({
