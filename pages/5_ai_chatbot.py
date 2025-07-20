@@ -479,7 +479,7 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
             title="Cost Distribution by Phase",
             hole=0.4,
         )
-        fig_pie.update_traces(textposition="inside", textinfo="percent+label")
+        fig_pie.update_traces(textposition="outside", textinfo="percent+label")
         st.plotly_chart(fig_pie, use_container_width=True)
 
         # Duration Line Chart
