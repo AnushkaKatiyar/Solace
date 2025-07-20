@@ -126,6 +126,10 @@ Output should be a list of 5-10 phases, depending on the user inputs. Each phase
   - Vendor: (list of strings),1–2 **actual NYC-based vendors or well-known relevant companies** (avoid placeholders like 'VendorX', 'VendorA'),
   - Permission if needed: (list of strings),required NYC government permissions (e.g., SCA, DoE, FDNY),
   - Duration (weeks): (number)
+- Resources & Material-Raw materials used in construction
+  - Item-should have the name and describe for which phases and subtask it is needed
+  - Quantity-in correct units e.g-metric tonne, feet etc
+  - Cost (USD): (number)
   
 
 Collected info:
