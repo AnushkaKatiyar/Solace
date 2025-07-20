@@ -604,21 +604,32 @@ elif project_type == "🛠 Repair & Maintenance":
             response_str = response.choices[0].message.content.strip()
 
             # Save the raw response for reference
-            st.session_state.repair_plan_raw = response_str           
+            st.session_state.repair_plan_raw = response_str     
+            st.session_state.repair_plan = response_str 
+            st.session_state.repair_plan_parsed = None      
 
     # Render final plan if exists
     if st.session_state.repair_plan:
         # Clean and parse
-        raw_json_str = st.session_state.repair_plan_raw.strip().removeprefix("```json").removesuffix("```").strip()
+        # One-time parser to avoid reparsing every rerun
+        if "repair_plan_parsed" not in st.session_state:
+            st.session_state.repair_plan_parsed = None
 
-        try:
-            parsed = json.loads(raw_json_str)
-            st.session_state.repair_plan = parsed
-        except Exception as e:
-            st.error("Invalid JSON: " + str(e))
-            st.stop()
+        if st.session_state.repair_plan_raw and st.session_state.repair_plan_parsed is None:
+            raw_json_str = st.session_state.repair_plan_raw.strip().removeprefix("```json").removesuffix("```").strip()
+            try:
+                parsed = json.loads(raw_json_str)
+                st.session_state.repair_plan_parsed = parsed
+            except Exception as e:
+                st.error("Invalid JSON: " + str(e))
+                st.stop()
 
-        final = st.session_state.repair_plan
+        # Now safely reference parsed JSON
+        if st.session_state.repair_plan_parsed:
+            final = st.session_state.repair_plan_parsed
+            # Render tables, charts, etc. using `final`
+        else:
+            st.info("No valid repair plan found.")
         st.subheader("🧰 Final Repair Plan")
         st.json(final)
 
