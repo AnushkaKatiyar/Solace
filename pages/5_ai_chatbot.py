@@ -553,12 +553,12 @@ elif project_type == "🛠 Repair & Maintenance":
             ]
             response = client.chat.complete(model="mistral-medium", messages=messages)
             st.session_state.repair_plan = response.choices[0].message.content.strip()
+            # 🧪 DEBUG: Show raw JSON response
+            st.subheader("🧪 Raw Assistant Response")
+            st.json(repair_plan)  # This pretty-prints dict/JSON in Streamlit
 
     # Render final plan if exists
     if st.session_state.repair_plan:
-        # 🧪 DEBUG: Show raw JSON response
-        st.subheader("🧪 Raw Assistant Response")
-        st.json(repair_plan)  # This pretty-prints dict/JSON in Streamlit
         # Clean and parse
         raw_json = st.session_state.repair_plan.strip().removeprefix("```json").removesuffix("```").strip()
         try:
