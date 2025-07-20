@@ -26,9 +26,6 @@ if project_type == "🏗 New Construction":
     st.subheader("New Construction Planning")
     # your existing pipeline goes here (assistant, model predictions, etc.)
 
-
-
-
     def animated_typing(message, delay=0.03):
         placeholder = st.empty()
         full_text = ""
@@ -239,31 +236,6 @@ if project_type == "🏗 New Construction":
 
         # Now it's a proper dict in session state — ready for rendering
         final_plan = st.session_state.final_plan
-        # You can now use final_plan to render sections, tables, etc.
-        
-
-    # #Display final plan JSON if exists
-    # if st.session_state.final_plan:
-    #     st.subheader("📦 Final Construction Plan")
-    #     st.code(
-    #         st.session_state.final_plan
-    #         if isinstance(st.session_state.final_plan, str)
-    #         else json.dumps(st.session_state.final_plan, indent=2),
-    #         language="json",
-    #     )
-        
-    #     if isinstance(st.session_state.final_plan, str):
-    #         st.write("Raw JSON string:", st.session_state.final_plan)    
-    #         cleaned = clean_json_string(st.session_state.final_plan)
-    #         st.write("Cleaned JSON string:", cleaned)
-    #         try:
-    #             parsed_json = json.loads(cleaned)
-    #             st.session_state.final_plan = parsed_json
-    #         except json.JSONDecodeError as e:
-    #             st.error(f"JSON decode failed: {e}")
-    #             st.stop()
-    #     else:
-    #         st.write("Parsed plan (dict):", st.session_state.final_plan)
 
     if "final_plan" in st.session_state and st.session_state.final_plan is not None:
         plan = st.session_state.final_plan
@@ -304,57 +276,6 @@ if project_type == "🏗 New Construction":
                 df_phase["Estimated Cost ($)"] = df_phase["Estimated Cost ($)"].apply(safe_format_cost)
 
                 st.dataframe(df_phase, use_container_width=True)
-        # # Iterate through each phase
-        # for phase in final_plan.get("phases", []):
-        #     with st.expander(f"{phase.get('phase_name', 'Unnamed Phase')}"):
-        #         # Display summary info as a table
-        #         summary_data = {
-        #             "Estimated Cost": [phase.get("estimated_cost", "N/A")],
-        #             "Estimated Duration (weeks)": [phase.get("estimated_duration", "N/A")],
-        #             "Labor Needs": [", ".join(phase.get("labor", []))],
-        #             "Vendors": [", ".join(phase.get("vendors", []))],
-        #             "Permissions": [", ".join(phase.get("permissions", []))]
-        #         }
-
-        #     summary_df = pd.DataFrame(summary_data)
-        #     st.table(summary_df)
-
-        #     # Display subtasks (if any)
-        #     subtasks = phase.get("subtasks", [])
-        #     if subtasks:
-        #         st.markdown("**Subtasks:**")
-        #         for i, task in enumerate(subtasks, start=1):
-        #             st.markdown(f"- {i}. {task}")
-    #############################################################################################    
-        # for phase in phases:
-        #     st.markdown(f"### 🏗️ {phase['PhaseName']}")
-        #     st.markdown(f"**Description:** {phase.get('Description', '')}")
-        #     phase_data = {
-        #         "Phase": phase["PhaseName"],
-        #         "Description": phase.get("Description", ""),
-        #         "Duration (weeks)": f"{int(round(phase.get('DurationEstimate', 0)))} weeks",
-        #         "Cost ($)": "${:,.0f}".format(phase.get("EstimatedCost", 0)),
-        #         "Vendors": ", ".join(phase.get("Vendors", [])),
-        #         "Permissions": ", ".join(phase.get("Permissions Required", [])),
-        #     }
-        #     st.table(pd.DataFrame([phase_data]))
-        #     # Subtasks Table
-        #     st.markdown("#### 🔧 Subtasks")
-        #     subtask_rows = []
-        #     for sub in phase.get("Subtasks", []):
-        #         subtask_rows.append(
-        #             {
-        #                 "Subtask": sub.get("SubtaskName", ""),
-        #                 "Description": sub.get("Description", ""),
-        #                 "Duration (weeks)": f"{int(round(sub.get('DurationEstimate', 0)))} weeks",
-        #                 "Cost ($)": "${:,.0f}".format(sub.get("CostEstimate", 0)),
-        #                 "Labor": ", ".join(sub.get("LaborCategories", [])),
-        #                 "Vendors": ", ".join(sub.get("Vendors", [])),
-        #                 "Permissions": ", ".join(sub.get("Permissions", [])),
-        #             }
-        #         )
-        #     st.table(pd.DataFrame(subtask_rows))
-    #####################################################################
         
             
     ####################################################################    
@@ -377,26 +298,7 @@ if project_type == "🏗 New Construction":
         else:
             st.info("No resources or materials specified.")
     ####################################################################
-        # # Collect all unique labor categories from phases and subtasks
-        # all_labors = set()
-        # for phase in phases:
-        #     all_labors.update(phase.get("LaborCategories", []))
-        #     for sub in phase.get("Subtasks", []):
-        #         all_labors.update(sub.get("LaborCategories", []))
-
-        # # Only display if there are labor categories
-        # if all_labors:
-        #     st.subheader("👷 Labor Categories")
-        #     sorted_labors = sorted(all_labors)
-
-        #     cols = st.columns(4)  # Split into 3 columns
-        #     for i, labor in enumerate(sorted_labors):
-        #         with cols[i % 4]:
-        #             st.markdown(f"- {labor}")
-        # else:
-        #     st.info("No labor categories found in this plan.")
-
-        # Collect unique labor categories and vendor types separately
+        
         all_labors = set()
         all_vendors = set()
 
@@ -431,42 +333,7 @@ if project_type == "🏗 New Construction":
         else:
             st.info("No labor or vendor types found in this plan.")    
     ####################################################################
-        # # Summary charts
-        # total_cost = 0
-        # total_duration = 0
-        # phase_labels = []
-        # phase_costs = []
-        # phase_durations = []
-
-        # for phase in phases:
-        #     phase_labels.append(phase["PhaseName"])
-        #     cost = phase.get("EstimatedCost", 0)
-        #     duration = phase.get("DurationEstimate", 0)
-        #     total_cost += cost
-        #     total_duration += duration
-        #     phase_costs.append(cost)
-        #     phase_durations.append(duration)
-
-        # # Cost Pie Chart
-        # st.subheader("💰 Cost Distribution")
-        # fig1, ax1 = plt.subplots()
-        # ax1.pie(phase_costs, labels=phase_labels, autopct="%1.1f%%", startangle=140)
-        # ax1.axis("equal")
-        # st.pyplot(fig1)
-
-        # # Duration Line Chart
-        # st.subheader("⏱ Duration by Phase")
-        # fig2, ax2 = plt.subplots()
-        # ax2.plot(phase_labels, phase_durations, marker="o")
-        # ax2.set_ylabel("Duration (weeks)")
-        # ax2.set_title("Duration by Phase")
-        # st.pyplot(fig2)
-
-        # st.subheader("📊 Summary Totals")
-        # st.markdown(f"**Total Estimated Cost:** ${total_cost:,.0f}")
-        # st.markdown(
-        #     f"**Total Estimated Duration:** {int(round(total_duration))} weeks (~{int(round(total_duration / 4))} months)"
-        # )
+        
     ##################################################
         import plotly.express as px
         import pandas as pd
@@ -542,4 +409,27 @@ elif project_type == "🚧 Upgrades":
 elif project_type == "🛠 Repair & Maintenance":
     st.subheader("Repair & Maintenance Tasks")
     st.info("🛠 Repair planner assistant coming soon!")
+    st.markdown("### Repair / Maintenance Examples")
+    st.markdown("""
+    - Boiler Repair (e.g., leaking or outdated boilers)  
+    - Roof Leak Repair  
+    - Fire Alarm System Fix  
+    - Mold Remediation  
+    - Broken Window Replacement  
+    - Elevator Repair  
+    - Pest Control & Infestation Treatment  
+    - Asbestos Abatement  
+    - Cracked Sidewalk/Playground Pavement Repair  
+    - Ceiling Tile Replacement after water damage  
+    - Emergency Plumbing Fixes (burst pipes, clogged sewage)  
+    - Heating System Maintenance  
+    - Lead Paint Stabilization  
+    - Lighting Fixture Repairs  
+    - HVAC System Repairs (furnace, ductwork leaks)  
+    - Water Heater Repair or Replacement  
+    - Electrical System Troubleshooting and Repairs  
+    - Playground Surface Repairs  
+    - Security System Repairs (alarms, sensors)  
+    - Drainage System Maintenance
+    """)
         
