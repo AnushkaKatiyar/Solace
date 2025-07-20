@@ -234,6 +234,41 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
     plan = st.session_state.final_plan
     phases = plan.get("ConstructionPhases", [])
     st.subheader("📋 Construction Phases & Subtasks")
+    
+    st.subheader("📋 Project Plan Overview (by Phase)")
+
+    for phase in phases:
+        phase_name = phase["PhaseName"]
+        with st.expander(f"📌 {phase_name}", expanded=True):
+            rows = []
+
+            # Main phase task
+            rows.append({
+                "Task": f"{phase_name}",
+                "Description": phase.get("Description", ""),
+                "Duration (weeks)": f"{int(round(phase.get('DurationEstimate', 0)))} weeks",
+                "Estimated Cost ($)": "${:,.0f}".format(phase.get("EstimatedCost", 0)),
+                "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
+                "Vendors": ", ".join(phase.get("Vendors", [])),
+                "Permissions": ", ".join(phase.get("Permissions", [])),
+            })
+
+            # Subtasks (indented with arrow)
+            for sub in phase.get("Subtasks", []):
+                rows.append({
+                    "Task": f"  ↳ {sub.get('SubtaskName', '')}",
+                    "Description": sub.get("Description", ""),
+                    "Duration (weeks)": f"{int(round(sub.get('DurationEstimate', 0)))} weeks",
+                    "Estimated Cost ($)": sub.get("CostEstimate", 0),
+                    "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
+                    "Vendors": ", ".join(sub.get("Vendors", [])),
+                    "Permissions": ", ".join(sub.get("Permissions", [])),
+                })
+
+            df_phase = pd.DataFrame(rows)
+            df_phase["Estimated Cost ($)"] = df_phase["Estimated Cost ($)"].apply(lambda x: "${:,.0f}".format(x))
+
+            st.dataframe(df_phase, use_container_width=True)
     # # Iterate through each phase
     # for phase in final_plan.get("phases", []):
     #     with st.expander(f"{phase.get('phase_name', 'Unnamed Phase')}"):
@@ -285,41 +320,7 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
     #         )
     #     st.table(pd.DataFrame(subtask_rows))
 #####################################################################
-    st.subheader("📋 Project Plan Overview (by Phase)")
-
-        for phase in phases:
-            phase_name = phase["PhaseName"]
-            with st.expander(f"📌 {phase_name}", expanded=True):
-                rows = []
-
-                # Main phase task
-                rows.append({
-                    "Task": f"{phase_name}",
-                    "Description": phase.get("Description", ""),
-                    "Duration (weeks)": f"{int(round(sub.get('DurationEstimate', 0)))} weeks",
-                    "Estimated Cost ($)": "${:,.0f}".format(phase.get("EstimatedCost", 0)),
-                    "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
-                    "Vendors": ", ".join(phases.get("Vendors", [])),
-                    "Permissions": ", ".join(phases.get("Permissions", [])),
-                })
-
-                # Subtasks (indented with arrow)
-                for sub in phase.get("Subtasks", []):
-                    rows.append({
-                        "Task": f"  ↳ {sub.get('SubtaskName', '')}",
-                        "Description": sub.get("Description", ""),
-                        "Duration (weeks)": f"{int(round(sub.get('DurationEstimate', 0)))} weeks",
-                        "Estimated Cost ($)": sub.get("CostEstimate", 0),
-                        "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
-                        "Vendors": ", ".join(phases.get("Vendors", [])),
-                        "Permissions": ", ".join(phases.get("Permissions", [])),
-                    })
-
-                df_phase = pd.DataFrame(rows)
-                df_phase["Estimated Cost ($)"] = df_phase["Estimated Cost ($)"].apply(lambda x: "${:,.0f}".format(x))
-
-                st.dataframe(df_phase, use_container_width=True)
-
+    
         
 ####################################################################    
     st.subheader("🧱 Resources & Materials")
