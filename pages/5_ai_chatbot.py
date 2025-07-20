@@ -519,6 +519,7 @@ elif project_type == "🛠 Repair & Maintenance":
     # Plan generation
     next_key, _ = get_next_repair_question()
     if next_key is None:
+        st.session_state.collected_info = st.session_state.repair_info.copy()
         if st.button("🛠 Generate Repair Plan"):
             if "collected_info" not in st.session_state:
                 st.session_state.collected_info = {}
@@ -622,7 +623,7 @@ elif project_type == "🛠 Repair & Maintenance":
         st.json(final)
 
         # --- Phases Table ---
-        phases = final.get("ProjectPlan", {}).get("Phases", [])
+        phases = final.get("ConstructionPhases", [])
         for phase in phases:
             with st.expander(f"📌 {phase['PhaseName']}", expanded=True):
                 rows = [{
@@ -648,7 +649,7 @@ elif project_type == "🛠 Repair & Maintenance":
 
         # --- Materials Table ---
         st.subheader("🧱 Resources & Materials")
-        resources = final.get("ProjectPlan", {}).get("ResourcesAndMaterials", [])
+        resources = final.get("ResourcesAndMaterials", [])
         mat_rows = []
         for item in resources:
             mat_rows.append({
