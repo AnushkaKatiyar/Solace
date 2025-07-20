@@ -557,8 +557,8 @@ elif project_type == "🛠 Repair & Maintenance":
     # Render final plan if exists
     if st.session_state.repair_plan:
         # 🧪 DEBUG: Show raw JSON response
-    st.subheader("🧪 Raw Assistant Response")
-    st.json(repair_plan)  # This pretty-prints dict/JSON in Streamlit
+        st.subheader("🧪 Raw Assistant Response")
+        st.json(repair_plan)  # This pretty-prints dict/JSON in Streamlit
         # Clean and parse
         raw_json = st.session_state.repair_plan.strip().removeprefix("```json").removesuffix("```").strip()
         try:
