@@ -576,7 +576,7 @@ elif project_type == "🛠 Repair & Maintenance":
         st.json(final)
 
         # --- Phases Table ---
-        phases = final.get("ConstructionPhases", [])
+        phases = final.get("Phases", [])
         for phase in phases:
             with st.expander(f"📌 {phase['PhaseName']}", expanded=True):
                 rows = [{
@@ -586,7 +586,7 @@ elif project_type == "🛠 Repair & Maintenance":
                     "Duration (weeks)": phase.get("DurationEstimate", 0),
                     "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
                     "Vendors": ", ".join(phase.get("Vendors", [])),
-                    "Permissions": ", ".join(phase.get("Permissions Required", [])),
+                    "Permissions": ", ".join(phase.get("PermissionsRequired", [])),
                 }]
                 for sub in phase.get("Subtasks", []):
                     rows.append({
@@ -602,16 +602,15 @@ elif project_type == "🛠 Repair & Maintenance":
 
         # --- Materials Table ---
         st.subheader("🧱 Resources & Materials")
-        resources = final.get("Resources & Materials", {})
+        resources = final.get("ResourcesAndMaterials", [])
         mat_rows = []
-        for category, items in resources.items():
-            for item in items:
-                mat_rows.append({
-                    "Category": category,
-                    "Item": item.get("Item", ""),
-                    "Quantity Estimate": item.get("QuantityEstimate", "N/A"),
-                    "Estimated Cost": safe_format_cost(item.get("EstimatedCost", 0)),
-                })
+        for item in resources:
+            mat_rows.append({
+                "Category": item.get("Category", ""),
+                "Item": item.get("Item", ""),
+                "Quantity Estimate": item.get("QuantityEstimate", "N/A"),
+                "Estimated Cost": safe_format_cost(item.get("EstimatedCost", 0)),
+            })
         st.dataframe(pd.DataFrame(mat_rows))
 
         # --- Summary Chart ---
