@@ -140,29 +140,32 @@ if project_type == "🏗 New Construction":
             summary_prompt = f"""
     Using the collected info, generate a detailed construction plan in JSON format with phases, subtasks, vendors, permissions, materials, and labor.
 
-    Output should be a list of 5-10 phases, depending on the user inputs. Each phase must include:
-    - Phase: (string) e.g. "I. Scope",
-    - Description: (string),a short description,
-    - Subphases/subtaskes: 5-10 sub tasks within the phases
-    - Subphase Breakdown: (list of phases and subtasks(5-10 phases and 5-10 subtasks) from above as dicts). Each dict must have:
-    - Name: (string)
-    - Description(string)
-    - Cost (USD): (number)
-    - Labor Category
-    - Vendor: (list of strings),1–2 **actual NYC-based vendors or well-known relevant companies** (avoid placeholders like 'VendorX', 'VendorA'),
-    - Permission if needed: (list of strings),required NYC government permissions (e.g., SCA, DoE, FDNY),
-    - Duration (weeks): (number)
-    - Resources & Material-Raw materials used in construction
-    - Item-should have the name and describe for which phases and subtask it is needed
-    - Quantity-in correct units e.g-metric tonne, feet etc
-    - Cost (USD): (number)
-    
+    Output should be a list of 5-10 phases based on user inputs. Each phase must include:
+    - PhaseName: (string) e.g. "I. Scope"
+    - Description: (string), a short description
+    - EstimatedCost: (number, USD)
+    - DurationEstimate: (number, weeks)
+    - Subtasks: list of 5-10 subtasks within the phase. Each subtask must include:
+    - SubtaskName: (string)
+    - Description: (string)
+    - CostEstimate: (number, USD)
+    - DurationEstimate: (number, weeks)
+    - LaborCategories: list of strings
+    - Vendors: list of 1–2 actual NYC-based vendors or well-known relevant companies (no placeholders)
+    - Permissions: list of required NYC government permissions (e.g., SCA, DOE, FDNY)
+
+    Include a ResourcesAndMaterials section listing raw materials used, where each entry includes:
+    - Category: (string)
+    - Item: (string)
+    - QuantityEstimate: (string with units, e.g., "5 metric tonnes", "200 feet")
+    - EstimatedCost: (number, USD)
 
     Collected info:
     {json.dumps(st.session_state.collected_info, indent=2)}
 
-    Only output JSON with this structure:
-    {{ 
+    Output only JSON matching this exact structure (no extra text or markdown):
+
+    {{
     "ConstructionPhases": [
         {{
         "PhaseName": "string",
@@ -175,27 +178,25 @@ if project_type == "🏗 New Construction":
             "Description": "string",
             "CostEstimate": number,
             "DurationEstimate": number,
-            "LaborCategories": [],
-            "Vendors": [],
-            "Permissions": []
+            "LaborCategories": ["string"],
+            "Vendors": ["string"],
+            "Permissions": ["string"]
             }}
         ],
-        "LaborCategories": [],
-        "Vendors": [],
-        "Permissions Required": []
+        "LaborCategories": ["string"],
+        "Vendors": ["string"],
+        "Permissions Required": ["string"]
         }}
     ],
-    "Resources & Materials": {{
-        "CategoryName": [
+    "ResourcesAndMaterials": [
         {{
-            "Item": "string",
-            "QuantityEstimate": string,
-            "EstimatedCost": number
+        "Category": "string",
+        "Item": "string",
+        "QuantityEstimate": "string",
+        "EstimatedCost": number
         }}
-        ]
+    ]
     }}
-    }}
-    No extra explanation.
     """
             messages = [
                 SystemMessage(content="You summarize the project info and generate the final JSON plan."),
