@@ -553,9 +553,21 @@ elif project_type == "🛠 Repair & Maintenance":
             ]
             response = client.chat.complete(model="mistral-medium", messages=messages)
             st.session_state.repair_plan = response.choices[0].message.content.strip()
-            # 🧪 DEBUG: Show raw JSON response
-            st.subheader("🧪 Raw Assistant Response")
-            st.json(repair_plan)  # This pretty-prints dict/JSON in Streamlit
+            # Try parsing the JSON string
+            try:
+                repair_plan_json = json.loads(response_str)
+                st.session_state.repair_plan = repair_plan_json
+            except json.JSONDecodeError:
+                st.error("❌ Assistant returned invalid JSON. Showing raw output instead:")
+                st.code(response_str)
+                repair_plan_json = None
+
+            # 🧪 DEBUG: Show parsed JSON (if successful)
+            if repair_plan_json:
+                st.subheader("🧪 Raw Assistant Response")
+                st.json(repair_plan_json)
+
+         
 
     # Render final plan if exists
     if st.session_state.repair_plan:
