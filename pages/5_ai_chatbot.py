@@ -410,6 +410,211 @@ if project_type == "🏗 New Construction":
 elif project_type == "🚧 Upgrades":
     st.subheader("Upgrade Planning")
     st.info("🚧 Upgrade planning assistant coming soon!")
+    def animated_typing(message, delay=0.03):
+        placeholder = st.empty()
+        full_text = ""
+        for char in message:
+            full_text += char
+            placeholder.markdown(f"**{full_text}**")
+            time.sleep(delay)
+
+    if "has_seen_upgrade_welcome" not in st.session_state:
+        st.session_state.has_seen_upgrade_welcome = True
+        with st.chat_message("assistant"):
+            animated_typing("Hey there 👋\n\nLet's plan your school upgrade project! Here are some examples to inspire you:")
+
+            st.markdown("""
+            **Examples:**
+            - Smart Board or AV System Installations  
+            - HVAC System Upgrade  
+            - Bathroom Modernization  
+            - Security System Upgrades  
+            - Solar Panel Installation  
+            - LED Lighting Retrofit  
+            - Accessibility Improvements  
+            - IT Infrastructure Overhaul  
+            - Library Renovation  
+            - Playground Equipment Upgrade  
+            - Kitchen/Cafeteria Modernization  
+            - Fire Suppression System Upgrades  
+            """)
+
+    # Define upgrade-specific questions
+    upgrade_questions = [
+        ("UpgradeDescription", "What kind of upgrade are you planning?"),
+        ("TargetArea", "Which part of the school is being upgraded (e.g., library, HVAC, playground)?"),
+        ("ImprovementGoal", "What is the intended benefit or goal of this upgrade (e.g., energy savings, accessibility)?"),
+        ("OccupiedStatus", "Is the building currently in use during the upgrade?"),
+        ("InfrastructureLimitations", "Are there infrastructure or power limitations to consider?"),
+        ("Timeline", "What is your desired completion timeline (in weeks)?"),
+    ]
+
+    # Init state
+    if "upgrade_info" not in st.session_state:
+        st.session_state.upgrade_info = {key: None for key, _ in upgrade_questions}
+    if "upgrade_chat" not in st.session_state:
+        st.session_state.upgrade_chat = []
+    if "upgrade_last_q" not in st.session_state:
+        st.session_state.upgrade_last_q = None
+    if "upgrade_plan" not in st.session_state:
+        st.session_state.upgrade_plan = None
+
+    def get_next_upgrade_question():
+        for key, q in upgrade_questions:
+            if st.session_state.upgrade_info[key] in [None, ""]:
+                return key, q
+        return None, None
+
+    upgrade_input = st.chat_input("Describe your upgrade project...")
+
+    if upgrade_input:
+        if st.session_state.upgrade_last_q:
+            st.session_state.upgrade_info[st.session_state.upgrade_last_q] = upgrade_input
+        st.session_state.upgrade_chat.append(UserMessage(content=upgrade_input))
+        next_key, next_q = get_next_upgrade_question()
+        st.session_state.upgrade_last_q = next_key
+
+        if next_q:
+            prompt = f"""
+            You are an expert NYC school **upgrade** planner.
+
+            Collected so far:
+            {json.dumps(st.session_state.upgrade_info, indent=2)}
+
+            Ask only the next missing question:
+            {next_q}
+            """
+        else:
+            prompt = f"""
+            All necessary upgrade info collected:
+            {json.dumps(st.session_state.upgrade_info, indent=2)}
+
+            Inform the user and ask if you'd like to generate a detailed upgrade plan with phases, subtasks, vendors, costs, labor, and materials.
+            """
+
+        messages = [SystemMessage(content=prompt)] + st.session_state.upgrade_chat
+        reply = client.chat.complete(model="mistral-medium", messages=messages)
+        reply_text = reply.choices[0].message.content.strip()
+        st.session_state.upgrade_chat.append(SystemMessage(content=reply_text))
+
+    for msg in st.session_state.upgrade_chat:
+        role = "user" if isinstance(msg, UserMessage) else "assistant"
+        with st.chat_message(role):
+            st.markdown(msg.content)
+
+    next_key, _ = get_next_upgrade_question()
+    if next_key is None:
+        st.session_state.collected_info = st.session_state.upgrade_info.copy()
+        if st.button("⚙️ Generate Upgrade Plan"):
+            upgrade_summary_prompt = f"""
+            Using the collected info, generate a detailed upgrade construction plan in **valid JSON format only**. Follow the structure exactly.
+
+            Your JSON must include:
+            1. "ConstructionPhases": array of 5–10 phases with:
+                - "PhaseName", "Description", "EstimatedCost", "DurationEstimate"
+                - "Subtasks": each with SubtaskName, Description, CostEstimate, DurationEstimate, LaborCategories, Vendors, Permissions
+                - "LaborCategories", "Vendors", "Permissions Required"
+
+            2. "ResourcesAndMaterials": array of materials with:
+                - "Category", "Item", "QuantityEstimate", "EstimatedCost"
+
+            ❗ JSON ONLY. No explanation or markdown.
+
+            User Info:
+            {json.dumps(st.session_state.collected_info, indent=2)}
+
+            Respond with just the JSON:
+            {{
+            "ConstructionPhases": [...],
+            "ResourcesAndMaterials": [...]
+            }}
+            """
+            messages = [
+                SystemMessage(content="You generate upgrade plans in JSON."),
+                UserMessage(content=upgrade_summary_prompt),
+            ]
+            response = client.chat.complete(model="mistral-medium", messages=messages)
+            response_str = response.choices[0].message.content.strip()
+            st.session_state.upgrade_plan_raw = response_str
+            st.session_state.upgrade_plan = response_str
+            st.session_state.upgrade_plan_parsed = None
+
+    if st.session_state.upgrade_plan:
+        if "upgrade_plan_parsed" not in st.session_state:
+            st.session_state.upgrade_plan_parsed = None
+
+        if st.session_state.upgrade_plan_raw and st.session_state.upgrade_plan_parsed is None:
+            raw_json_str = st.session_state.upgrade_plan_raw.strip().removeprefix("```json").removesuffix("```").strip()
+            try:
+                parsed = json.loads(raw_json_str)
+                st.session_state.upgrade_plan_parsed = parsed
+            except Exception as e:
+                st.error("Invalid JSON: " + str(e))
+                st.stop()
+
+        if st.session_state.upgrade_plan_parsed:
+            final = st.session_state.upgrade_plan_parsed
+        else:
+            st.info("No valid upgrade plan found.")
+
+        st.subheader("📈 Final Upgrade Plan")
+
+        def safe_format_cost(cost):
+            try:
+                return f"${float(cost):,.2f}"
+            except:
+                return "N/A"
+
+        phases = final.get("ConstructionPhases", [])
+        for phase in phases:
+            with st.expander(f"📌 {phase['PhaseName']}", expanded=True):
+                rows = [{
+                    "Task": phase["PhaseName"],
+                    "Description": phase.get("Description", ""),
+                    "Estimated Cost ($)": safe_format_cost(phase.get("EstimatedCost", 0)),
+                    "Duration (weeks)": phase.get("DurationEstimate", 0),
+                    "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
+                    "Vendors": ", ".join(phase.get("Vendors", [])),
+                    "Permissions": ", ".join(phase.get("Permissions Required", [])),
+                }]
+                for sub in phase.get("Subtasks", []):
+                    rows.append({
+                        "Task": f"  ↳ {sub.get('SubtaskName', '')}",
+                        "Description": sub.get("Description", ""),
+                        "Estimated Cost ($)": safe_format_cost(sub.get("CostEstimate", 0)),
+                        "Duration (weeks)": sub.get("DurationEstimate", 0),
+                        "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
+                        "Vendors": ", ".join(sub.get("Vendors", [])),
+                        "Permissions": ", ".join(sub.get("Permissions", [])),
+                    })
+                st.dataframe(pd.DataFrame(rows), use_container_width=True)
+
+        st.subheader("🧱 Upgrade Resources & Materials")
+        resources = final.get("ResourcesAndMaterials", [])
+        mat_rows = [{
+            "Category": item.get("Category", ""),
+            "Item": item.get("Item", ""),
+            "Quantity Estimate": item.get("QuantityEstimate", ""),
+            "Estimated Cost": safe_format_cost(item.get("EstimatedCost", 0)),
+        } for item in resources]
+        st.dataframe(pd.DataFrame(mat_rows))
+
+        df_chart = pd.DataFrame({
+            "Phase": [p["PhaseName"] for p in phases],
+            "Cost": [p.get("EstimatedCost", 0) for p in phases],
+            "Duration": [p.get("DurationEstimate", 0) for p in phases],
+        })
+
+        st.subheader("💰 Cost by Upgrade Phase")
+        st.plotly_chart(px.pie(df_chart, names="Phase", values="Cost", title="Cost Distribution", hole=0.4), use_container_width=True)
+
+        st.subheader("⏱ Timeline by Phase")
+        fig = px.line(df_chart, x="Phase", y="Duration", markers=True)
+        fig.update_layout(yaxis_title="Weeks", xaxis_tickangle=-45)
+        st.plotly_chart(fig, use_container_width=True)
+
+        st.markdown(f"**Total Estimated Cost:** ${int(df_chart['Cost'].sum()):,}")
+        st.markdown(f"**Total Estimated Duration:** {int(df_chart['Duration'].sum())} weeks")
 ###############################################################
 ###############################################################
 ###############################################################
