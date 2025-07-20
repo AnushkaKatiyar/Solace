@@ -296,9 +296,11 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
                 rows.append({
                     "Task": f"{phase_name}",
                     "Description": phase.get("Description", ""),
-                    "Duration (weeks)": int(round(phase.get("DurationEstimate", 0))),
-                    "Estimated Cost ($)": phase.get("EstimatedCost", 0),
-                    "Labor Categories": ", ".join(phase.get("LaborCategories", []))
+                    "Duration (weeks)": f"{int(round(sub.get('DurationEstimate', 0)))} weeks",
+                    "Estimated Cost ($)": "${:,.0f}".format(phase.get("EstimatedCost", 0)),
+                    "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
+                    "Vendors": ", ".join(phases.get("Vendors", [])),
+                    "Permissions": ", ".join(phases.get("Permissions", [])),
                 })
 
                 # Subtasks (indented with arrow)
@@ -306,9 +308,11 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
                     rows.append({
                         "Task": f"  ↳ {sub.get('SubtaskName', '')}",
                         "Description": sub.get("Description", ""),
-                        "Duration (weeks)": int(round(sub.get("DurationEstimate", 0))),
+                        "Duration (weeks)": f"{int(round(sub.get('DurationEstimate', 0)))} weeks",
                         "Estimated Cost ($)": sub.get("CostEstimate", 0),
-                        "Labor Categories": ", ".join(sub.get("LaborCategories", []))
+                        "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
+                        "Vendors": ", ".join(phases.get("Vendors", [])),
+                        "Permissions": ", ".join(phases.get("Permissions", [])),
                     })
 
                 df_phase = pd.DataFrame(rows)
