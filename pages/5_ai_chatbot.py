@@ -552,15 +552,21 @@ elif project_type == "🛠 Repair & Maintenance":
                 UserMessage(content=repair_summary_prompt),
             ]
             response = client.chat.complete(model="mistral-medium", messages=messages)
-            st.session_state.repair_plan = response.choices[0].message.content.strip()
+            # st.session_state.repair_plan = response.choices[0].message.content.strip()
+            # Extract assistant message content
+            response_str = response.choices[0].message.content.strip()
+
+            # Save the raw response for reference
+            st.session_state.repair_plan_raw = response_str
+
             # Try parsing the JSON string
             try:
                 repair_plan_json = json.loads(response_str)
                 st.session_state.repair_plan = repair_plan_json
 
-                # Show raw JSON for debugging
-                st.subheader("🧪 Raw Assistant Response")
-                st.json(repair_plan_json)  # This prints the parsed JSON nicely
+                # Show parsed JSON
+                st.subheader("🧪 Parsed Assistant JSON")
+                st.json(repair_plan_json)
 
             except json.JSONDecodeError:
                 st.error("❌ Assistant returned invalid JSON. Showing raw response.")
