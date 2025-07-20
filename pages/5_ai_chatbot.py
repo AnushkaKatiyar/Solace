@@ -634,7 +634,7 @@ elif project_type == "🚧 Upgrades":
             st.markdown(f"**Total Estimated Duration:** {int(valid_durations.sum())} weeks")
         else:
             st.warning("⚠️ No valid duration data found.")
-        st.markdown(f"**Total Estimated Duration:** {int(df_chart['DurationWeeks'].sum())} weeks")
+
 
        
 ###############################################################
