@@ -522,7 +522,7 @@ elif project_type == "🛠 Repair & Maintenance":
         if st.button("🛠 Generate Repair Plan"):
             if "collected_info" not in st.session_state:
                 st.session_state.collected_info = {}
-                repair_summary_prompt = f"""
+            repair_summary_prompt = f"""
         Using the collected info, generate a detailed construction plan in **valid JSON format only**. Follow the exact structure described below.
 
         Your JSON must include:
