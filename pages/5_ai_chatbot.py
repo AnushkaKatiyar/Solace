@@ -521,71 +521,75 @@ elif project_type == "🛠 Repair & Maintenance":
     if next_key is None:
         if st.button("🛠 Generate Repair Plan"):
             repair_summary_prompt = f"""
-            Using the collected info, generate a detailed construction plan in JSON format with phases, subtasks, vendors, permissions, materials, and labor.
+        Using the collected info, generate a detailed construction plan in **valid JSON format only**. Follow the exact structure described below.
 
-            Output should be a list of 5-10 phases based on user inputs. Each phase must include:
-            - PhaseName: (string) e.g. "I. Scope"
-            - Description: (string), a short description
-            - EstimatedCost: (number, USD)
-            - DurationEstimate: (number, weeks)
-            - Subtasks: list of 5-10 subtasks within the phase. Each subtask must include:
-            - SubtaskName: (string)
-            - Description: (string)
-            - CostEstimate: (number, USD)
-            - DurationEstimate: (number, weeks)
-            - LaborCategories: list of strings
-            - Vendors: list of 1–2 actual NYC-based vendors or well-known relevant companies (no placeholders)
-            - Permissions: list of required NYC government permissions (e.g., SCA, DOE, FDNY)
+        Your JSON must include:
+        1. "ConstructionPhases" — a JSON array (not a dict) of 5–10 phases.
+        2. Each phase should have:
+        - "PhaseName": string (e.g., "I. Scope")
+        - "Description": string
+        - "EstimatedCost": number (USD)
+        - "DurationEstimate": number (weeks)
+        - "Subtasks": a JSON array of 5–10 objects. Each subtask must include:
+            - "SubtaskName": string
+            - "Description": string
+            - "CostEstimate": number (USD)
+            - "DurationEstimate": number (weeks)
+            - "LaborCategories": JSON array of strings
+            - "Vendors": JSON array of 1–2 real NYC-based vendors (not placeholders)
+            - "Permissions": JSON array of NYC government permissions (e.g., SCA, DOE, FDNY)
+        - "LaborCategories": JSON array of strings
+        - "Vendors": JSON array of strings
+        - "Permissions Required": JSON array of strings
 
-            Include a ResourcesAndMaterials section listing raw materials used, where each entry includes:
-            - Category: (string)
-            - Item: (string)
-            - QuantityEstimate: (string with units, e.g., "5 metric tonnes", "200 feet")
-            - EstimatedCost: (number, USD)
+        3. "ResourcesAndMaterials" — a JSON array of raw materials. Each item must include:
+        - "Category": string
+        - "Item": string
+        - "QuantityEstimate": string (include units, e.g., "5 metric tonnes")
+        - "EstimatedCost": number (USD)
 
-           
+        ❗ JSON Formatting Rules:
+        - DO NOT use numeric keys like "0": {{...}}, "1": {{...}}. Use JSON arrays (square brackets []) instead.
+        - DO NOT include any text, explanation, or markdown outside the JSON.
+        - The output must be valid, parseable JSON and match this structure **exactly**.
 
-            Output only JSON matching this exact structure (no extra text or markdown):
+        Here is the user-provided context:
+        {json.dumps(st.session_state.collected_info, indent=2)}
 
+        Respond with only the JSON:
+        {{
+        "ConstructionPhases": [
             {{
-            "ConstructionPhases": [
+            "PhaseName": "string",
+            "Description": "string",
+            "EstimatedCost": number,
+            "DurationEstimate": number,
+            "Subtasks": [
                 {{
-                "PhaseName": "string",
+                "SubtaskName": "string",
                 "Description": "string",
-                "EstimatedCost": number,
+                "CostEstimate": number,
                 "DurationEstimate": number,
-                "Subtasks": [
-                    {{
-                    "SubtaskName": "string",
-                    "Description": "string",
-                    "CostEstimate": number,
-                    "DurationEstimate": number,
-                    "LaborCategories": ["string"],
-                    "Vendors": ["string"],
-                    "Permissions": ["string"]
-                    }}
-                ],
                 "LaborCategories": ["string"],
                 "Vendors": ["string"],
-                "Permissions Required": ["string"]
+                "Permissions": ["string"]
                 }}
             ],
-            "ResourcesAndMaterials": [
-                {{
-                "Category": "string",
-                "Item": "string",
-                "QuantityEstimate": "string",
-                "EstimatedCost": number
-                }}
-            ]
+            "LaborCategories": ["string"],
+            "Vendors": ["string"],
+            "Permissions Required": ["string"]
             }}
-            IMPORTANT: Output valid JSON only.
-            - Use JSON arrays for lists (i.e., square brackets `[]` enclosing comma-separated objects).
-            - Do NOT use numeric keys like "0": {...} or "1": {...} inside arrays.
-            - Arrays must be proper JSON arrays without explicit keys.
-            - Each list (like "Phases", "Subtasks", "Resources & Materials") must be formatted as JSON arrays.
-            - Do not include any extra text or explanation outside the JSON.
-                        """
+        ],
+        "ResourcesAndMaterials": [
+            {{
+            "Category": "string",
+            "Item": "string",
+            "QuantityEstimate": "string",
+            "EstimatedCost": number
+            }}
+        ]
+        }}
+        """
 
             messages = [
                 SystemMessage(content="You summarize the project info and generate the final JSON plan."),
