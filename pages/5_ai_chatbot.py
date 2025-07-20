@@ -286,12 +286,18 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
     st.subheader("🧱 Resources & Materials")
     resources = plan.get("Resources & Materials", {})
     if resources:
-        # Corrected this part to handle list of dicts per category
-        materials_list = []
+        # Flatten data into rows with Category, Item, Quantity, Cost
+        materials_rows = []
         for category, items in resources.items():
-            items_str = ", ".join([item.get("Item", "") for item in items])
-            materials_list.append({"Category": category, "Items": items_str})
-        materials_df = pd.DataFrame(materials_list)
+            for item in items:
+                materials_rows.append({
+                    "Category": category,
+                    "Item": item.get("Item", ""),
+                    "Quantity Estimate": item.get("QuantityEstimate", "N/A"),
+                    "Estimated Cost": item.get("EstimatedCost", "N/A")
+                })
+
+        materials_df = pd.DataFrame(materials_rows)
         st.table(materials_df)
     else:
         st.info("No resources or materials specified.")
