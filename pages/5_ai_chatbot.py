@@ -557,26 +557,17 @@ elif project_type == "🛠 Repair & Maintenance":
             response_str = response.choices[0].message.content.strip()
 
             # Save the raw response for reference
-            st.session_state.repair_plan_raw = response_str
+            st.session_state.repair_plan_raw = response_str           
 
-            # Try parsing the JSON string
-            try:
-                repair_plan_json = json.loads(response_str)
-                st.session_state.repair_plan = repair_plan_json
-
-                # Show parsed JSON
-                st.subheader("🧪 Parsed Assistant JSON")
-                st.json(repair_plan_json)
-
-            except json.JSONDecodeError:
-                st.error("❌ Assistant returned invalid JSON. Showing raw response.")
-                st.text(response_str)
+          
          
 
     # Render final plan if exists
     if st.session_state.repair_plan:
         # Clean and parse
-        raw_json = st.session_state.repair_plan.strip().removeprefix("```json").removesuffix("```").strip()
+        raw_json_str = st.session_state.repair_plan_raw.strip().removeprefix("```json").removesuffix("```").strip()
+        raw_json = json.loads(raw_json_str)
+
         try:
             parsed = json.loads(raw_json)
             st.session_state.repair_plan = parsed
