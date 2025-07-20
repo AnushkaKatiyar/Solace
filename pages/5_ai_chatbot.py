@@ -543,8 +543,7 @@ elif project_type == "🛠 Repair & Maintenance":
             - QuantityEstimate: (string with units, e.g., "5 metric tonnes", "200 feet")
             - EstimatedCost: (number, USD)
 
-            Collected info:
-            {json.dumps(st.session_state.collected_info, indent=2)}
+           
 
             Output only JSON matching this exact structure (no extra text or markdown):
 
