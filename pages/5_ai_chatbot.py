@@ -11,10 +11,9 @@ import time
 mistral_api_key = st.secrets["mistral_api_key"]
 client = Mistral(api_key=mistral_api_key)
 
-
 st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
 st.title("🛠️ AI Assistant for NYC School Construction")
-
+st.markdown("### 🔧 What type of project are you planning?")
 # Project type selector
 project_type = st.radio(
     "Select Project Type",
