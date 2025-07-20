@@ -315,12 +315,24 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
     #     st.markdown(", ".join(sorted(all_labors)))
     st.subheader("👷 Labor Categories")
 
-    sorted_labors = sorted(all_labors)
-    cols = st.columns(3)  # You can change 3 to 4 if you want more compact columns
+    # Collect all unique labor categories from phases and subtasks
+    all_labors = set()
+    for phase in phases:
+        all_labors.update(phase.get("LaborCategories", []))
+        for sub in phase.get("Subtasks", []):
+            all_labors.update(sub.get("LaborCategories", []))
 
-    for i, labor in enumerate(sorted_labors):
-        with cols[i % 3]:
-            st.markdown(f"- {labor}")
+    # Only display if there are labor categories
+    if all_labors:
+        st.subheader("👷 Labor Categories")
+        sorted_labors = sorted(all_labors)
+
+        cols = st.columns(3)  # Split into 3 columns
+        for i, labor in enumerate(sorted_labors):
+            with cols[i % 3]:
+                st.markdown(f"- {labor}")
+    else:
+        st.info("No labor categories found in this plan.")
  ####################################################################
     # Summary charts
     total_cost = 0
