@@ -283,6 +283,38 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
                 }
             )
         st.table(pd.DataFrame(subtask_rows))
+#####################################################################
+
+        st.subheader("📋 Project Plan Overview (by Phase)")
+
+        for phase in phases:
+            phase_name = phase["PhaseName"]
+            with st.expander(f"📌 {phase_name}"):
+                rows = []
+
+                # Main phase task
+                rows.append({
+                    "Task": f"{phase_name}",
+                    "Description": phase.get("Description", ""),
+                    "Duration (weeks)": int(round(phase.get("DurationEstimate", 0))),
+                    "Estimated Cost ($)": phase.get("EstimatedCost", 0),
+                    "Labor Categories": ", ".join(phase.get("LaborCategories", []))
+                })
+
+                # Subtasks (indented with arrow)
+                for sub in phase.get("Subtasks", []):
+                    rows.append({
+                        "Task": f"  ↳ {sub.get('SubtaskName', '')}",
+                        "Description": sub.get("Description", ""),
+                        "Duration (weeks)": int(round(sub.get("DurationEstimate", 0))),
+                        "Estimated Cost ($)": sub.get("CostEstimate", 0),
+                        "Labor Categories": ", ".join(sub.get("LaborCategories", []))
+                    })
+
+                df_phase = pd.DataFrame(rows)
+                df_phase["Estimated Cost ($)"] = df_phase["Estimated Cost ($)"].apply(lambda x: "${:,.0f}".format(x))
+
+                st.dataframe(df_phase, use_container_width=True)
 ####################################################################    
     st.subheader("🧱 Resources & Materials")
     resources = plan.get("Resources & Materials", {})
@@ -303,18 +335,6 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
     else:
         st.info("No resources or materials specified.")
 ####################################################################
-    # # Display unique labor categories used across all phases and subtasks
-    # all_labors = set()
-    # for phase in phases:
-    #     all_labors.update(phase.get("LaborCategories", []))
-    #     for sub in phase.get("Subtasks", []):
-    #         all_labors.update(sub.get("LaborCategories", []))
-
-    # if all_labors:
-    #     st.subheader("👷 Labor Categories")
-    #     st.markdown(", ".join(sorted(all_labors)))
-    # st.subheader("👷 Labor Categories")
-
     # Collect all unique labor categories from phases and subtasks
     all_labors = set()
     for phase in phases:
