@@ -163,7 +163,7 @@ Only output JSON with this structure:
     "CategoryName": [
       {{
         "Item": "string",
-        "QuantityEstimate": number,
+        "QuantityEstimate": string,
         "EstimatedCost": number
       }}
     ]
