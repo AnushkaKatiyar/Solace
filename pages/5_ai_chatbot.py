@@ -373,11 +373,11 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
 
     for phase in phases:
         all_labors.update(phase.get("LaborCategories", []))
-        all_vendors.update(phase.get("VendorTypes", []))
+        all_vendors.update(phase.get("Vendors", []))
         
         for sub in phase.get("Subtasks", []):
             all_labors.update(sub.get("LaborCategories", []))
-            all_vendors.update(sub.get("VendorTypes", []))
+            all_vendors.update(sub.get("Vendors", []))
 
     if all_labors or all_vendors:
         st.subheader("🧰 Project Resources")
