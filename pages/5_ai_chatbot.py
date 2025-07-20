@@ -348,24 +348,59 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
     else:
         st.info("No resources or materials specified.")
 ####################################################################
-    # Collect all unique labor categories from phases and subtasks
+    # # Collect all unique labor categories from phases and subtasks
+    # all_labors = set()
+    # for phase in phases:
+    #     all_labors.update(phase.get("LaborCategories", []))
+    #     for sub in phase.get("Subtasks", []):
+    #         all_labors.update(sub.get("LaborCategories", []))
+
+    # # Only display if there are labor categories
+    # if all_labors:
+    #     st.subheader("👷 Labor Categories")
+    #     sorted_labors = sorted(all_labors)
+
+    #     cols = st.columns(4)  # Split into 3 columns
+    #     for i, labor in enumerate(sorted_labors):
+    #         with cols[i % 4]:
+    #             st.markdown(f"- {labor}")
+    # else:
+    #     st.info("No labor categories found in this plan.")
+
+    # Collect unique labor categories and vendor types separately
     all_labors = set()
+    all_vendors = set()
+
     for phase in phases:
         all_labors.update(phase.get("LaborCategories", []))
+        all_vendors.update(phase.get("VendorTypes", []))
+        
         for sub in phase.get("Subtasks", []):
             all_labors.update(sub.get("LaborCategories", []))
+            all_vendors.update(sub.get("VendorTypes", []))
 
-    # Only display if there are labor categories
-    if all_labors:
-        st.subheader("👷 Labor Categories")
-        sorted_labors = sorted(all_labors)
+    if all_labors or all_vendors:
+        st.subheader("🧰 Project Resources")
 
-        cols = st.columns(4)  # Split into 3 columns
-        for i, labor in enumerate(sorted_labors):
-            with cols[i % 4]:
-                st.markdown(f"- {labor}")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("### 👷 Labor Categories")
+            if all_labors:
+                for labor in sorted(all_labors):
+                    st.markdown(f"- {labor}")
+            else:
+                st.write("No labor categories found.")
+
+        with col2:
+            st.markdown("### 🏢 Vendor Types")
+            if all_vendors:
+                for vendor in sorted(all_vendors):
+                    st.markdown(f"- {vendor}")
+            else:
+                st.write("No vendor types found.")
     else:
-        st.info("No labor categories found in this plan.")
+        st.info("No labor or vendor types found in this plan.")    
  ####################################################################
     # Summary charts
     total_cost = 0
