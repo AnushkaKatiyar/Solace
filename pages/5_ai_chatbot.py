@@ -632,7 +632,11 @@ elif project_type == "🛠 Repair & Maintenance":
             st.info("No valid repair plan found.")
         st.subheader("🧰 Final Repair Plan")
         st.json(final)
-
+        def safe_format_cost(cost):
+        try:
+            return f"${float(cost):,.2f}"
+        except (ValueError, TypeError):
+            return "N/A"
         # --- Phases Table ---
         phases = final.get("ConstructionPhases", [])
         for phase in phases:
