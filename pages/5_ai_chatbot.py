@@ -256,37 +256,37 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
     #         for i, task in enumerate(subtasks, start=1):
     #             st.markdown(f"- {i}. {task}")
 #############################################################################################    
-    # for phase in phases:
-    #     st.markdown(f"### 🏗️ {phase['PhaseName']}")
-    #     st.markdown(f"**Description:** {phase.get('Description', '')}")
-    #     phase_data = {
-    #         "Phase": phase["PhaseName"],
-    #         "Description": phase.get("Description", ""),
-    #         "Duration (weeks)": f"{int(round(phase.get('DurationEstimate', 0)))} weeks",
-    #         "Cost ($)": "${:,.0f}".format(phase.get("EstimatedCost", 0)),
-    #         "Vendors": ", ".join(phase.get("Vendors", [])),
-    #         "Permissions": ", ".join(phase.get("Permissions Required", [])),
-    #     }
-    #     st.table(pd.DataFrame([phase_data]))
-    #     # Subtasks Table
-    #     st.markdown("#### 🔧 Subtasks")
-    #     subtask_rows = []
-    #     for sub in phase.get("Subtasks", []):
-    #         subtask_rows.append(
-    #             {
-    #                 "Subtask": sub.get("SubtaskName", ""),
-    #                 "Description": sub.get("Description", ""),
-    #                 "Duration (weeks)": f"{int(round(sub.get('DurationEstimate', 0)))} weeks",
-    #                 "Cost ($)": "${:,.0f}".format(sub.get("CostEstimate", 0)),
-    #                 "Labor": ", ".join(sub.get("LaborCategories", [])),
-    #                 "Vendors": ", ".join(sub.get("Vendors", [])),
-    #                 "Permissions": ", ".join(sub.get("Permissions", [])),
-    #             }
-    #         )
-    #     st.table(pd.DataFrame(subtask_rows))
+    for phase in phases:
+        st.markdown(f"### 🏗️ {phase['PhaseName']}")
+        st.markdown(f"**Description:** {phase.get('Description', '')}")
+        phase_data = {
+            "Phase": phase["PhaseName"],
+            "Description": phase.get("Description", ""),
+            "Duration (weeks)": f"{int(round(phase.get('DurationEstimate', 0)))} weeks",
+            "Cost ($)": "${:,.0f}".format(phase.get("EstimatedCost", 0)),
+            "Vendors": ", ".join(phase.get("Vendors", [])),
+            "Permissions": ", ".join(phase.get("Permissions Required", [])),
+        }
+        st.table(pd.DataFrame([phase_data]))
+        # Subtasks Table
+        st.markdown("#### 🔧 Subtasks")
+        subtask_rows = []
+        for sub in phase.get("Subtasks", []):
+            subtask_rows.append(
+                {
+                    "Subtask": sub.get("SubtaskName", ""),
+                    "Description": sub.get("Description", ""),
+                    "Duration (weeks)": f"{int(round(sub.get('DurationEstimate', 0)))} weeks",
+                    "Cost ($)": "${:,.0f}".format(sub.get("CostEstimate", 0)),
+                    "Labor": ", ".join(sub.get("LaborCategories", [])),
+                    "Vendors": ", ".join(sub.get("Vendors", [])),
+                    "Permissions": ", ".join(sub.get("Permissions", [])),
+                }
+            )
+        st.table(pd.DataFrame(subtask_rows))
 #####################################################################
 
-     st.subheader("📋 Project Plan Overview (by Phase)")
+        st.subheader("📋 Project Plan Overview (by Phase)")
 
         for phase in phases:
             phase_name = phase["PhaseName"]
@@ -315,7 +315,7 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
                 df_phase = pd.DataFrame(rows)
                 df_phase["Estimated Cost ($)"] = df_phase["Estimated Cost ($)"].apply(lambda x: "${:,.0f}".format(x))
 
-                st.dataframe(df_phase, use_container_width=True)   
+                st.dataframe(df_phase, use_container_width=True)
 ####################################################################    
     st.subheader("🧱 Resources & Materials")
     resources = plan.get("Resources & Materials", {})
