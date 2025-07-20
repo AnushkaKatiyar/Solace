@@ -283,6 +283,7 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
                 }
             )
         st.table(pd.DataFrame(subtask_rows))
+####################################################################    
     st.subheader("🧱 Resources & Materials")
     resources = plan.get("Resources & Materials", {})
     if resources:
@@ -301,17 +302,26 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
         st.table(materials_df)
     else:
         st.info("No resources or materials specified.")
-    # Display unique labor categories used across all phases and subtasks
-    all_labors = set()
-    for phase in phases:
-        all_labors.update(phase.get("LaborCategories", []))
-        for sub in phase.get("Subtasks", []):
-            all_labors.update(sub.get("LaborCategories", []))
+####################################################################
+    # # Display unique labor categories used across all phases and subtasks
+    # all_labors = set()
+    # for phase in phases:
+    #     all_labors.update(phase.get("LaborCategories", []))
+    #     for sub in phase.get("Subtasks", []):
+    #         all_labors.update(sub.get("LaborCategories", []))
 
-    if all_labors:
-        st.subheader("👷 Labor Categories")
-        st.markdown(", ".join(sorted(all_labors)))
+    # if all_labors:
+    #     st.subheader("👷 Labor Categories")
+    #     st.markdown(", ".join(sorted(all_labors)))
+    st.subheader("👷 Labor Categories")
 
+    sorted_labors = sorted(all_labors)
+    cols = st.columns(3)  # You can change 3 to 4 if you want more compact columns
+
+    for i, labor in enumerate(sorted_labors):
+        with cols[i % 3]:
+            st.markdown(f"- {labor}")
+ ####################################################################
     # Summary charts
     total_cost = 0
     total_duration = 0
