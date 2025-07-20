@@ -559,14 +559,11 @@ elif project_type == "🛠 Repair & Maintenance":
             # Save the raw response for reference
             st.session_state.repair_plan_raw = response_str           
 
-          
-         
-
     # Render final plan if exists
     if st.session_state.repair_plan:
         # Clean and parse
         raw_json_str = st.session_state.repair_plan_raw.strip().removeprefix("```json").removesuffix("```").strip()
-        raw_json = json.loads(raw_json_str)
+      
 
         try:
             parsed = json.loads(raw_json)
