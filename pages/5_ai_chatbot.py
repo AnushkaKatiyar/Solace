@@ -614,7 +614,13 @@ elif project_type == "🚧 Upgrades":
         st.plotly_chart(fig, use_container_width=True)
 
         st.markdown(f"**Total Estimated Cost:** ${int(df_chart['Cost'].sum()):,}")
-        st.markdown(f"**Total Estimated Duration:** {int(df_chart['Duration'].sum())} weeks")
+        if "Duration" in df_chart.columns and pd.api.types.is_numeric_dtype(df_chart["Duration"]):
+            total_duration = int(df_chart["Duration"].sum())
+            st.markdown(f"**Total Estimated Duration:** {total_duration} weeks")
+        else:
+            st.warning("⚠️ No valid duration data found.")
+
+        # st.markdown(f"**Total Estimated Duration:** {int(df_chart['Duration'].sum())} weeks")
 ###############################################################
 ###############################################################
 ###############################################################
