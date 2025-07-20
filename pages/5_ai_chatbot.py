@@ -557,16 +557,14 @@ elif project_type == "🛠 Repair & Maintenance":
             try:
                 repair_plan_json = json.loads(response_str)
                 st.session_state.repair_plan = repair_plan_json
-            except json.JSONDecodeError:
-                st.error("❌ Assistant returned invalid JSON. Showing raw output instead:")
-                st.code(response_str)
-                repair_plan_json = None
 
-            # 🧪 DEBUG: Show parsed JSON (if successful)
-            if repair_plan_json:
+                # Show raw JSON for debugging
                 st.subheader("🧪 Raw Assistant Response")
-                st.json(repair_plan_json)
+                st.json(repair_plan_json)  # This prints the parsed JSON nicely
 
+            except json.JSONDecodeError:
+                st.error("❌ Assistant returned invalid JSON. Showing raw response.")
+                st.text(response_str)
          
 
     # Render final plan if exists
