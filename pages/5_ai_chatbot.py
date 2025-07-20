@@ -439,38 +439,73 @@ if "final_plan" in st.session_state and st.session_state.final_plan is not None:
     # st.markdown(
     #     f"**Total Estimated Duration:** {int(round(total_duration))} weeks (~{int(round(total_duration / 4))} months)"
     # )
+##################################################
+    import plotly.express as px
+    import pandas as pd
+
+    # Make sure you have your phases data
+    if "final_plan" in st.session_state and st.session_state.final_plan:
+        plan = st.session_state.final_plan
+        phases = plan.get("ConstructionPhases", [])
+
+        # Prepare data lists
+        phase_labels = []
+        phase_costs = []
+        phase_durations = []
+        total_cost = 0
+        total_duration = 0
+
+        for phase in phases:
+            phase_labels.append(phase["PhaseName"])
+            cost = phase.get("EstimatedCost", 0)
+            duration = phase.get("DurationEstimate", 0)
+            total_cost += cost
+            total_duration += duration
+            phase_costs.append(cost)
+            phase_durations.append(duration)
+
+        df = pd.DataFrame({
+            "Phase": phase_labels,
+            "Cost": phase_costs,
+            "Duration": phase_durations,
+        })
+
+        # Cost Pie Chart
+        st.subheader("💰 Cost Distribution")
+        fig_pie = px.pie(
+            df,
+            names="Phase",
+            values="Cost",
+            title="Cost Distribution by Phase",
+            hole=0.4,
+        )
+        fig_pie.update_traces(textposition="inside", textinfo="percent+label")
+        st.plotly_chart(fig_pie, use_container_width=True)
+
+        # Duration Line Chart
+        st.subheader("⏱ Duration by Phase")
+        fig_line = px.line(
+            df,
+            x="Phase",
+            y="Duration",
+            markers=True,
+            title="Duration by Phase",
+        )
+        fig_line.update_layout(
+            xaxis_tickangle=-45,
+            yaxis_title="Duration (weeks)",
+            margin=dict(l=40, r=20, t=50, b=80),
+        )
+        st.plotly_chart(fig_line, use_container_width=True)
+
+        # Summary Totals
+        st.subheader("📊 Summary Totals")
+        st.markdown(f"**Total Estimated Cost:** ${total_cost:,.0f}")
+        st.markdown(
+            f"**Total Estimated Duration:** {int(round(total_duration))} weeks (~{int(round(total_duration / 4))} months)"
+        )
+    else:
+        st.info("No construction phases data available.")
 
 
-    # Prepare data
-    df = pd.DataFrame({
-        "Phase": phase_labels,
-        "Cost": phase_costs,
-        "Duration": phase_durations,
-    })
-
-    # Cost Pie Chart
-    st.subheader("💰 Cost Distribution")
-    fig_pie = px.pie(df, names="Phase", values="Cost",
-                    title="Cost Distribution by Phase",
-                    hole=0.4,  # donut style
-                    )
-    fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-    st.plotly_chart(fig_pie, use_container_width=True)
-
-    # Duration Line Chart
-    st.subheader("⏱ Duration by Phase")
-    fig_line = px.line(df, x="Phase", y="Duration", markers=True,
-                    title="Duration by Phase")
-    fig_line.update_layout(
-        xaxis_tickangle=-45,
-        yaxis_title="Duration (weeks)",
-        margin=dict(l=40, r=20, t=50, b=80),
-    )
-    st.plotly_chart(fig_line, use_container_width=True)
-
-    # Summary Totals
-    st.subheader("📊 Summary Totals")
-    st.markdown(f"**Total Estimated Cost:** ${total_cost:,.0f}")
-    st.markdown(
-        f"**Total Estimated Duration:** {int(round(total_duration))} weeks (~{int(round(total_duration / 4))} months)"
-    )
+        
