@@ -631,7 +631,7 @@ elif project_type == "🛠 Repair & Maintenance":
         else:
             st.info("No valid repair plan found.")
         st.subheader("🧰 Final Repair Plan")
-        st.json(final)
+        # st.json(final)
         def safe_format_cost(cost):
             try:
                 return f"${float(cost):,.2f}"
