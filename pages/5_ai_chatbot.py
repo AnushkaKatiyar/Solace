@@ -42,7 +42,7 @@ with col1:
 with col2:
     if st.button("🚧 Upgrades"):
         st.session_state.project_type = "upgrade"
-    st.image("assets/Upgrade.jpg", caption="School Upgrades", use_container_width=True)
+    st.image("assets/Upgrade.png", caption="School Upgrades", use_container_width=True)
     if st.session_state.project_type == "upgrade":
         st.success("✔ Selected")
 
