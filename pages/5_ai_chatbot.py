@@ -36,28 +36,32 @@ if "project_type" not in st.session_state:
     st.session_state.project_type = None
 st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
 # Layout the three options side by side
-col1, col2, col3 = st.columns(3)
-image_width = 200
-with col1:
-    if st.button("🏗 New Construction"):
-        st.session_state.project_type = "new"
-    st.image("assets/New_Construction.jpg", caption="New School Construction", width=image_width)
-    if st.session_state.project_type == "new":
-        st.success("✔ Selected")
+# Only show choices if nothing is selected yet
+if st.session_state.project_type is None:
+    col1, col2, col3 = st.columns(3)
+    image_width = 200
+    with col1:
+        if st.button("🏗 New Construction"):
+            st.session_state.project_type = "new"
+        st.image("assets/New_Construction.jpg", caption="New School Construction", width=image_width)
+        if st.session_state.project_type == "new":
+            st.success("✔ Selected")
 
-with col2:
-    if st.button("🚧 Upgrades"):
-        st.session_state.project_type = "upgrade"
-    st.image("assets/Upgrade.png", caption="School Upgrades", width=image_width)
-    if st.session_state.project_type == "upgrade":
-        st.success("✔ Selected")
+    with col2:
+        if st.button("🚧 Upgrades"):
+            st.session_state.project_type = "upgrade"
+        st.image("assets/Upgrade.png", caption="School Upgrades", width=image_width)
+        if st.session_state.project_type == "upgrade":
+            st.success("✔ Selected")
 
-with col3:
-    if st.button("🛠 Repair & Maintenance"):
-        st.session_state.project_type = "repair"
-    st.image("assets/Repair.jpg", caption="Repair & Maintenance", width=image_width)
-    if st.session_state.project_type == "repair":
-        st.success("✔ Selected")
+    with col3:
+        if st.button("🛠 Repair & Maintenance"):
+            st.session_state.project_type = "repair"
+        st.image("assets/Repair.jpg", caption="Repair & Maintenance", width=image_width)
+        if st.session_state.project_type == "repair":
+            st.success("✔ Selected")
+else:
+    st.markdown(f"### ✅ You selected: **{st.session_state.project_type.title().replace('_', ' ')}**")
 
 # Show content based on selection
 st.markdown("---")
@@ -966,3 +970,7 @@ elif st.session_state.project_type == "repair":
 
         st.markdown(f"**Total Estimated Cost:** ${int(df_chart['Cost'].sum()):,}")
         st.markdown(f"**Total Estimated Duration:** {int(df_chart['Duration'].sum())} weeks")
+
+# Add a back/reset button
+if st.button("🔙 Go Back"):
+    st.session_state.project_type = None
