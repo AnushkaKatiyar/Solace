@@ -34,7 +34,7 @@ st.markdown(
 # Store selection in session state
 if "project_type" not in st.session_state:
     st.session_state.project_type = None
-
+st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
 # Layout the three options side by side
 col1, col2, col3 = st.columns(3)
 image_width = 200
