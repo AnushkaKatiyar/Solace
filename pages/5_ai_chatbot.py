@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 import re
 import time
+import os
 
 ASSETS_DIR = "assets/"
 LOGO_PATH = os.path.join(ASSETS_DIR, "Solace_logo.png")
