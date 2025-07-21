@@ -18,7 +18,7 @@ st.markdown("### 🔧 What type of project are you planning?")
 project_type = st.radio(
     "Select Project Type",
     ["🏗 New Construction", "🚧 Upgrades", "🛠 Repair & Maintenance"],
-    index=0,
+    index=None,
     horizontal=True
 )
 
