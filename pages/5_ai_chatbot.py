@@ -24,7 +24,7 @@ client = Mistral(api_key=mistral_api_key)
 st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
 st.markdown(
     """
-    <div style='text-align: center; background-color: #E8F8FF; padding: 20px 5px; border-radius: 12px;'>
+    <div style='text-align: center; background-color: #E8F8FF; padding: 10px 5px; border-radius: 8px;'>
         <h3 style='color: #2C81C0; margin-bottom: 0.3em;'>🛠️ AI Assistant for NYC School Construction</h3>
         <h5 style='color: #2C81C0; margin-top: 0;'>🔧 What type of project are you planning?</h5>
     </div>
