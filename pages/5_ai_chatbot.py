@@ -7,6 +7,9 @@ import plotly.express as px
 import re
 import time
 import os
+from streamlit_lottie import st_lottie
+import requests
+import io
 
 ASSETS_DIR = "assets/"
 LOGO_PATH = os.path.join(ASSETS_DIR, "Solace_logo.png")
