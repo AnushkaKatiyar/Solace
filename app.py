@@ -55,7 +55,7 @@ client = Mistral(api_key=mistral_api_key)
 st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
 st.markdown(
     """
-    <div style='text-align: center; background-color: #E8F8FF; padding: 10px 5px; border-radius: 8px;'>
+    <div style='text-align: center; background-color: #E8F8FF; padding: 5px 3px; border-radius: 5px;'>
         <h3 style='color: #2C81C0; margin-bottom: 0;'>🛠️ AI Assistant for NYC School Construction</h3>
         <h5 style='color: #2C81C0; margin-top: 0;'>🔧 What type of project are you planning?</h5>
     </div>
@@ -70,7 +70,7 @@ st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
 # Only show choices if nothing is selected yet
 if st.session_state.project_type is None:
     col1, col2, col3 = st.columns(3)
-    image_width = 200
+    image_width = 150
     with col1:
         if st.button("🏗 New Construction"):
             st.session_state.project_type = "new"
