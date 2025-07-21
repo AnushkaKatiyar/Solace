@@ -11,18 +11,54 @@ import time
 mistral_api_key = st.secrets["mistral_api_key"]
 client = Mistral(api_key=mistral_api_key)
 
+# st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
+# st.title("🛠️ AI Assistant for NYC School Construction")
+# st.markdown("### 🔧 What type of project are you planning?")
+# # Project type selector
+# project_type = st.radio(
+#     "Select Project Type",
+#     ["🏗 New Construction", "🚧 Upgrades", "🛠 Repair & Maintenance"],
+#     index=None,
+#     horizontal=True
+# )
 st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
 st.title("🛠️ AI Assistant for NYC School Construction")
-st.markdown("### 🔧 What type of project are you planning?")
-# Project type selector
-project_type = st.radio(
-    "Select Project Type",
-    ["🏗 New Construction", "🚧 Upgrades", "🛠 Repair & Maintenance"],
-    index=None,
-    horizontal=True
-)
+st.markdown("## 🔧 What type of project are you planning?")
 
-if project_type == "🏗 New Construction":
+# Store selection in session state
+if "project_type" not in st.session_state:
+    st.session_state.project_type = None
+
+# Layout the three options side by side
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    if st.button("🏗 New Construction"):
+        st.session_state.project_type = "new"
+    st.image("assets/New_Construction.jpg", caption="New School Construction", use_column_width=True)
+    if st.session_state.project_type == "new":
+        st.success("✔ Selected")
+
+with col2:
+    if st.button("🚧 Upgrades"):
+        st.session_state.project_type = "upgrade"
+    st.image("assets/Upgrade.jpg", caption="School Upgrades", use_column_width=True)
+    if st.session_state.project_type == "upgrade":
+        st.success("✔ Selected")
+
+with col3:
+    if st.button("🛠 Repair & Maintenance"):
+        st.session_state.project_type = "repair"
+    st.image("assets/Repair.jpg", caption="Repair & Maintenance", use_column_width=True)
+    if st.session_state.project_type == "repair":
+        st.success("✔ Selected")
+
+# Show content based on selection
+st.markdown("---")
+
+# if project_type == "🏗 New Construction":
+#     st.subheader("New Construction Planning")
+if st.session_state.project_type == "new":
     st.subheader("New Construction Planning")
     # your existing pipeline goes here (assistant, model predictions, etc.)
 
@@ -407,9 +443,11 @@ if project_type == "🏗 New Construction":
 ###############################################################
 ###############################################################
 ###############################################################
-elif project_type == "🚧 Upgrades":
-    st.subheader("Upgrade Planning")
-    st.info("🚧 Upgrade planning assistant coming soon!")
+# elif project_type == "🚧 Upgrades":
+#     st.subheader("Upgrade Planning")
+elif st.session_state.project_type == "upgrade":
+    st.subheader("Upgrade Project Planning")
+    st.info("🚧 We're here to help you upgrade existing facilities.")
     def animated_typing(message, delay=0.03):
         placeholder = st.empty()
         full_text = ""
@@ -643,8 +681,11 @@ elif project_type == "🚧 Upgrades":
 ###############################################################
 ###############################################################
 ###############################################################
-elif project_type == "🛠 Repair & Maintenance":
-    st.subheader("Repair / Maintenance Planning")
+# elif project_type == "🛠 Repair & Maintenance":
+#     st.subheader("Repair / Maintenance Planning")
+elif st.session_state.project_type == "repair":
+    st.subheader("Repair & Maintenance Planning")
+    st.info("🛠 Let’s get those repairs underway!")
 
     def animated_typing(message, delay=0.03):
         placeholder = st.empty()
