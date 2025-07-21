@@ -22,9 +22,15 @@ client = Mistral(api_key=mistral_api_key)
 #     horizontal=True
 # )
 st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
-st.markdown("<h4 style='margin-bottom: 0.2em;'>🛠️ AI Assistant for NYC School Construction</h4>", unsafe_allow_html=True)
-st.markdown("<h5 style='margin-top: 0em; color: gray;'>🔧 What type of project are you planning?</h5>", unsafe_allow_html=True)
-
+st.markdown(
+    """
+    <div style='text-align: center; background-color: #E8F8FF; padding: 20px 10px; border-radius: 12px;'>
+        <h3 style='color: #2C81C0; margin-bottom: 0.3em;'>🛠️ AI Assistant for NYC School Construction</h3>
+        <h5 style='color: #2C81C0; margin-top: 0;'>🔧 What type of project are you planning?</h5>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 # Store selection in session state
 if "project_type" not in st.session_state:
     st.session_state.project_type = None
