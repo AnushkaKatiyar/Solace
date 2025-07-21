@@ -22,8 +22,8 @@ client = Mistral(api_key=mistral_api_key)
 #     horizontal=True
 # )
 st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
-st.title("🛠️ AI Assistant for NYC School Construction")
-st.markdown("## 🔧 What type of project are you planning?")
+st.markdown("<h4 style='margin-bottom: 0.2em;'>🛠️ AI Assistant for NYC School Construction</h4>", unsafe_allow_html=True)
+st.markdown("<h5 style='margin-top: 0em; color: gray;'>🔧 What type of project are you planning?</h5>", unsafe_allow_html=True)
 
 # Store selection in session state
 if "project_type" not in st.session_state:
@@ -31,7 +31,7 @@ if "project_type" not in st.session_state:
 
 # Layout the three options side by side
 col1, col2, col3 = st.columns(3)
-image_width = 250 
+image_width = 200
 with col1:
     if st.button("🏗 New Construction"):
         st.session_state.project_type = "new"
