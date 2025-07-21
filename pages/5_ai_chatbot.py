@@ -7,6 +7,33 @@ import plotly.express as px
 import re
 import time
 
+ASSETS_DIR = "assets/"
+LOGO_PATH = os.path.join(ASSETS_DIR, "Solace_logo.png")
+# === Helper function to load Lottie animation ===
+def load_lottie_url(url: str):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+
+# === Sidebar ===
+with st.sidebar:
+    st.image(LOGO_PATH, width=120)
+
+    # Load and display Lottie animation
+    lottie_anim = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_jcikwtux.json")
+    if lottie_anim:
+        st_lottie(lottie_anim, speed=1, width=150, height=150, key="sidebar_anim")
+
+    st.title("Solace")
+    st.markdown("🚧 *NYC School Construction Estimator*")
+    st.markdown("---")
+    st.markdown("Created for Solace Technologies")
+    st.markdown("🔗 [GitHub Repo](https://github.com/AnushkaKatiyar)")
+    st.markdown("💬 Powered by Mistral + ML Models")
+
+
+
 # Load API key from Streamlit secrets
 mistral_api_key = st.secrets["mistral_api_key"]
 client = Mistral(api_key=mistral_api_key)
