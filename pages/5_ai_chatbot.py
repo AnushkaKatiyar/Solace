@@ -35,21 +35,21 @@ image_width = 250
 with col1:
     if st.button("🏗 New Construction"):
         st.session_state.project_type = "new"
-    st.image("assets/New_Construction.jpg", caption="New School Construction", use_container_width=True, width=image_width)
+    st.image("assets/New_Construction.jpg", caption="New School Construction", width=image_width)
     if st.session_state.project_type == "new":
         st.success("✔ Selected")
 
 with col2:
     if st.button("🚧 Upgrades"):
         st.session_state.project_type = "upgrade"
-    st.image("assets/Upgrade.png", caption="School Upgrades", use_container_width=True, width=image_width)
+    st.image("assets/Upgrade.png", caption="School Upgrades", width=image_width)
     if st.session_state.project_type == "upgrade":
         st.success("✔ Selected")
 
 with col3:
     if st.button("🛠 Repair & Maintenance"):
         st.session_state.project_type = "repair"
-    st.image("assets/Repair.jpg", caption="Repair & Maintenance", use_container_width=True, width=image_width)
+    st.image("assets/Repair.jpg", caption="Repair & Maintenance", width=image_width)
     if st.session_state.project_type == "repair":
         st.success("✔ Selected")
 
@@ -455,12 +455,10 @@ elif st.session_state.project_type == "upgrade":
             full_text += char
             placeholder.markdown(f"**{full_text}**")
             time.sleep(delay)
-
     if "has_seen_upgrade_welcome" not in st.session_state:
         st.session_state.has_seen_upgrade_welcome = True
         with st.chat_message("assistant"):
             animated_typing("Hey there 👋\n\nLet's plan your school upgrade project! Here are some examples to inspire you:")
-
             st.markdown("""
             **Examples:**
             - Smart Board or AV System Installations  
