@@ -91,8 +91,6 @@ if st.session_state.project_type is None:
         st.image("assets/Repair.jpg", caption="Repair & Maintenance", width=image_width)
         if st.session_state.project_type == "repair":
             st.success("✔ Selected")
-else:
-    st.markdown(f"### ✅ You selected: **{st.session_state.project_type.title().replace('_', ' ')}**")
 
 # Show content based on selection
 st.markdown("---")
