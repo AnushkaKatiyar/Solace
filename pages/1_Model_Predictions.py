@@ -57,9 +57,9 @@ phase_mapping = {
     "Scope": "I. Scope",
     "Design": "II. Design",
     "CM": "III. CM - Construction Management",
-    "CM,Art,F&E": "IV. CM, Art & FE",
-    "CM,F&E": "V. CM & FE",
-    "F&E": "VI. F&E",
+    "CM,Art,F&E": "IV. Furniture Equipment & Art",
+    "CM,F&E": "V. Commissioning",
+    "F&E": "VI. Inspection & Testing",
     "Purch & Install": "VII. Purch & Install",
     "Construction": "VIII. Construction"
 }
@@ -199,8 +199,8 @@ def prepare_features_for_duration(description, phase_name):
     df = pd.DataFrame([{
         "description_no_stopwords": description,
         "Project Phase Name": phase_name,
-        "project_status": "PI",
-        "timeline_status": "Incomplete"
+        "project_status": "Complete",
+        "timeline_status": "Complete"
     }])
     embedding = bert_model.encode(df["description_no_stopwords"].tolist())
     cat_feats = ohe_duration.transform(df[["Project Phase Name", "project_status", "timeline_status"]])
@@ -210,8 +210,8 @@ def prepare_features_for_duration(description, phase_name):
 def prepare_single_row(description, phase, duration_weeks):
     df = pd.DataFrame([{
         "Project Phase Name": phase,
-        "project_status": "PI",
-        "timeline_status": "Incomplete",
+        "project_status": "Complete",
+        "timeline_status": "Complete",
         "end_date_missing": True,
         "duration_days": duration_weeks * 7
     }])
