@@ -226,7 +226,7 @@ if st.session_state.project_type == "new":
     - Labor Category
     - Vendor: (list of strings),1–2 **actual NYC-based vendors or well-known relevant companies** (avoid placeholders like 'VendorX', 'VendorA'),
     - Permission if needed: (list of strings),required NYC government permissions (e.g., SCA, DoE, FDNY),
-    - Duration (weeks): (number)
+    - Duration (weeks): (number)- Please predict realistic numbers
     - Resources & Material-Raw materials used in construction
     - Item-should have the name and describe for which phases and subtask it is needed
     - Quantity-in correct units e.g-metric tonne, feet etc
