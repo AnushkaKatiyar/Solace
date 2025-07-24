@@ -43,12 +43,12 @@ mistral_api_key = st.secrets["mistral_api_key"]
 client = Mistral(api_key=mistral_api_key)
 
 # st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
-# st.title("🛠️ AI Assistant for NYC School Construction")
-# st.markdown("### 🔧 What type of project are you planning?")
+# st.title("AI Assistant for NYC School Construction")
+# st.markdown("###  What type of project are you planning?")
 # # Project type selector
 # project_type = st.radio(
 #     "Select Project Type",
-#     ["🏗 New Construction", "🚧 Upgrades", "🛠 Repair & Maintenance"],
+#     [" New Construction", " Upgrades", " Repair & Maintenance"],
 #     index=None,
 #     horizontal=True
 # )
@@ -56,8 +56,8 @@ st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
 st.markdown(
     """
     <div style='text-align: center; background-color: #E8F8FF; padding: 5px 3px; border-radius: 5px;'>
-        <h3 style='color: #2C81C0; margin-bottom: 0;'>🛠️ AI Assistant for NYC School Construction</h3>
-        <h5 style='color: #2C81C0; margin-top: 0;'>🔧 What type of project are you planning?</h5>
+        <h3 style='color: #2C81C0; margin-bottom: 0;'> AI Assistant for NYC School Construction</h3>
+        <h5 style='color: #2C81C0; margin-top: 0;'> What type of project are you planning?</h5>
     </div>
     """,
     unsafe_allow_html=True
@@ -72,21 +72,21 @@ if st.session_state.project_type is None:
     col1, col2, col3 = st.columns(3)
     image_width = 150
     with col1:
-        if st.button("🏗 New Construction"):
+        if st.button(" New Construction"):
             st.session_state.project_type = "new"
         st.image("assets/New_Construction.jpg", caption="New School Construction", width=image_width)
         if st.session_state.project_type == "new":
             st.success("✔ Selected")
 
     with col2:
-        if st.button("🚧 Upgrades"):
+        if st.button(" Upgrades"):
             st.session_state.project_type = "upgrade"
         st.image("assets/Upgrade.png", caption="School Upgrades", width=image_width)
         if st.session_state.project_type == "upgrade":
             st.success("✔ Selected")
 
     with col3:
-        if st.button("🛠 Repair & Maintenance"):
+        if st.button(" Repair & Maintenance"):
             st.session_state.project_type = "repair"
         st.image("assets/Repair.jpg", caption="Repair & Maintenance", width=image_width)
         if st.session_state.project_type == "repair":
@@ -112,7 +112,7 @@ if st.session_state.project_type == "new":
     if "has_seen_welcome" not in st.session_state:
         st.session_state.has_seen_welcome = True
         with st.chat_message("assistant"):
-            animated_typing("Hi, Welcome to Solace NYC School Construction Demo 👋\n\nI'm your project manager assistant. Can I help you create a plan for school construction in NYC?")
+            animated_typing("Hi, Welcome to Solace NYC School Construction Demo 👋\n\nI'm your project manager assistant. Can I help you create a plan for school construction in NYC? Please enter a brief description")
 
     # Define the questions to ask sequentially
     questions = [
