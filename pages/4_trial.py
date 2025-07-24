@@ -1,3 +1,35 @@
+from mistralai.client import MistralClient
+from mistralai.models.chat_completion import ChatMessage
+import os
+
+# Replace this with your actual API key or set it in environment variable
+api_key = st.secrets["mistral_api_key"]
+
+model = "mistral-tiny"
+
+try:
+    client = MistralClient(api_key=api_key)
+
+    messages = [
+        ChatMessage(role="system", content="You are a helpful assistant."),
+        ChatMessage(role="user", content="What is the capital of France?")
+    ]
+
+    response = client.chat(
+        model=model,
+        messages=messages
+    )
+
+    print("✅ API Test Successful. Response:")
+    print(response.choices[0].message.content)
+
+except Exception as e:
+    print("🔴 Mistral API Test Failed:")
+    print(e)
+
+
+
+
 import streamlit as st
 from mistralai import Mistral, UserMessage, SystemMessage
 import json
@@ -142,8 +174,7 @@ if st.session_state.project_type is None:
 st.markdown("---")
 
 
-# if project_type == "🏗 New Construction":
-#     st.subheader("New Construction Planning")
+
 if st.session_state.project_type == "new":
     st.subheader("New Construction Planning")
     # your existing pipeline goes here (assistant, model predictions, etc.)
