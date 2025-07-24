@@ -37,7 +37,6 @@ except Exception as e:
 bert_model = SentenceTransformer('all-MiniLM-L6-v2')
 model_dict = {'low': model_low, 'mid': model_mid, 'high': model_high}
 
-st.session_state.cost_bucket = {"new": "high", "upgrade": "mid", "repair": "low"}[project_type]
 
 if "project_type" not in st.session_state:
     st.session_state.project_type = None
@@ -96,16 +95,6 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 mistral_api_key = st.secrets["mistral_api_key"]
 client = Mistral(api_key=mistral_api_key)
 
-# st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
-# st.title("AI Assistant for NYC School Construction")
-# st.markdown("###  What type of project are you planning?")
-# # Project type selector
-# project_type = st.radio(
-#     "Select Project Type",
-#     [" New Construction", " Upgrades", " Repair & Maintenance"],
-#     index=None,
-#     horizontal=True
-# )
 st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
 st.markdown(
     """
