@@ -200,9 +200,10 @@ if st.session_state.project_type is None:
 
 # Show content based on selection
 st.markdown("---")
-
-
-
+###################################################################
+###################################################################
+###################################################################
+###################################################################
 if st.session_state.project_type == "new":
     st.subheader("New Construction Planning")
     # your existing pipeline goes here (assistant, model predictions, etc.)
@@ -249,7 +250,6 @@ if st.session_state.project_type == "new":
     if "last_question_key" not in st.session_state:
         st.session_state.last_question_key = None
 
-    
 
     # Function to find the next unanswered question
     def get_next_question():
@@ -283,12 +283,7 @@ if st.session_state.project_type == "new":
     Current collected info:
     {json.dumps(st.session_state.collected_info, indent=2)}
 
-    Ask only the questions defined and wait for user response, do not repeat question.
-    Ask only the next missing question once.
-    Do NOT repeat previous questions or user answers.
-    Wait for user's answer before asking anything else.
-    If all questions are answered, tell the user that all info is collected and they can ask to generate the plan.
-
+    Ask only the questions defined and wait for user response, do not repeat question. Do not display unnecessary information.
     Next question:
     {next_question}
     """
