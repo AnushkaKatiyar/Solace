@@ -77,7 +77,6 @@ if "project_type" not in st.session_state:
     st.session_state.project_type = None
 if "cost_bucket" not in st.session_state:
     st.session_state.cost_bucket = None
-
 def prepare_single_row(description, phase, duration_weeks):
     df = pd.DataFrame([{
         "Project Phase Name": phase,
@@ -102,13 +101,46 @@ def prepare_features_for_duration(description, phase_name):
     cat_feats = ohe_duration.transform(df[["Project Phase Name", "project_status", "timeline_status"]])
     return np.hstack([embedding, cat_feats])
 
-def predict_cost_duration(description, bucket):
+######for duration from ai    
+ai_input = f"""
+Based on the following project description, estimate the expected duration in months for each of the following construction phases:
+
+Phases:
+{phase_mapping}
+
+Project Description:
+{description}
+
+Reply in this format (JSON):
+{{
+    "I. Scope": "<duration in weeks>",
+    "II. Design": "<duration in weeks>",
+    "III. Commissioning": "<duration in weeks>",
+    "IV. Purch & Install": "<duration in weeks>",
+    "V. Construction": "<duration in weeks>"
+}}
+"""
+
+# Extract the JSON from between the backticks or use regex
+match = re.search(r"\{.*\}", response_text, re.DOTALL)
+if match:
+    clean_json = match.group(0)
+    ai_durations = json.loads(clean_json)
+else:
+    print("JSON not found in AI response")
+    ai_durations = {}
+
+def predict_cost_duration(description, bucket, ai_durations):
     predictions = []
 
     for phase_code, display_name in phase_mapping.items():
-        X_dur = prepare_features_for_duration(description, phase_code)
-        duration_weeks = duration_model.predict(X_dur)[0]
+        # Get AI-estimated duration (in weeks)
+        try:
+            duration_weeks = float(ai_durations.get(phase_code, 0))
+        except (ValueError, TypeError):
+            duration_weeks = 0  # fallback if parsing fails
 
+        # Prepare cost features using AI duration
         X_cost = prepare_single_row(description, phase_code, duration_weeks)
         model = model_dict[bucket]
         cost = model.predict(X_cost)[0]
@@ -121,6 +153,25 @@ def predict_cost_duration(description, bucket):
 
     result_df = pd.DataFrame(predictions)
     return result_df
+# def predict_cost_duration(description, bucket):
+#     predictions = []
+
+#     for phase_code, display_name in phase_mapping.items():
+#         X_dur = prepare_features_for_duration(description, phase_code)
+#         duration_weeks = duration_model.predict(X_dur)[0]
+
+#         X_cost = prepare_single_row(description, phase_code, duration_weeks)
+#         model = model_dict[bucket]
+#         cost = model.predict(X_cost)[0]
+
+#         predictions.append({
+#             "Phase": display_name,
+#             "Predicted Duration (weeks)": round(duration_weeks, 2),
+#             "Predicted Cost (USD)": round(max(cost, 0), 2),
+#         })
+
+#     result_df = pd.DataFrame(predictions)
+#     return result_df
 
 ASSETS_DIR = "assets/"
 LOGO_PATH = os.path.join(ASSETS_DIR, "Solace_logo.png")
@@ -217,10 +268,11 @@ if st.session_state.project_type == "new":
     if "has_seen_welcome" not in st.session_state:
         st.session_state.has_seen_welcome = True
         with st.chat_message("assistant"):
-            animated_typing("Hi, Welcome to Solace NYC School Construction Demo 👋\n\nI'm your project manager assistant. Can I help you create a plan for school construction in NYC? Please enter a brief description")
+            animated_typing("Hi, Welcome to Solace NYC School Construction Demo 👋\n\nI'm your project manager assistant. Can I help you create a plan for school construction in NYC?")
 
     # Define the questions to ask sequentially
     questions = [
+        ("ProjectDescription", "Please describe the project in a few sentences."),
         ("Location", "Which part of NYC is the school located in?"),
         ("Grades", "How many grades will the school have?"),
         ("StudentsPerClass", "What is the average number of students per class?"),
@@ -581,9 +633,10 @@ if st.session_state.project_type == "new":
             )
             st.divider()
             st.subheader("🧮 ML-Based Cost & Schedule Estimates")
-
-            description = st.session_state.collected_info.get("SpecialReqs", "")  # or any collected field as base description
-            bucket = st.session_state.get("bucket", "high")  # fallback to mid
+###############################################################################
+            
+            description = st.session_state.collected_info.get("ProjectDescription", "") 
+            bucket = st.session_state.get("bucket", "high")  # fallback to high
 
             if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
                 with st.spinner("Running prediction model..."):
@@ -838,11 +891,11 @@ elif st.session_state.project_type == "upgrade":
         df_chart["Duration_Weeks"] = df_chart["Duration"].apply(parse_duration_to_weeks)
         valid_durations = df_chart["Duration_Weeks"].dropna()
         
-
+################################################################################
         st.divider()
         st.subheader("🧮 ML-Based Cost & Schedule Estimates")
 
-        description = st.session_state.collected_info.get("SpecialReqs", "")  # or any collected field as base description
+        description = st.session_state.collected_info.get("ProjectDescription", "")  
         bucket = st.session_state.get("bucket", "mid")  # fallback to mid
 
         if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
@@ -1162,10 +1215,11 @@ elif st.session_state.project_type == "repair":
         st.markdown(f"**Total Estimated Cost:** ${int(df_chart['Cost'].sum()):,}")
         st.markdown(f"**Total Estimated Duration:** {int(df_chart['Duration'].sum())} weeks")
 
+################################################################        
         st.divider()
         st.subheader("🧮 ML-Based Cost & Schedule Estimates")
 
-        description = st.session_state.collected_info.get("SpecialReqs", "")  # or any collected field as base description
+        description = st.session_state.collected_info.get("ProjectDescription", "")  
         bucket = st.session_state.get("bucket", "low")  # fallback to low
 
         if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
