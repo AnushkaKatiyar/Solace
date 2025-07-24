@@ -535,11 +535,16 @@ if st.session_state.project_type == "new":
             materials_rows = []
             for category, items in resources.items():
                 for item in items:
+                    cost = item.get("EstimatedCost", "N/A")
+                    if isinstance(cost, (int, float)):
+                        cost_str = f"${cost:,.2f}"  # Format as currency with commas and 2 decimals
+                    else:
+                        cost_str = cost 
                     materials_rows.append({
                         "Category": category,
                         "Item": item.get("Item", ""),
                         "Quantity Estimate": item.get("QuantityEstimate", "N/A"),
-                        "Estimated Cost": item.get("EstimatedCost", "N/A")
+                        "Estimated Cost": cost_str
                     })
 
             materials_df = pd.DataFrame(materials_rows)
