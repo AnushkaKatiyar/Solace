@@ -419,7 +419,7 @@ if st.session_state.project_type == "new":
         ]
         response = client.chat.complete(
             model="mistral-small",
-            messages=[SystemMessage(content=ai_input)]
+            messages=messages
         )
         response_text = response.choices[0].message.content.strip()
         # Extract the JSON from between the backticks or use regex
