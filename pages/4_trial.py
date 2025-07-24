@@ -1,12 +1,14 @@
+
+
 import streamlit as st
 from mistralai import Mistral, UserMessage, SystemMessage
 import os
 
-# Streamlit section header
+# Streamlit UI
 st.subheader("🧪 Mistral API Test")
 
-# Get API key from env or manually
-api_key = os.getenv("MISTRAL_API_KEY", "tYBsvUlFQBA8TBh1JcRAPcHAJl7tqMpD")  # Replace if not using env var
+# Load API key from env or directly insert here
+api_key = os.getenv("MISTRAL_API_KEY", "tYBsvUlFQBA8TBh1JcRAPcHAJl7tqMpD")  # Replace manually if not using env vars
 model = "mistral-tiny"
 
 # Show test button
@@ -19,7 +21,7 @@ if st.button("Test Mistral API"):
             UserMessage(content="What is the capital of France?")
         ]
 
-        response = client.chat(
+        response = client.chat.messages.create(
             model=model,
             messages=messages
         )
