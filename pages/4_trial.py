@@ -310,7 +310,7 @@ if st.session_state.project_type == "new":
         assistant_reply = response.choices[0].message.content.strip()
 
         # Append assistant reply to chat history
-        st.session_state.chat_history.append(AssistantMessage(content=assistant_reply))
+        st.session_state.chat_history.append(SystemtMessage(content=assistant_reply))
 
     # Display the full chat history
     for msg in st.session_state.chat_history:
