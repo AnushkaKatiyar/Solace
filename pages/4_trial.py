@@ -413,6 +413,10 @@ if st.session_state.project_type == "new":
             "V. Construction": "<duration in weeks>"
         }}
         """
+        messages = [
+            SystemMessage(content="You are an expert NYC school construction planner."),
+            UserMessage(content=ai_input)
+        ]
         response = client.chat.complete(
             model="mistral-small",
             messages=[SystemMessage(content=ai_input)]
