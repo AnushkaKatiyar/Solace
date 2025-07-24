@@ -658,7 +658,7 @@ if st.session_state.project_type == "new":
             if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
                 with st.spinner("Running prediction model..."):
                     try:
-                        result_df = predict_cost_duration(description, bucket)
+                        result_df = predict_cost_duration(description, bucket,ai_durations)
 
                         total_cost = result_df["Predicted Cost (USD)"].sum()
                         total_duration = result_df["Predicted Duration (weeks)"].sum()
@@ -918,7 +918,7 @@ elif st.session_state.project_type == "upgrade":
         if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
             with st.spinner("Running prediction model..."):
                 try:
-                    result_df = predict_cost_duration(description, bucket)
+                    result_df = predict_cost_duration(description, bucket,ai_durations)
 
                     total_cost = result_df["Predicted Cost (USD)"].sum()
                     total_duration = result_df["Predicted Duration (weeks)"].sum()
@@ -1242,7 +1242,7 @@ elif st.session_state.project_type == "repair":
         if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
             with st.spinner("Running prediction model..."):
                 try:
-                    result_df = predict_cost_duration(description, bucket)
+                    result_df = predict_cost_duration(description, bucket,ai_durations)
 
                     total_cost = result_df["Predicted Cost (USD)"].sum()
                     total_duration = result_df["Predicted Duration (weeks)"].sum()
