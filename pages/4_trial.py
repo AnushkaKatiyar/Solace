@@ -444,7 +444,7 @@ if st.session_state.project_type == "new":
                     # Remove any non-numeric part like " weeks"
                     numeric_str = "".join(c for c in raw_val if c.isdigit() or c == ".")
 
-                    duration_weeks = float(ai_durations.get(display_name, 0))
+                    duration_weeks = float(numeric_str) if numeric_str else 0
                 except (ValueError, TypeError):
                     duration_weeks = 0  # fallback if parsing fails
 
