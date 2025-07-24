@@ -10,6 +10,8 @@ import os
 from streamlit_lottie import st_lottie
 import requests
 import io
+from sentence_transformers import SentenceTransformer
+import pickle
 
 # --- Load Models ---
 MODEL_DIR = "models"
@@ -788,6 +790,34 @@ elif st.session_state.project_type == "upgrade":
         df_chart["Duration_Weeks"] = df_chart["Duration"].apply(parse_duration_to_weeks)
         valid_durations = df_chart["Duration_Weeks"].dropna()
 
+        st.divider()
+        st.subheader("🧮 ML-Based Cost & Schedule Estimates")
+
+        description = st.session_state.collected_info.get("SpecialReqs", "")  # or any collected field as base description
+        bucket = st.session_state.get("bucket", "mid")  # fallback to mid
+
+        if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
+            with st.spinner("Running prediction model..."):
+                try:
+                    result_df = predict_cost_duration(description, bucket)
+
+                    total_cost = result_df["Predicted Cost (USD)"].sum()
+                    total_duration = result_df["Predicted Duration (weeks)"].sum()
+
+                    result_df["Predicted Cost (USD)"] = result_df["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
+                    result_df["Duration"] = result_df["Predicted Duration (weeks)"].apply(
+                        lambda w: f"{int(w)} weeks {int((w % 1) * 7)} days"
+                    )
+
+                    st.dataframe(result_df[["Phase", "Predicted Cost (USD)", "Duration"]], use_container_width=True)
+
+                    col1, col2 = st.columns(2)
+                    col1.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
+                    col2.metric("🕒 Total Estimated Duration", f"{total_duration:.1f} weeks")
+
+                except Exception as e:
+                    st.error(f"Prediction failed: {e}")
+
         if not valid_durations.empty:
             st.markdown(f"**Total Estimated Duration:** {int(valid_durations.sum())} weeks")
         else:
@@ -1082,6 +1112,34 @@ elif st.session_state.project_type == "repair":
 
         st.markdown(f"**Total Estimated Cost:** ${int(df_chart['Cost'].sum()):,}")
         st.markdown(f"**Total Estimated Duration:** {int(df_chart['Duration'].sum())} weeks")
+
+        st.divider()
+        st.subheader("🧮 ML-Based Cost & Schedule Estimates")
+
+        description = st.session_state.collected_info.get("SpecialReqs", "")  # or any collected field as base description
+        bucket = st.session_state.get("bucket", "low")  # fallback to low
+
+        if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
+            with st.spinner("Running prediction model..."):
+                try:
+                    result_df = predict_cost_duration(description, bucket)
+
+                    total_cost = result_df["Predicted Cost (USD)"].sum()
+                    total_duration = result_df["Predicted Duration (weeks)"].sum()
+
+                    result_df["Predicted Cost (USD)"] = result_df["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
+                    result_df["Duration"] = result_df["Predicted Duration (weeks)"].apply(
+                        lambda w: f"{int(w)} weeks {int((w % 1) * 7)} days"
+                    )
+
+                    st.dataframe(result_df[["Phase", "Predicted Cost (USD)", "Duration"]], use_container_width=True)
+
+                    col1, col2 = st.columns(2)
+                    col1.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
+                    col2.metric("🕒 Total Estimated Duration", f"{total_duration:.1f} weeks")
+
+                except Exception as e:
+                    st.error(f"Prediction failed: {e}")
 
 # Add a back/reset button
 if st.button("🔙 Go Back"):
