@@ -67,13 +67,10 @@ model_dict = {'low': model_low, 'mid': model_mid, 'high': model_high}
 # === Phase Mapping ===
 phase_mapping = {
     "Scope": "I. Scope",
-    "Design": "II. Design",
-    "CM": "III. CM - Construction Management",
-    "CM,Art,F&E": "IV. Furniture Equipment & Art",
-    "CM,F&E": "V. Commissioning",
-    "F&E": "VI. Inspection & Testing",
-    "Purch & Install": "VII. Purch & Install",
-    "Construction": "VIII. Construction"
+    "Design": "II. Design",   
+    "CM,F&E": "III. Commissioning",
+    "Purch & Install": "IV. Purch & Install",
+    "Construction": "V. Construction"
 }
 
 if "project_type" not in st.session_state:
