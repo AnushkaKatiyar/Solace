@@ -1,36 +1,27 @@
-
-
 import streamlit as st
 from mistralai import Mistral, UserMessage, SystemMessage
-import os
 
-# Streamlit UI
-st.subheader("🧪 Mistral API Test")
+# Load API key securely
+MISTRAL_API_KEY = st.secrets["mistral_api_key"]
 
-# Load API key from env or directly insert here
-api_key = os.getenv("MISTRAL_API_KEY", "tYBsvUlFQBA8TBh1JcRAPcHAJl7tqMpD")  # Replace manually if not using env vars
-model = "mistral-tiny"
+try:
+    client = Mistral(api_key=MISTRAL_API_KEY)
 
-# Show test button
-if st.button("Test Mistral API"):
-    try:
-        client = Mistral(api_key=api_key)
+    # Prepare test messages
+    messages = [
+        SystemMessage(content="You are a helpful assistant."),
+        UserMessage(content="What is the capital of France?")
+    ]
 
-        messages = [
-            SystemMessage(content="You are a helpful assistant."),
-            UserMessage(content="What is the capital of France?")
-        ]
+    # Call Mistral API
+    response = client.chat(messages=messages)
 
-        response = client.chat.messages.create(
-            model=model,
-            messages=messages
-        )
+    st.success("✅ Mistral API Test Passed!")
+    st.write("🔁 Response:", response.choices[0].message.content)
 
-        st.success("✅ Mistral API Test Successful!")
-        st.markdown(f"**Response:** {response.choices[0].message.content}")
+except Exception as e:
+    st.error(f"🔴 Mistral API Test Failed:\n\n{e}")
 
-    except Exception as e:
-        st.error(f"🔴 Mistral API Test Failed:\n\n```\n{e}\n```")
 
 
 
