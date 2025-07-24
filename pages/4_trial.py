@@ -823,6 +823,9 @@ elif st.session_state.project_type == "upgrade":
         fig.update_layout(yaxis_title="Weeks", xaxis_tickangle=-45)
         st.plotly_chart(fig, use_container_width=True)
 
+        df_chart["Duration_Weeks"] = df_chart["Duration"].apply(parse_duration_to_weeks)
+        valid_durations = df_chart["Duration_Weeks"].dropna()
+
         st.markdown(f"**Total Estimated Cost:** ${int(df_chart['Cost'].sum()):,}")
         def parse_duration_to_weeks(duration_str):
             if isinstance(duration_str, str):
@@ -837,8 +840,7 @@ elif st.session_state.project_type == "upgrade":
                         return round(num / 7, 2)
             return None
 
-        df_chart["Duration_Weeks"] = df_chart["Duration"].apply(parse_duration_to_weeks)
-        valid_durations = df_chart["Duration_Weeks"].dropna()
+        
 
         st.divider()
         st.subheader("🧮 ML-Based Cost & Schedule Estimates")
