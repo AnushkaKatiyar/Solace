@@ -237,6 +237,7 @@ if st.session_state.project_type == "new":
     # Initialize session state for collected info and chat history
     if "collected_info" not in st.session_state:
         st.session_state.collected_info = {key: None for key, _ in questions}
+        
 
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
@@ -392,7 +393,7 @@ if st.session_state.project_type == "new":
             final_json = response.choices[0].message.content.strip()
             st.session_state.final_plan = final_json
 
-        description = st.session_state["ProjectDescription"]
+        description = st.session_state.collected_info.get("ProjectDescription", "")
     
         ai_input = f"""
         Based on the following project description, estimate the expected duration in months for each of the following construction phases:
