@@ -11,6 +11,57 @@ from streamlit_lottie import st_lottie
 import requests
 import io
 
+# --- Load Models ---
+MODEL_DIR = "models"
+try:
+    with open(os.path.join(MODEL_DIR, "low_custom.pkl"), "rb") as f:
+        model_low = pickle.load(f)
+    with open(os.path.join(MODEL_DIR, "mid_custom.pkl"), "rb") as f:
+        model_mid = pickle.load(f)
+    with open(os.path.join(MODEL_DIR, "high_custom.pkl"), "rb") as f:
+        model_high = pickle.load(f)
+    with open(os.path.join(MODEL_DIR, "duration_model.pkl"), "rb") as f:
+        duration_model = pickle.load(f)
+    with open(os.path.join(MODEL_DIR, "ohe.pkl"), "rb") as f:
+        ohe = pickle.load(f)
+    with open(os.path.join(MODEL_DIR, "scaler.pkl"), "rb") as f:
+        scaler = pickle.load(f)
+    with open(os.path.join(MODEL_DIR, "ohe_duration.pkl"), "rb") as f:
+        ohe_duration = pickle.load(f)
+except Exception as e:
+    st.error(f"🔴 Error loading models: {e}")
+    st.stop()
+
+bert_model = SentenceTransformer('all-MiniLM-L6-v2')
+model_dict = {'low': model_low, 'mid': model_mid, 'high': model_high}
+
+st.session_state.cost_bucket = {"new": "high", "upgrade": "mid", "repair": "low"}[project_type]
+
+if "project_type" not in st.session_state:
+    st.session_state.project_type = None
+if "cost_bucket" not in st.session_state:
+    st.session_state.cost_bucket = None
+
+def predict_cost_duration(description, bucket):
+    predictions = []
+
+    for phase_code, display_name in phase_mapping.items():
+        X_dur = prepare_features_for_duration(description, phase_code)
+        duration_weeks = duration_model.predict(X_dur)[0]
+
+        X_cost = prepare_single_row(description, phase_code, duration_weeks)
+        model = model_dict[bucket]
+        cost = model.predict(X_cost)[0]
+
+        predictions.append({
+            "Phase": display_name,
+            "Predicted Duration (weeks)": round(duration_weeks, 2),
+            "Predicted Cost (USD)": round(max(cost, 0), 2),
+        })
+
+    result_df = pd.DataFrame(predictions)
+    return result_df
+
 ASSETS_DIR = "assets/"
 LOGO_PATH = os.path.join(ASSETS_DIR, "Solace_logo.png")
 # === Helper function to load Lottie animation ===
@@ -36,6 +87,8 @@ with st.sidebar:
     st.markdown("🔗 [GitHub Repo](https://github.com/AnushkaKatiyar)")
     st.markdown("💬 Powered by Mistral + ML Models")
 
+# === Model Setup ===
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # Load API key from Streamlit secrets
 mistral_api_key = st.secrets["mistral_api_key"]
@@ -73,6 +126,7 @@ if st.session_state.project_type is None:
     with col1:
         if st.button(" New Construction"):
             st.session_state.project_type = "new"
+            st.session_state.cost_bucket = "high"
         st.image("assets/New_Construction.jpg", caption="New School Construction", width=image_width)
         if st.session_state.project_type == "new":
             st.success("✔ Selected")
@@ -80,6 +134,7 @@ if st.session_state.project_type is None:
     with col2:
         if st.button(" Upgrades"):
             st.session_state.project_type = "upgrade"
+            st.session_state.cost_bucket = "mid"
         st.image("assets/Upgrade.png", caption="School Upgrades", width=image_width)
         if st.session_state.project_type == "upgrade":
             st.success("✔ Selected")
@@ -87,12 +142,14 @@ if st.session_state.project_type is None:
     with col3:
         if st.button(" Repair & Maintenance"):
             st.session_state.project_type = "repair"
+            st.session_state.cost_bucket = "low"
         st.image("assets/Repair.jpg", caption="Repair & Maintenance", width=image_width)
         if st.session_state.project_type == "repair":
             st.success("✔ Selected")
 
 # Show content based on selection
 st.markdown("---")
+
 
 # if project_type == "🏗 New Construction":
 #     st.subheader("New Construction Planning")
@@ -473,6 +530,33 @@ if st.session_state.project_type == "new":
             st.markdown(
                 f"**Total Estimated Duration:** {int(round(total_duration))} weeks (~{int(round(total_duration / 4))} months)"
             )
+            st.divider()
+            st.subheader("🧮 ML-Based Cost & Schedule Estimates")
+
+            description = st.session_state.collected_info.get("SpecialReqs", "")  # or any collected field as base description
+            bucket = st.session_state.get("bucket", "high")  # fallback to mid
+
+            if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
+                with st.spinner("Running prediction model..."):
+                    try:
+                        result_df = predict_cost_duration(description, bucket)
+
+                        total_cost = result_df["Predicted Cost (USD)"].sum()
+                        total_duration = result_df["Predicted Duration (weeks)"].sum()
+
+                        result_df["Predicted Cost (USD)"] = result_df["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
+                        result_df["Duration"] = result_df["Predicted Duration (weeks)"].apply(
+                            lambda w: f"{int(w)} weeks {int((w % 1) * 7)} days"
+                        )
+
+                        st.dataframe(result_df[["Phase", "Predicted Cost (USD)", "Duration"]], use_container_width=True)
+
+                        col1, col2 = st.columns(2)
+                        col1.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
+                        col2.metric("🕒 Total Estimated Duration", f"{total_duration:.1f} weeks")
+
+                    except Exception as e:
+                        st.error(f"Prediction failed: {e}")
         else:
             st.info("No construction phases data available.")
 ###############################################################
