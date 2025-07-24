@@ -194,7 +194,7 @@ if st.session_state.project_type == "new":
 
         # Call the Mistral model
         response = client.chat.complete(
-            model="mistral-small",
+            model="mistral-medium",
             messages=messages,
         )
         assistant_reply = response.choices[0].message.content.strip()
