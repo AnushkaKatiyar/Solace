@@ -248,59 +248,6 @@ if st.session_state.project_type == "new":
     if "last_question_key" not in st.session_state:
         st.session_state.last_question_key = None
 
-    description = st.session_state["ProjectDescription"]
-    ai_input = f"""
-    Based on the following project description, estimate the expected duration in months for each of the following construction phases:
-
-    Phases:
-    {phase_mapping}
-
-    Project Description:
-    {description}
-
-    Reply in this format (JSON):
-    {{
-        "I. Scope": "<duration in weeks>",
-        "II. Design": "<duration in weeks>",
-        "III. Commissioning": "<duration in weeks>",
-        "IV. Purch & Install": "<duration in weeks>",
-        "V. Construction": "<duration in weeks>"
-    }}
-    """
-    response_text = agent.run(ai_input)
-    # Extract the JSON from between the backticks or use regex
-    match = re.search(r"\{.*\}", response_text, re.DOTALL)
-    if match:
-        clean_json = match.group(0)
-        ai_durations = json.loads(clean_json)
-    else:
-        print("JSON not found in AI response")
-        ai_durations = {}
-
-    def predict_cost_duration(description, bucket, ai_durations):
-        predictions = []
-
-        for phase_code, display_name in phase_mapping.items():
-            # Get AI-estimated duration (in weeks)
-            try:
-                duration_weeks = float(ai_durations.get(phase_code, 0))
-            except (ValueError, TypeError):
-                duration_weeks = 0  # fallback if parsing fails
-
-            # Prepare cost features using AI duration
-            X_cost = prepare_single_row(description, phase_code, duration_weeks)
-            model = model_dict[bucket]
-            cost = model.predict(X_cost)[0]
-
-            predictions.append({
-                "Phase": display_name,
-                "Predicted Duration (weeks)": round(duration_weeks, 2),
-                "Predicted Cost (USD)": round(max(cost, 0), 2),
-            })
-
-        result_df = pd.DataFrame(predictions)
-        return result_df
-    
     
 
     # Function to find the next unanswered question
@@ -444,6 +391,62 @@ if st.session_state.project_type == "new":
             )
             final_json = response.choices[0].message.content.strip()
             st.session_state.final_plan = final_json
+
+        description = st.session_state["ProjectDescription"]
+    
+        ai_input = f"""
+        Based on the following project description, estimate the expected duration in months for each of the following construction phases:
+
+        Phases:
+        {phase_mapping}
+
+        Project Description:
+        {description}
+
+        Reply in this format (JSON):
+        {{
+            "I. Scope": "<duration in weeks>",
+            "II. Design": "<duration in weeks>",
+            "III. Commissioning": "<duration in weeks>",
+            "IV. Purch & Install": "<duration in weeks>",
+            "V. Construction": "<duration in weeks>"
+        }}
+        """
+        response_text = agent.run(ai_input)
+        # Extract the JSON from between the backticks or use regex
+        match = re.search(r"\{.*\}", response_text, re.DOTALL)
+        if match:
+            clean_json = match.group(0)
+            ai_durations = json.loads(clean_json)
+        else:
+            print("JSON not found in AI response")
+            ai_durations = {}
+
+        def predict_cost_duration(description, bucket, ai_durations):
+            predictions = []
+
+            for phase_code, display_name in phase_mapping.items():
+                # Get AI-estimated duration (in weeks)
+                try:
+                    duration_weeks = float(ai_durations.get(phase_code, 0))
+                except (ValueError, TypeError):
+                    duration_weeks = 0  # fallback if parsing fails
+
+                # Prepare cost features using AI duration
+                X_cost = prepare_single_row(description, phase_code, duration_weeks)
+                model = model_dict[bucket]
+                cost = model.predict(X_cost)[0]
+
+                predictions.append({
+                    "Phase": display_name,
+                    "Predicted Duration (weeks)": round(duration_weeks, 2),
+                    "Predicted Cost (USD)": round(max(cost, 0), 2),
+                })
+
+            result_df = pd.DataFrame(predictions)
+            return result_df
+        
+    
 
     def clean_json_string(raw_json):
         return raw_json.strip().removeprefix("```json").removesuffix("```").strip()
