@@ -283,6 +283,7 @@ if st.session_state.project_type == "new":
     Current collected info:
     {json.dumps(st.session_state.collected_info, indent=2)}
 
+    Ask only the questions defined and wait for user response, do not repeat question.
     Ask only the next missing question once.
     Do NOT repeat previous questions or user answers.
     Wait for user's answer before asking anything else.
@@ -339,7 +340,7 @@ if st.session_state.project_type == "new":
     - Duration (weeks): (number)- Please predict realistic numbers
     - Resources & Material-Raw materials used in construction
     - Item-should have the name and describe for which phases and subtask it is needed
-    - Quantity-in correct units e.g-metric tonne, feet etc
+    - Quantity-number followed by correct units e.g-metric tonne, feet etc
     - Cost (USD): (number)
     
 
@@ -374,7 +375,7 @@ if st.session_state.project_type == "new":
         "CategoryName": [
         {{
             "Item": "string",
-            "QuantityEstimate": string,
+            "QuantityEstimate": "string",
             "EstimatedCost": number
         }}
         ]
