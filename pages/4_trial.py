@@ -4,20 +4,24 @@ from mistralai import Mistral, UserMessage, SystemMessage
 # Load API key from .streamlit/secrets.toml
 
 
+
+st.title("Check Mistral Model Access")
+
 api_key = st.secrets["mistral_api_key"]
 client = Mistral(api_key=api_key)
 
 models_to_test = ["mistral-tiny", "mistral-small", "mistral-medium"]
 
-for model_name in models_to_test:
-    try:
-        response = client.chat.complete(
-            model=model_name,
-            messages=[SystemMessage(content="Say hello!")],
-        )
-        print(f"Access to {model_name} confirmed.")
-    except Exception as e:
-        print(f"Access to {model_name} denied or error: {e}")
+if st.button("Test Mistral Model Access"):
+    for model_name in models_to_test:
+        st.write(f"Testing access for model: **{model_name}** ...")
+        try:
+            response = client.chat.complete(
+                model=model_name,
+                messages=[SystemMessage(content="Say hello!")],
+            )
+            st.success(f"✅ Access to **{model_name}** confirmed.")
+        except Exception as e:
 
 
 
