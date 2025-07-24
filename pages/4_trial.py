@@ -396,7 +396,7 @@ if st.session_state.project_type == "new":
         description = st.session_state.collected_info.get("ProjectDescription", "")
         phases_json_str = json.dumps(phase_mapping, indent=2)
         ai_input = f"""
-        Based on the following project description, estimate the expected duration in months for each of the following construction phases:
+        Based on the following project description, estimate the expected duration in weeks for each of the following construction phases, answer in numeric, no ranges:
 
         Phases:
         {phases_json_str}
