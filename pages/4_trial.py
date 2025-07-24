@@ -440,7 +440,7 @@ if st.session_state.project_type == "new":
             for phase_code, display_name in phase_mapping.items():
                 # Get AI-estimated duration (in weeks)
                 try:
-                    duration_weeks = float(ai_durations.get(phase_code, 0))
+                    duration_weeks = float(ai_durations.get(display_name, 0))
                 except (ValueError, TypeError):
                     duration_weeks = 0  # fallback if parsing fails
 
