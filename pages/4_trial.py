@@ -101,7 +101,11 @@ def prepare_features_for_duration(description, phase_name):
     cat_feats = ohe_duration.transform(df[["Project Phase Name", "project_status", "timeline_status"]])
     return np.hstack([embedding, cat_feats])
 
-######for duration from ai    
+######for duration from ai 
+if "ProjectDescription" in st.session_state and st.session_state["ProjectDescription"]:
+    description = st.session_state["ProjectDescription"]
+
+   
 ai_input = f"""
 Based on the following project description, estimate the expected duration in months for each of the following construction phases:
 
@@ -297,6 +301,9 @@ if st.session_state.project_type == "new":
     # Track the last asked question key so we know where to save answer
     if "last_question_key" not in st.session_state:
         st.session_state.last_question_key = None
+
+    
+    
 
     # Function to find the next unanswered question
     def get_next_question():
