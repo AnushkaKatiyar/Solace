@@ -27,7 +27,7 @@
 
 
 import streamlit as st
-from mistralai import Mistral, UserMessage, SystemMessage
+from mistralai import Mistral, UserMessage, SystemMessage, AssistantMessage
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -274,7 +274,7 @@ if st.session_state.project_type == "new":
         assistant_reply = response.choices[0].message.content.strip()
 
         # Append assistant reply to chat history
-        st.session_state.chat_history.append(SystemMessage(content=assistant_reply))
+        st.session_state.chat_history.append(AssistantMessage(content=assistant_reply))
 
     # Display the full chat history
     for msg in st.session_state.chat_history:
