@@ -6,7 +6,7 @@ import os
 st.subheader("🧪 Mistral API Test")
 
 # Get API key from env or manually
-api_key = os.getenv("MISTRAL_API_KEY", "your_api_key_here")  # Replace if not using env var
+api_key = os.getenv("MISTRAL_API_KEY", "tYBsvUlFQBA8TBh1JcRAPcHAJl7tqMpD")  # Replace if not using env var
 model = "mistral-tiny"
 
 # Show test button
