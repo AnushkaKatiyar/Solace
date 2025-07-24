@@ -431,7 +431,8 @@ if st.session_state.project_type == "new":
         else:
             print("JSON not found in AI response")
             ai_durations = {}
-        
+        st.subheader("Parsed Durations Dictionary:")
+        st.json(ai_durations)
         def predict_cost_duration(description, bucket, ai_durations):
             predictions = []
 
