@@ -1,9 +1,5 @@
 import streamlit as st
-from mistralai import Mistral, UserMessage, SystemMessage
-
-# Load API key from .streamlit/secrets.toml
-
-
+from mistralai import Mistral, SystemMessage, UserMessage
 
 st.title("Check Mistral Model Access")
 
@@ -18,9 +14,12 @@ if st.button("Test Mistral Model Access"):
         try:
             response = client.chat.complete(
                 model=model_name,
-                messages=[SystemMessage(content="Say hello!")],
+                messages=[
+                    SystemMessage(content="You are a helpful assistant."),
+                    UserMessage(content="Say hello!")
+                ],
             )
-            st.success(f"✅ Access to **{model_name}** confirmed.")
+            st.success(f"✅ Access to **{model_name}** confirmed. Response:\n{response.choices[0].message.content}")
         except Exception as e:
             st.error(f"❌ Access to **{model_name}** denied or error: {e}")
 
