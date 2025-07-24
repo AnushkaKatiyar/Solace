@@ -16,7 +16,7 @@ try:
 
     # Call chat method
     response = client.chat(
-        model="mistral-small",  # or mistral-medium, mistral-tiny
+        model="mistral-medium",  # or mistral-medium, mistral-tiny
         messages=messages
     )
 
