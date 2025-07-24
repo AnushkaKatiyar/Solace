@@ -103,7 +103,7 @@ def prepare_features_for_duration(description, phase_name):
 
 ######for duration from ai 
 if "ProjectDescription" in st.session_state and st.session_state["ProjectDescription"]:
-    description = st.session_state["ProjectDescription"]
+    description = st.session_state["ProjectDescription"," "]
 
    
 ai_input = f"""
@@ -124,7 +124,7 @@ Reply in this format (JSON):
     "V. Construction": "<duration in weeks>"
 }}
 """
-
+response_text = agent.run(ai_input)
 # Extract the JSON from between the backticks or use regex
 match = re.search(r"\{.*\}", response_text, re.DOTALL)
 if match:
@@ -301,6 +301,8 @@ if st.session_state.project_type == "new":
     # Track the last asked question key so we know where to save answer
     if "last_question_key" not in st.session_state:
         st.session_state.last_question_key = None
+
+    description = st.session_state["ProjectDescription"]
 
     
     
