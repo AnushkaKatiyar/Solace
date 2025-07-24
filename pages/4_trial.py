@@ -1,29 +1,31 @@
 import streamlit as st
 from mistralai import Mistral, UserMessage, SystemMessage
 
-# Load API key securely
+# Load API key from .streamlit/secrets.toml
 MISTRAL_API_KEY = st.secrets["mistral_api_key"]
 
 try:
+    # Initialize Mistral client
     client = Mistral(api_key=MISTRAL_API_KEY)
 
-    # Prepare test messages
+    # Create message list
     messages = [
         SystemMessage(content="You are a helpful assistant."),
         UserMessage(content="What is the capital of France?")
     ]
 
-    # Call Mistral API
-    response = client.chat(messages=messages)
+    # Call chat method
+    response = client.chat(
+        model="mistral-small",  # or mistral-medium, mistral-tiny
+        messages=messages
+    )
 
+    # Display success message and output
     st.success("✅ Mistral API Test Passed!")
-    st.write("🔁 Response:", response.choices[0].message.content)
+    st.markdown(f"**🔁 Response:** {response.choices[0].message.content}")
 
 except Exception as e:
     st.error(f"🔴 Mistral API Test Failed:\n\n{e}")
-
-
-
 
 
 
