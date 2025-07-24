@@ -81,6 +81,19 @@ if "project_type" not in st.session_state:
 if "cost_bucket" not in st.session_state:
     st.session_state.cost_bucket = None
 
+def prepare_single_row(description, phase, duration_weeks):
+    df = pd.DataFrame([{
+        "Project Phase Name": phase,
+        "project_status": "Complete",
+        "timeline_status": "Complete",
+        "end_date_missing": True,
+        "duration_days": duration_weeks * 7
+    }])
+    embedding = bert_model.encode([description])
+    cat_feats = ohe.transform(df[["Project Phase Name", "project_status", "timeline_status", "end_date_missing"]])
+    num_feats = scaler.transform(df[["duration_days"]])
+    return np.hstack([embedding, cat_feats, num_feats])
+
 def prepare_features_for_duration(description, phase_name):
     df = pd.DataFrame([{
         "description_no_stopwords": description,
