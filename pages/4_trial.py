@@ -413,7 +413,11 @@ if st.session_state.project_type == "new":
             "V. Construction": "<duration in weeks>"
         }}
         """
-        response_text = agent.run(ai_input)
+        response = client.chat.complete(
+            model="mistral-small",
+            messages=[SystemMessage(content=ai_input)]
+        )
+        response_text = response.choices[0].message.content.strip()
         # Extract the JSON from between the backticks or use regex
         match = re.search(r"\{.*\}", response_text, re.DOTALL)
         if match:
