@@ -422,7 +422,8 @@ if st.session_state.project_type == "new":
             messages=messages
         )
         response_text = response.choices[0].message.content.strip()
-        
+        st.subheader("AI Raw Duration Response:")
+        st.code(response_text, language="json")
         # Extract the JSON from between the backticks or use regex
         match = re.search(r"\{.*\}", response_text, re.DOTALL)
         if match:
