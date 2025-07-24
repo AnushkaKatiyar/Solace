@@ -762,7 +762,7 @@ elif st.session_state.project_type == "upgrade":
         if next_q:
             prompt = f"""
             You are an expert NYC school **upgrade** planner.
-
+            Ask only the defined upgrade questions.
             Collected so far:
             {json.dumps(st.session_state.upgrade_info, indent=2)}
 
@@ -920,7 +920,7 @@ elif st.session_state.project_type == "upgrade":
         st.divider()
         st.subheader("🧮 ML-Based Cost & Schedule Estimates")
 
-        description = st.session_state.collected_info.get("ProjectDescription", "")  
+        description = st.session_state.collected_info.get("UpgradeDescription", "")  
         bucket = st.session_state.get("bucket", "mid")  # fallback to mid
 
         if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
