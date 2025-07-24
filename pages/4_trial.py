@@ -65,6 +65,17 @@ except Exception as e:
 bert_model = SentenceTransformer('all-MiniLM-L6-v2')
 model_dict = {'low': model_low, 'mid': model_mid, 'high': model_high}
 
+# === Phase Mapping ===
+phase_mapping = {
+    "Scope": "I. Scope",
+    "Design": "II. Design",
+    "CM": "III. CM - Construction Management",
+    "CM,Art,F&E": "IV. Furniture Equipment & Art",
+    "CM,F&E": "V. Commissioning",
+    "F&E": "VI. Inspection & Testing",
+    "Purch & Install": "VII. Purch & Install",
+    "Construction": "VIII. Construction"
+}
 
 if "project_type" not in st.session_state:
     st.session_state.project_type = None
