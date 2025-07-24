@@ -1,18 +1,18 @@
-from mistralai.client import MistralClient
-from mistralai.models.chat_completion import ChatMessage
+from mistralai import Mistral, UserMessage, SystemMessage
 import os
 
-# Replace this with your actual API key or set it in environment variable
+# Replace with your actual API key, or set it in environment variables
 api_key = st.secrets["mistral_api_key"]
 
+# Choose available model: 'mistral-tiny', 'mistral-small', or others
 model = "mistral-tiny"
 
 try:
-    client = MistralClient(api_key=api_key)
+    client = Mistral(api_key=api_key)
 
     messages = [
-        ChatMessage(role="system", content="You are a helpful assistant."),
-        ChatMessage(role="user", content="What is the capital of France?")
+        SystemMessage(content="You are a helpful assistant."),
+        UserMessage(content="What is the capital of France?")
     ]
 
     response = client.chat(
@@ -20,8 +20,8 @@ try:
         messages=messages
     )
 
-    print("✅ API Test Successful. Response:")
-    print(response.choices[0].message.content)
+    print("✅ Mistral API Test Successful.")
+    print("Response:", response.choices[0].message.content)
 
 except Exception as e:
     print("🔴 Mistral API Test Failed:")
