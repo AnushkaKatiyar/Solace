@@ -22,6 +22,7 @@ if st.button("Test Mistral Model Access"):
             )
             st.success(f"✅ Access to **{model_name}** confirmed.")
         except Exception as e:
+            st.error(f"❌ Access to **{model_name}** denied or error: {e}")
 
 
 
