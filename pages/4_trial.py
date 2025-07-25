@@ -182,9 +182,9 @@ st.markdown("""
         padding: 12px 20px;
         border: none;
         border-radius: 8px;
-        font-size: 16px;
+        font-size: 18px;
         font-weight: bold;
-        width: 100%;
+        width: 90%;
         transition: 0.3s ease-in-out;
     }
 
@@ -196,7 +196,7 @@ st.markdown("""
     /* Center image container */
     .image-container {
         text-align: center;
-        margin-top: 10px;
+        margin-top: 8px;
     }
 
     </style>
