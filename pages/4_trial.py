@@ -198,8 +198,8 @@ st.markdown("""
         text-align: center;
         margin-top: 5px;
         max-width: 90%;       /* same as button width */
-        margin-left: 10px;
-        margin-right: auto;
+        margin-left: 50px;
+        
     }
 
     </style>
