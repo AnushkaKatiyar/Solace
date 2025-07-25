@@ -288,7 +288,6 @@ st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
 # Custom CSS
 st.markdown("""
     <style>
-    /* Style the actual Streamlit buttons */
     .stButton > button {
         background-color: #1E90FF !important;
         color: white !important;
@@ -308,49 +307,57 @@ st.markdown("""
         transform: scale(1.04);
     }
 
-    /* Center the image below button */
-    .image-container {
+    .image-align {
         display: flex;
-        justify-content: center;
-        margin-top: 10px;
+        justify-content: flex-start;
+        align-items: center;
+        height: 100%;
     }
     </style>
 """, unsafe_allow_html=True)
 
-
 if st.session_state.project_type is None:
-    spacer1, col1, col2, col3, spacer2 = st.columns([0.5, 2, 2, 2, 0.5])
     image_width = 100
 
-    with col1:
+    # Row 1: Button 1 + Image 1
+    col_btn1, col_img1 = st.columns([1, 1])
+    with col_btn1:
         if st.button(" New Construction", key="new"):
             st.session_state.project_type = "new"
             st.session_state.cost_bucket = "high"
-        st.markdown('<div class="image-container">', unsafe_allow_html=True)
-        st.image("assets/New_Construction.jpg", width=image_width)
-        st.markdown('</div>', unsafe_allow_html=True)
         if st.session_state.project_type == "new":
             st.success("✔ Selected")
+    with col_img1:
+        st.markdown('<div class="image-align">', unsafe_allow_html=True)
+        st.image("assets/New_Construction.jpg", width=image_width)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    with col2:
+    # Row 2: Button 2 + Image 2
+    col_btn2, col_img2 = st.columns([1, 1])
+    with col_btn2:
         if st.button(" Upgrades", key="upgrade"):
             st.session_state.project_type = "upgrade"
             st.session_state.cost_bucket = "mid"
-        st.markdown('<div class="image-container">', unsafe_allow_html=True)
-        st.image("assets/Upgrade.png", width=image_width)
-        st.markdown('</div>', unsafe_allow_html=True)
         if st.session_state.project_type == "upgrade":
             st.success("✔ Selected")
+    with col_img2:
+        st.markdown('<div class="image-align">', unsafe_allow_html=True)
+        st.image("assets/Upgrade.png", width=image_width)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    with col3:
+    # Row 3: Button 3 + Image 3
+    col_btn3, col_img3 = st.columns([1, 1])
+    with col_btn3:
         if st.button(" Repair & Maintenance", key="repair"):
             st.session_state.project_type = "repair"
             st.session_state.cost_bucket = "low"
-        st.markdown('<div class="image-container">', unsafe_allow_html=True)
-        st.image("assets/Repair.jpg", width=image_width)
-        st.markdown('</div>', unsafe_allow_html=True)
         if st.session_state.project_type == "repair":
             st.success("✔ Selected")
+    with col_img3:
+        st.markdown('<div class="image-align">', unsafe_allow_html=True)
+        st.image("assets/Repair.jpg", width=image_width)
+        st.markdown('</div>', unsafe_allow_html=True)
+
 
 
 # Show content based on selection
