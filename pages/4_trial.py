@@ -172,47 +172,47 @@ if "project_type" not in st.session_state:
 # Add some spacing
 st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
 
-# Custom CSS for styling buttons and centering images
-st.markdown("""
-    <style>
-    /* Style each button container */
-    .stButton > button {
-        background-color: #1E90FF;  /* Dodger Blue */
-        color: white;
-        padding: 12px 20px;
-        border: none;
-        border-radius: 8px;
-        font-size: 18px;
-        font-weight: bold;
-        width: 90%;
-        transition: 0.3s ease-in-out;
-    }
+# # Custom CSS for styling buttons and centering images
+# st.markdown("""
+#     <style>
+#     /* Style each button container */
+#     .stButton > button {
+#         background-color: #1E90FF;  /* Dodger Blue */
+#         color: white;
+#         padding: 12px 20px;
+#         border: none;
+#         border-radius: 8px;
+#         font-size: 18px;
+#         font-weight: bold;
+#         width: 90%;
+#         transition: 0.3s ease-in-out;
+#     }
 
-    .stButton > button:hover {
-        background-color: #1C86EE;  /* Slightly darker blue */
-        transform: scale(1.04);
-    }
+#     .stButton > button:hover {
+#         background-color: #1C86EE;  /* Slightly darker blue */
+#         transform: scale(1.04);
+#     }
 
-    /* Center image container */
-    .image-container {
-        text-align: center;
-        margin-top: 5px;
-        max-width: 90%;       /* same as button width */
-        margin-left: 50px;
+#     /* Center image container */
+#     .image-container {
+#         text-align: center;
+#         margin-top: 5px;
+#         max-width: 90%;       /* same as button width */
+#         margin-left: 50px;
         
-    }
+#     }
 
-    </style>
-""", unsafe_allow_html=True)
+#     </style>
+# """, unsafe_allow_html=True)
 
 
 #Spacing above buttons    
 #st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
 # Layout the three options side by side
 # Only show choices if nothing is selected yet
-if st.session_state.project_type is None:
-    spacer1, col1, col2, col3,spacer2 = st.columns([0.5, 2, 2, 2,0.5])
-    image_width = 100
+# if st.session_state.project_type is None:
+#     spacer1, col1, col2, col3,spacer2 = st.columns([0.5, 2, 2, 2,0.5])
+#     image_width = 100
     # with col1:
     #     if st.button(" New Construction"):
     #         st.session_state.project_type = "new"
@@ -236,51 +236,124 @@ if st.session_state.project_type is None:
     #     st.image("assets/Repair.jpg", caption="Repair & Maintenance", width=image_width)
     #     if st.session_state.project_type == "repair":
     #         st.success("✔ Selected")
+# if st.session_state.project_type is None:
+#     spacer1, col1, col2, col3,spacer2 = st.columns([0.5, 2, 2, 2,0.5])
+#     image_width = 100
+#     with col1:
+#         st.markdown('<div class="stButton new-btn">', unsafe_allow_html=True)
+#         if st.button(" New Construction", key="new"):
+#             st.session_state.project_type = "new"
+#             st.session_state.cost_bucket = "high"
+#         st.markdown('</div>', unsafe_allow_html=True)
+#         st.markdown("<div class='image-container'>", unsafe_allow_html=True)
+        
+        
+#         st.image("assets/New_Construction.jpg", width=image_width)
+#         # st.markdown("</div>", unsafe_allow_html=True)
+
+#         if st.session_state.project_type == "new":
+#             st.success("✔ Selected")
+
+#     with col2:
+#         st.markdown('<div class="stButton upgrade-btn">', unsafe_allow_html=True)
+#         if st.button(" Upgrades", key="upgrade"):
+#             st.session_state.project_type = "upgrade"
+#             st.session_state.cost_bucket = "mid"
+#         st.markdown('</div>', unsafe_allow_html=True)
+
+        
+#         st.markdown("<div class='image-container'>", unsafe_allow_html=True)
+#         st.image("assets/Upgrade.png", width=image_width)
+#         # st.markdown("</div>", unsafe_allow_html=True)
+
+#         if st.session_state.project_type == "upgrade":
+#             st.success("✔ Selected")
+
+#     with col3:
+#         st.markdown('<div class="stButton repair-btn">', unsafe_allow_html=True)
+#         if st.button(" Repair & Maintenance", key="repair"):
+#             st.session_state.project_type = "repair"
+#             st.session_state.cost_bucket = "low"
+#         st.markdown('</div>', unsafe_allow_html=True)
+
+        
+#         st.markdown("<div class='image-container'>", unsafe_allow_html=True)
+#         st.image("assets/Repair.jpg", width=image_width)
+#         # st.markdown("</div>", unsafe_allow_html=True)
+
+#         if st.session_state.project_type == "repair":
+#             st.success("✔ Selected")
+
+# Custom CSS for styling buttons and centering images
+st.markdown("""
+    <style>
+    .button-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .button-container button {
+        background-color: #1E90FF;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        width: 90%;
+        transition: 0.3s ease-in-out;
+        cursor: pointer;
+    }
+
+    .button-container button:hover {
+        background-color: #1C86EE;
+        transform: scale(1.04);
+    }
+
+    .button-container img {
+        margin-top: 8px;
+        display: block;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+if st.session_state.project_type is None:
+    spacer1, col1, col2, col3, spacer2 = st.columns([0.5, 2, 2, 2, 0.5])
+    image_width = 100
+
     with col1:
-        st.markdown('<div class="stButton new-btn">', unsafe_allow_html=True)
+        st.markdown('<div class="button-container">', unsafe_allow_html=True)
         if st.button(" New Construction", key="new"):
             st.session_state.project_type = "new"
             st.session_state.cost_bucket = "high"
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown("<div class='image-container'>", unsafe_allow_html=True)
-        
-        
         st.image("assets/New_Construction.jpg", width=image_width)
-        # st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
         if st.session_state.project_type == "new":
             st.success("✔ Selected")
 
     with col2:
-        st.markdown('<div class="stButton upgrade-btn">', unsafe_allow_html=True)
+        st.markdown('<div class="button-container">', unsafe_allow_html=True)
         if st.button(" Upgrades", key="upgrade"):
             st.session_state.project_type = "upgrade"
             st.session_state.cost_bucket = "mid"
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        
-        st.markdown("<div class='image-container'>", unsafe_allow_html=True)
         st.image("assets/Upgrade.png", width=image_width)
-        # st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
         if st.session_state.project_type == "upgrade":
             st.success("✔ Selected")
 
     with col3:
-        st.markdown('<div class="stButton repair-btn">', unsafe_allow_html=True)
+        st.markdown('<div class="button-container">', unsafe_allow_html=True)
         if st.button(" Repair & Maintenance", key="repair"):
             st.session_state.project_type = "repair"
             st.session_state.cost_bucket = "low"
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        
-        st.markdown("<div class='image-container'>", unsafe_allow_html=True)
         st.image("assets/Repair.jpg", width=image_width)
-        # st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
         if st.session_state.project_type == "repair":
             st.success("✔ Selected")
-
 
 # Show content based on selection
 st.markdown("---")
