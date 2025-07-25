@@ -242,9 +242,9 @@ if st.session_state.project_type is None:
             st.session_state.project_type = "new"
             st.session_state.cost_bucket = "high"
         st.markdown('</div>', unsafe_allow_html=True)
-
-        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
         st.markdown("<div class='image-container'>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+        
         st.image("assets/New_Construction.jpg", width=image_width, caption="New School Construction")
         # st.markdown("</div>", unsafe_allow_html=True)
 
