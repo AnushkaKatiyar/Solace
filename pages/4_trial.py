@@ -101,28 +101,6 @@ def prepare_features_for_duration(description, phase_name):
     cat_feats = ohe_duration.transform(df[["Project Phase Name", "project_status", "timeline_status"]])
     return np.hstack([embedding, cat_feats])
 
-######for duration from ai    
-
-# def predict_cost_duration(description, bucket):
-#     predictions = []
-
-#     for phase_code, display_name in phase_mapping.items():
-#         X_dur = prepare_features_for_duration(description, phase_code)
-#         duration_weeks = duration_model.predict(X_dur)[0]
-
-#         X_cost = prepare_single_row(description, phase_code, duration_weeks)
-#         model = model_dict[bucket]
-#         cost = model.predict(X_cost)[0]
-
-#         predictions.append({
-#             "Phase": display_name,
-#             "Predicted Duration (weeks)": round(duration_weeks, 2),
-#             "Predicted Cost (USD)": round(max(cost, 0), 2),
-#         })
-
-#     result_df = pd.DataFrame(predictions)
-#     return result_df
-
 ASSETS_DIR = "assets/"
 LOGO_PATH = os.path.join(ASSETS_DIR, "Solace_logo.png")
 # === Helper function to load Lottie animation ===
@@ -196,119 +174,7 @@ if "project_type" not in st.session_state:
 # Add some spacing
 st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
 
-# # Custom CSS for styling buttons and centering images
-# st.markdown("""
-#     <style>
-#     /* Style each button container */
-#     .stButton > button {
-#         background-color: #1E90FF;  /* Dodger Blue */
-#         color: white;
-#         padding: 12px 20px;
-#         border: none;
-#         border-radius: 8px;
-#         font-size: 18px;
-#         font-weight: bold;
-#         width: 90%;
-#         transition: 0.3s ease-in-out;
-#     }
 
-#     .stButton > button:hover {
-#         background-color: #1C86EE;  /* Slightly darker blue */
-#         transform: scale(1.04);
-#     }
-
-#     /* Center image container */
-#     .image-container {
-#         text-align: center;
-#         margin-top: 5px;
-#         max-width: 90%;       /* same as button width */
-#         margin-left: 50px;
-        
-#     }
-
-#     </style>
-# """, unsafe_allow_html=True)
-
-
-#Spacing above buttons    
-#st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
-# Layout the three options side by side
-# Only show choices if nothing is selected yet
-# if st.session_state.project_type is None:
-#     spacer1, col1, col2, col3,spacer2 = st.columns([0.5, 2, 2, 2,0.5])
-#     image_width = 100
-    # with col1:
-    #     if st.button(" New Construction"):
-    #         st.session_state.project_type = "new"
-    #         st.session_state.cost_bucket = "high"
-    #     st.image("assets/New_Construction.jpg", caption="New School Construction", width=image_width)
-    #     if st.session_state.project_type == "new":
-    #         st.success("✔ Selected")
-
-    # with col2:
-    #     if st.button(" Upgrades"):
-    #         st.session_state.project_type = "upgrade"
-    #         st.session_state.cost_bucket = "mid"
-    #     st.image("assets/Upgrade.png", caption="School Upgrades", width=image_width)
-    #     if st.session_state.project_type == "upgrade":
-    #         st.success("✔ Selected")
-
-    # with col3:
-    #     if st.button(" Repair & Maintenance"):
-    #         st.session_state.project_type = "repair"
-    #         st.session_state.cost_bucket = "low"
-    #     st.image("assets/Repair.jpg", caption="Repair & Maintenance", width=image_width)
-    #     if st.session_state.project_type == "repair":
-    #         st.success("✔ Selected")
-# if st.session_state.project_type is None:
-#     spacer1, col1, col2, col3,spacer2 = st.columns([0.5, 2, 2, 2,0.5])
-#     image_width = 100
-#     with col1:
-#         st.markdown('<div class="stButton new-btn">', unsafe_allow_html=True)
-#         if st.button(" New Construction", key="new"):
-#             st.session_state.project_type = "new"
-#             st.session_state.cost_bucket = "high"
-#         st.markdown('</div>', unsafe_allow_html=True)
-#         st.markdown("<div class='image-container'>", unsafe_allow_html=True)
-        
-        
-#         st.image("assets/New_Construction.jpg", width=image_width)
-#         # st.markdown("</div>", unsafe_allow_html=True)
-
-#         if st.session_state.project_type == "new":
-#             st.success("✔ Selected")
-
-#     with col2:
-#         st.markdown('<div class="stButton upgrade-btn">', unsafe_allow_html=True)
-#         if st.button(" Upgrades", key="upgrade"):
-#             st.session_state.project_type = "upgrade"
-#             st.session_state.cost_bucket = "mid"
-#         st.markdown('</div>', unsafe_allow_html=True)
-
-        
-#         st.markdown("<div class='image-container'>", unsafe_allow_html=True)
-#         st.image("assets/Upgrade.png", width=image_width)
-#         # st.markdown("</div>", unsafe_allow_html=True)
-
-#         if st.session_state.project_type == "upgrade":
-#             st.success("✔ Selected")
-
-#     with col3:
-#         st.markdown('<div class="stButton repair-btn">', unsafe_allow_html=True)
-#         if st.button(" Repair & Maintenance", key="repair"):
-#             st.session_state.project_type = "repair"
-#             st.session_state.cost_bucket = "low"
-#         st.markdown('</div>', unsafe_allow_html=True)
-
-        
-#         st.markdown("<div class='image-container'>", unsafe_allow_html=True)
-#         st.image("assets/Repair.jpg", width=image_width)
-#         # st.markdown("</div>", unsafe_allow_html=True)
-
-#         if st.session_state.project_type == "repair":
-#             st.success("✔ Selected")
-
-# Custom CSS for styling buttons and centering images
 # Custom CSS
 st.markdown("""
     <style>
@@ -349,20 +215,17 @@ if st.session_state.project_type is None:
         if st.button(" New Construction", key="new"):
             st.session_state.project_type = "new"
             st.session_state.cost_bucket = "high"
-        if st.session_state.project_type == "new":
-            st.success("✔ Selected")
+        
     with col2:
         if st.button(" Upgrades", key="upgrade"):
             st.session_state.project_type = "upgrade"
             st.session_state.cost_bucket = "mid"
-        if st.session_state.project_type == "upgrade":
-            st.success("✔ Selected")
+        
     with col3:
         if st.button(" Repair & Maintenance", key="repair"):
             st.session_state.project_type = "repair"
             st.session_state.cost_bucket = "low"
-        if st.session_state.project_type == "repair":
-            st.success("✔ Selected")
+        
 
     # Row 2: Images (center aligned)
     spacer1_img, img_col1, img_col2, img_col3, spacer2_img = st.columns([1, 2, 2, 1.3, 0.4])
