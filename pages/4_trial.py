@@ -301,7 +301,7 @@ st.markdown("""
         border-radius: 8px;
         font-size: 18px;
         font-weight: bold;
-        width: 90%;
+        width: 250px;
         transition: 0.3s ease-in-out;
         cursor: pointer;
     }
