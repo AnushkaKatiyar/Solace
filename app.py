@@ -42,25 +42,37 @@ mistral_api_key = st.secrets["mistral_api_key"]
 client = Mistral(api_key=mistral_api_key)
 
 # st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
-# st.title("AI Assistant for NYC School Construction")
-# st.markdown("###  What type of project are you planning?")
-# # Project type selector
-# project_type = st.radio(
-#     "Select Project Type",
-#     [" New Construction", " Upgrades", " Repair & Maintenance"],
-#     index=None,
-#     horizontal=True
+# st.markdown(
+#     """
+#     <div style='text-align: center; background-color: #E8F8FF; padding: 5px 3px; border-radius: 5px;'>
+#         <h3 style='color: #2C81C0; margin-bottom: 0;'> AI Assistant for NYC School Construction</h3>
+#         <h5 style='color: #2C81C0; margin-top: 0;'> What type of project are you planning?</h5>
+#     </div>
+#     """,
+#     unsafe_allow_html=True
 # )
 st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
-st.markdown(
-    """
-    <div style='text-align: center; background-color: #E8F8FF; padding: 5px 3px; border-radius: 5px;'>
-        <h3 style='color: #2C81C0; margin-bottom: 0;'> AI Assistant for NYC School Construction</h3>
-        <h5 style='color: #2C81C0; margin-top: 0;'> What type of project are you planning?</h5>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+
+st.markdown("""
+<div style="
+    text-align: center; 
+    background: linear-gradient(90deg, #D9F0FF, #A7D8FF);
+    padding: 20px 15px; 
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(44, 129, 192, 0.25);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 900px;
+    margin: 20px auto 30px auto;
+">
+    <h2 style="color: #1A5A99; margin-bottom: 5px;">
+        AI Assistant for NYC School Construction
+    </h2>
+    <h5 style="color: #1A5A99; margin-top: 0; font-weight: 400;">
+        What type of project are you planning?
+    </h5>
+</div>
+""", unsafe_allow_html=True)
+
 # Store selection in session state
 if "project_type" not in st.session_state:
     st.session_state.project_type = None
