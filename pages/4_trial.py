@@ -175,29 +175,33 @@ st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
 # Custom CSS for styling buttons and centering images
 st.markdown("""
     <style>
-    .custom-button {
-        background-color: #4CAF50;
+    /* Style each button container */
+    .stButton > button {
+        background-color: #1E90FF;  /* Dodger Blue */
         color: white;
         padding: 12px 20px;
         border: none;
         border-radius: 8px;
         font-size: 16px;
-        cursor: pointer;
+        font-weight: bold;
         width: 100%;
-        transition: background-color 0.3s;
+        transition: 0.3s ease-in-out;
     }
-    .custom-button:hover {
-        background-color: #45a049;
+
+    .stButton > button:hover {
+        background-color: #1C86EE;  /* Slightly darker blue */
+        transform: scale(1.02);
     }
-    .button-container {
-        text-align: center;
-        margin-bottom: 10px;
-    }
+
+    /* Center image container */
     .image-container {
         text-align: center;
+        margin-top: 10px;
     }
+
     </style>
 """, unsafe_allow_html=True)
+
 
 #Spacing above buttons    
 #st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
