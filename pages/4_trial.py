@@ -172,7 +172,7 @@ st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
 # Layout the three options side by side
 # Only show choices if nothing is selected yet
 if st.session_state.project_type is None:
-    spacer1, col1, col2, col3, spacer2 = st.columns([1, 2, 2, 2, 1])
+    spacer1, col1, col2, col3, spacer2 = st.columns([1, 2, 3, 2, 1])
     # col1, col2, col3 = st.columns(3)
     image_width = 100
     with col1:
