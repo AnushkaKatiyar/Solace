@@ -106,8 +106,7 @@ if st.session_state.project_type is None:
 # Show content based on selection
 st.markdown("---")
 
-# if project_type == "🏗 New Construction":
-#     st.subheader("New Construction Planning")
+
 if st.session_state.project_type == "new":
     st.subheader("New Construction Planning")
     # your existing pipeline goes here (assistant, model predictions, etc.)
@@ -305,7 +304,7 @@ if st.session_state.project_type == "new":
 
     if st.session_state.final_plan:
         # Optional: Add a header
-        st.subheader("📦 Final Construction Plan")
+        st.subheader("Final Construction Plan")
 
         # If it's still a string, clean and parse it
         if isinstance(st.session_state.final_plan, str):
@@ -365,7 +364,7 @@ if st.session_state.project_type == "new":
         
             
     ####################################################################    
-        st.subheader("🧱 Resources & Materials")
+        st.subheader(" Resources & Materials")
         resources = plan.get("Resources & Materials", {})
         if resources:
             # Flatten data into rows with Category, Item, Quantity, Cost
