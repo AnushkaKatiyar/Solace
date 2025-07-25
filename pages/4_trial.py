@@ -293,7 +293,7 @@ st.markdown("""
         align-items: center;
     }
 
-    .button-container button {
+    .button-container .stButton > button {
         background-color: #1E90FF;
         color: white;
         padding: 12px 20px;
@@ -306,7 +306,7 @@ st.markdown("""
         cursor: pointer;
     }
 
-    .button-container button:hover {
+    .button-container .stButton > button:hover {
         background-color: #1C86EE;
         transform: scale(1.04);
     }
@@ -324,36 +324,28 @@ if st.session_state.project_type is None:
 
     with col1:
         st.markdown('<div class="button-container">', unsafe_allow_html=True)
-        if st.button(" New Construction", key="new"):
-            st.session_state.project_type = "new"
-            st.session_state.cost_bucket = "high"
+        st.button(" New Construction", key="new")
         st.image("assets/New_Construction.jpg", width=image_width)
         st.markdown('</div>', unsafe_allow_html=True)
-
         if st.session_state.project_type == "new":
             st.success("✔ Selected")
 
     with col2:
         st.markdown('<div class="button-container">', unsafe_allow_html=True)
-        if st.button(" Upgrades", key="upgrade"):
-            st.session_state.project_type = "upgrade"
-            st.session_state.cost_bucket = "mid"
+        st.button(" Upgrades", key="upgrade")
         st.image("assets/Upgrade.png", width=image_width)
         st.markdown('</div>', unsafe_allow_html=True)
-
         if st.session_state.project_type == "upgrade":
             st.success("✔ Selected")
 
     with col3:
         st.markdown('<div class="button-container">', unsafe_allow_html=True)
-        if st.button(" Repair & Maintenance", key="repair"):
-            st.session_state.project_type = "repair"
-            st.session_state.cost_bucket = "low"
+        st.button(" Repair & Maintenance", key="repair")
         st.image("assets/Repair.jpg", width=image_width)
         st.markdown('</div>', unsafe_allow_html=True)
-
         if st.session_state.project_type == "repair":
             st.success("✔ Selected")
+
 
 # Show content based on selection
 st.markdown("---")
