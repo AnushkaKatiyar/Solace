@@ -155,16 +155,40 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 mistral_api_key = st.secrets["mistral_api_key"]
 client = Mistral(api_key=mistral_api_key)
 
+# st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
+# st.markdown(
+#     """
+#     <div style='text-align: center; background-color: #E8F8FF; padding: 5px 3px; border-radius: 5px;'>
+#         <h3 style='color: #2C81C0; margin-bottom: 0;'> AI Assistant for NYC School Construction</h3>
+#         <h5 style='color: #2C81C0; margin-top: 0;'> What type of project are you planning?</h5>
+#     </div>
+#     """,
+#     unsafe_allow_html=True
+# )
+
 st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
-st.markdown(
-    """
-    <div style='text-align: center; background-color: #E8F8FF; padding: 5px 3px; border-radius: 5px;'>
-        <h3 style='color: #2C81C0; margin-bottom: 0;'> AI Assistant for NYC School Construction</h3>
-        <h5 style='color: #2C81C0; margin-top: 0;'> What type of project are you planning?</h5>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+
+st.markdown("""
+<div style="
+    max-width: 800px;
+    margin: 20px auto 40px auto;
+    padding: 25px 30px;
+    text-align: center;
+    background-color: #cce6ff;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 102, 204, 0.3);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+">
+    <h1 style="color: #004080; margin-bottom: 8px; font-weight: 700; font-size: 2.8rem;">
+        🤖 AI Assistant for NYC School Construction
+    </h1>
+    <h4 style="color: #004080; margin-top: 0; font-weight: 400;">
+        What type of project are you planning?
+    </h4>
+</div>
+""", unsafe_allow_html=True)
+
+
 # Store selection in session state
 if "project_type" not in st.session_state:
     st.session_state.project_type = None
