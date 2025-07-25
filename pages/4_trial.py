@@ -230,34 +230,46 @@ if st.session_state.project_type is None:
     #     if st.session_state.project_type == "repair":
     #         st.success("✔ Selected")
     with col1:
-        with st.container():
-            clicked = st.button("New Construction", key="btn_new")
-            if clicked:
-                st.session_state.project_type = "new"
-                st.session_state.cost_bucket = "high"
-            st.markdown('<div class="image-container"><img src="assets/New_Construction.jpg" width="100"><br><small>New School Construction</small></div>', unsafe_allow_html=True)
-            if st.session_state.project_type == "new":
-                st.success("✔ Selected")
+        st.markdown('<div class="stButton new-btn">', unsafe_allow_html=True)
+        if st.button(" New Construction", key="new"):
+            st.session_state.project_type = "new"
+            st.session_state.cost_bucket = "high"
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+        st.image("assets/New_Construction.jpg", width=image_width, caption="New School Construction")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        if st.session_state.project_type == "new":
+            st.success("✔ Selected")
 
     with col2:
-        with st.container():
-            clicked = st.button("Upgrades", key="btn_upgrade")
-            if clicked:
-                st.session_state.project_type = "upgrade"
-                st.session_state.cost_bucket = "mid"
-            st.markdown('<div class="image-container"><img src="assets/Upgrade.png" width="100"><br><small>School Upgrades</small></div>', unsafe_allow_html=True)
-            if st.session_state.project_type == "upgrade":
-                st.success("✔ Selected")
+        st.markdown('<div class="stButton upgrade-btn">', unsafe_allow_html=True)
+        if st.button(" Upgrades", key="upgrade"):
+            st.session_state.project_type = "upgrade"
+            st.session_state.cost_bucket = "mid"
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+        st.image("assets/Upgrade.png", width=image_width, caption="School Upgrades")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        if st.session_state.project_type == "upgrade":
+            st.success("✔ Selected")
 
     with col3:
-        with st.container():
-            clicked = st.button("Repair & Maintenance", key="btn_repair")
-            if clicked:
-                st.session_state.project_type = "repair"
-                st.session_state.cost_bucket = "low"
-            st.markdown('<div class="image-container"><img src="assets/Repair.jpg" width="100"><br><small>Repair & Maintenance</small></div>', unsafe_allow_html=True)
-            if st.session_state.project_type == "repair":
-                st.success("✔ Selected")
+        st.markdown('<div class="stButton repair-btn">', unsafe_allow_html=True)
+        if st.button(" Repair & Maintenance", key="repair"):
+            st.session_state.project_type = "repair"
+            st.session_state.cost_bucket = "low"
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+        st.image("assets/Repair.jpg", width=image_width, caption="Repair & Maintenance")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        if st.session_state.project_type == "repair":
+            st.success("✔ Selected")
 
 
 # Show content based on selection
