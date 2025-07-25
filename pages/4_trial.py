@@ -170,6 +170,7 @@ if "project_type" not in st.session_state:
     st.session_state.project_type = None
 
 # Inject CSS
+# CSS styling
 st.markdown("""
     <style>
     .stButton > button {
@@ -204,14 +205,6 @@ st.markdown("""
 
     .repair-btn > button:hover {
         background-color: #27ae60;
-    }
-
-    .centered {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        text-align: center;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -252,10 +245,11 @@ if st.session_state.project_type is None:
             st.session_state.project_type = "new"
             st.session_state.cost_bucket = "high"
         st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown(
-            f"<div class='centered'><img src='assets/New_Construction.jpg' width='{image_width}'><p>New School Construction</p></div>",
-            unsafe_allow_html=True
-        )
+
+        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+        st.image("assets/New_Construction.jpg", width=image_width, caption="New School Construction")
+        st.markdown("</div>", unsafe_allow_html=True)
+
         if st.session_state.project_type == "new":
             st.success("✔ Selected")
 
@@ -265,10 +259,11 @@ if st.session_state.project_type is None:
             st.session_state.project_type = "upgrade"
             st.session_state.cost_bucket = "mid"
         st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown(
-            f"<div class='centered'><img src='assets/Upgrade.png' width='{image_width}'><p>School Upgrades</p></div>",
-            unsafe_allow_html=True
-        )
+
+        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+        st.image("assets/Upgrade.png", width=image_width, caption="School Upgrades")
+        st.markdown("</div>", unsafe_allow_html=True)
+
         if st.session_state.project_type == "upgrade":
             st.success("✔ Selected")
 
@@ -278,10 +273,11 @@ if st.session_state.project_type is None:
             st.session_state.project_type = "repair"
             st.session_state.cost_bucket = "low"
         st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown(
-            f"<div class='centered'><img src='assets/Repair.jpg' width='{image_width}'><p>Repair & Maintenance</p></div>",
-            unsafe_allow_html=True
-        )
+
+        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+        st.image("assets/Repair.jpg", width=image_width, caption="Repair & Maintenance")
+        st.markdown("</div>", unsafe_allow_html=True)
+
         if st.session_state.project_type == "repair":
             st.success("✔ Selected")
 
