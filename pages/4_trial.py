@@ -168,35 +168,107 @@ st.markdown(
 # Store selection in session state
 if "project_type" not in st.session_state:
     st.session_state.project_type = None
+
+# Inject CSS for button styling
+st.markdown("""
+    <style>
+    .stButton > button {
+        width: 200px;
+        height: 45px;
+        font-size: 16px;
+        border-radius: 8px;
+        color: white;
+        margin-bottom: 10px;
+    }
+
+    /* Specific button color classes */
+    .new-btn > button {
+        background-color: #3498db; /* Blue */
+    }
+
+    .upgrade-btn > button {
+        background-color: #f39c12; /* Orange */
+    }
+
+    .repair-btn > button {
+        background-color: #2ecc71; /* Green */
+    }
+
+    /* Hover effects */
+    .new-btn > button:hover {
+        background-color: #2980b9;
+    }
+
+    .upgrade-btn > button:hover {
+        background-color: #e67e22;
+    }
+
+    .repair-btn > button:hover {
+        background-color: #27ae60;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+#Spacing above buttons    
 st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
 # Layout the three options side by side
 # Only show choices if nothing is selected yet
 if st.session_state.project_type is None:
     spacer1, col1, col2, col3 = st.columns([0.5, 2, 2, 2])
     image_width = 100
+    # with col1:
+    #     if st.button(" New Construction"):
+    #         st.session_state.project_type = "new"
+    #         st.session_state.cost_bucket = "high"
+    #     st.image("assets/New_Construction.jpg", caption="New School Construction", width=image_width)
+    #     if st.session_state.project_type == "new":
+    #         st.success("✔ Selected")
+
+    # with col2:
+    #     if st.button(" Upgrades"):
+    #         st.session_state.project_type = "upgrade"
+    #         st.session_state.cost_bucket = "mid"
+    #     st.image("assets/Upgrade.png", caption="School Upgrades", width=image_width)
+    #     if st.session_state.project_type == "upgrade":
+    #         st.success("✔ Selected")
+
+    # with col3:
+    #     if st.button(" Repair & Maintenance"):
+    #         st.session_state.project_type = "repair"
+    #         st.session_state.cost_bucket = "low"
+    #     st.image("assets/Repair.jpg", caption="Repair & Maintenance", width=image_width)
+    #     if st.session_state.project_type == "repair":
+    #         st.success("✔ Selected")
     with col1:
-        if st.button(" New Construction"):
+        st.markdown('<div class="stButton new-btn">', unsafe_allow_html=True)
+        if st.button(" New Construction", key="new"):
             st.session_state.project_type = "new"
             st.session_state.cost_bucket = "high"
+        st.markdown('</div>', unsafe_allow_html=True)
         st.image("assets/New_Construction.jpg", caption="New School Construction", width=image_width)
         if st.session_state.project_type == "new":
             st.success("✔ Selected")
 
     with col2:
-        if st.button(" Upgrades"):
+        st.markdown('<div class="stButton upgrade-btn">', unsafe_allow_html=True)
+        if st.button(" Upgrades", key="upgrade"):
             st.session_state.project_type = "upgrade"
             st.session_state.cost_bucket = "mid"
+        st.markdown('</div>', unsafe_allow_html=True)
         st.image("assets/Upgrade.png", caption="School Upgrades", width=image_width)
         if st.session_state.project_type == "upgrade":
             st.success("✔ Selected")
 
     with col3:
-        if st.button(" Repair & Maintenance"):
+        st.markdown('<div class="stButton repair-btn">', unsafe_allow_html=True)
+        if st.button(" Repair & Maintenance", key="repair"):
             st.session_state.project_type = "repair"
             st.session_state.cost_bucket = "low"
+        st.markdown('</div>', unsafe_allow_html=True)
         st.image("assets/Repair.jpg", caption="Repair & Maintenance", width=image_width)
         if st.session_state.project_type == "repair":
             st.success("✔ Selected")
+
 
 # Show content based on selection
 st.markdown("---")
