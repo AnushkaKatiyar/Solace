@@ -190,13 +190,16 @@ st.markdown("""
 
     .stButton > button:hover {
         background-color: #1C86EE;  /* Slightly darker blue */
-        transform: scale(1.02);
+        transform: scale(1.04);
     }
 
     /* Center image container */
     .image-container {
         text-align: center;
-        margin-top: 8px;
+        margin-top: 5px;
+        max-width: 90%;       /* same as button width */
+        margin-left: auto;
+        margin-right: auto;
     }
 
     </style>
@@ -241,8 +244,9 @@ if st.session_state.project_type is None:
         st.markdown('</div>', unsafe_allow_html=True)
 
         st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+        st.markdown("<div class='image-container'>", unsafe_allow_html=True)
         st.image("assets/New_Construction.jpg", width=image_width, caption="New School Construction")
-        st.markdown("</div>", unsafe_allow_html=True)
+        # st.markdown("</div>", unsafe_allow_html=True)
 
         if st.session_state.project_type == "new":
             st.success("✔ Selected")
@@ -255,8 +259,9 @@ if st.session_state.project_type is None:
         st.markdown('</div>', unsafe_allow_html=True)
 
         st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+        st.markdown("<div class='image-container'>", unsafe_allow_html=True)
         st.image("assets/Upgrade.png", width=image_width, caption="School Upgrades")
-        st.markdown("</div>", unsafe_allow_html=True)
+        # st.markdown("</div>", unsafe_allow_html=True)
 
         if st.session_state.project_type == "upgrade":
             st.success("✔ Selected")
@@ -269,8 +274,9 @@ if st.session_state.project_type is None:
         st.markdown('</div>', unsafe_allow_html=True)
 
         st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+        st.markdown("<div class='image-container'>", unsafe_allow_html=True)
         st.image("assets/Repair.jpg", width=image_width, caption="Repair & Maintenance")
-        st.markdown("</div>", unsafe_allow_html=True)
+        # st.markdown("</div>", unsafe_allow_html=True)
 
         if st.session_state.project_type == "repair":
             st.success("✔ Selected")
@@ -1347,6 +1353,6 @@ elif st.session_state.project_type == "repair":
                 except Exception as e:
                     st.error(f"Prediction failed: {e}")
 
-# Add a back/reset button
-if st.button("🔙 Go Back"):
-    st.session_state.project_type = None
+# # Add a back/reset button
+# if st.button("🔙 Go Back"):
+#     st.session_state.project_type = None
