@@ -55,21 +55,21 @@ st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
 
 st.markdown("""
 <div style="
-    text-align: center; 
-    background: linear-gradient(90deg, #D9F0FF, #A7D8FF);
-    padding: 20px 15px; 
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(44, 129, 192, 0.25);
+    max-width: 800px;
+    margin: 20px auto 40px auto;
+    padding: 25px 30px;
+    text-align: center;
+    background-color: #cce6ff;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 102, 204, 0.3);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    max-width: 900px;
-    margin: 20px auto 30px auto;
 ">
-    <h2 style="color: #1A5A99; margin-bottom: 5px;">
-        AI Assistant for NYC School Construction
-    </h2>
-    <h5 style="color: #1A5A99; margin-top: 0; font-weight: 400;">
+    <h1 style="color: #004080; margin-bottom: 8px; font-weight: 700; font-size: 2.8rem;">
+        🤖 AI Assistant for NYC School Construction
+    </h1>
+    <h4 style="color: #004080; margin-top: 0; font-weight: 400;">
         What type of project are you planning?
-    </h5>
+    </h4>
 </div>
 """, unsafe_allow_html=True)
 
