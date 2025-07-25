@@ -341,7 +341,7 @@ if st.session_state.project_type is None:
             st.success("✔ Selected")
 
     # Row 2: Images (center aligned)
-    spacer1_img, img_col1, img_col2, img_col3, spacer2_img = st.columns([1, 2, 1.5, 2, 0.1])
+    spacer1_img, img_col1, img_col2, img_col3, spacer2_img = st.columns([1, 2, 1.5, 1.5, 0.1])
     with img_col1:
         st.markdown('<div class="image-container">', unsafe_allow_html=True)
         st.image("assets/New_Construction.jpg", width=image_width)
