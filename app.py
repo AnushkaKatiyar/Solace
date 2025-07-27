@@ -659,29 +659,19 @@ if st.session_state.project_type == "new":
             st.markdown(
                 """
                 <div style="
-                    border: 1px solid #4a90e2;
-                    border-radius: 10px;
+                    display: inline-block;
+                    padding: 8px 20px;
+                    border-top-left-radius: 10px;
+                    border-top-right-radius: 10px;
+                    background-color: #4a90e2;  /* nice blue tab color */
+                    color: white;
+                    font-size: 20px;
+                    font-weight: bold;
                     font-family: sans-serif;
-                    color: #222;
-                    max-width: 600px;
-                    margin-bottom: 20px;
                     box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+                    margin-bottom: -2px;
                 ">
-                    <div style="
-                        background-color: #4a90e2;
-                        color: white;
-                        font-weight: bold;
-                        font-size: 20px;
-                        padding: 10px 20px;
-                        border-top-left-radius: 10px;
-                        border-top-right-radius: 10px;
-                        box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2);
-                    ">
-                        💰 Cost Distribution
-                    </div>
-                    <div style="padding: 20px;">
-                        <!-- Content goes here -->
-                    </div>
+                    💰 Cost Distribution
                 </div>
                 """,
                 unsafe_allow_html=True,
