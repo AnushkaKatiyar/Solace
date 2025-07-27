@@ -519,8 +519,9 @@ if st.session_state.project_type == "new":
 
                 phase_cost = phase.get("EstimatedCost", 1e-6)  # Avoid divide-by-zero
                 phase_duration = phase.get("DurationEstimate", 1e-6)
+                ml_duration = phase.get("DurationEstimate", 0)
+                ml_cost = phase.get("EstimatedCost", 0)
                 
-                pred_row = None
                 if 'result_df' in locals() and not result_df.empty:
                     pred_row = result_df[result_df["Phase"] == phase_name]
 
@@ -608,7 +609,7 @@ if st.session_state.project_type == "new":
             col1, col2 = st.columns(2)
 
             with col1:
-                st.markdown("###Labor Categories")
+                st.markdown("Labor Categories")
                 if all_labors:
                     for labor in sorted(all_labors):
                         st.markdown(f"- {labor}")
@@ -616,7 +617,7 @@ if st.session_state.project_type == "new":
                     st.write("No labor categories found.")
 
             with col2:
-                st.markdown("###Vendor Types")
+                st.markdown("Vendor Types")
                 if all_vendors:
                     for vendor in sorted(all_vendors):
                         st.markdown(f"- {vendor}")
