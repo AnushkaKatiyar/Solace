@@ -658,19 +658,87 @@ if st.session_state.project_type == "new":
             st.info("No resources or materials specified.")
     ####################################################################
         
+        # all_labors = set()
+        # all_vendors = set()
+
+        # for phase in phases:
+        #     all_labors.update(phase.get("LaborCategories", []))
+        #     all_vendors.update(phase.get("Vendors", []))
+            
+        #     for sub in phase.get("Subtasks", []):
+        #         all_labors.update(sub.get("LaborCategories", []))
+        #         all_vendors.update(sub.get("Vendors", []))
+
+        # if all_labors or all_vendors:
+           
+        #     st.markdown(
+        #         """
+        #         <div style="
+        #             display: inline-block;
+        #             padding: 8px 20px;
+        #             border-top-left-radius: 10px;
+        #             border-top-right-radius: 10px;
+        #             background-color: #0077b6;  /* nice blue tab color */
+        #             color: white;
+        #             font-size: 20px;
+        #             font-weight: bold;
+        #             font-family: sans-serif;
+        #             box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        #             margin-bottom: -2px;
+        #         ">
+        #             Project Resources
+        #         </div>
+        #         """,
+        #         unsafe_allow_html=True,
+        #     )
+
+        #     col1, col2 = st.columns(2)
+
+        #     with col1:
+        #         st.subheader("Labor Categories")
+        #         if all_labors:
+        #             for labor in sorted(all_labors):
+        #                 st.markdown(f"- {labor}")
+        #         else:
+        #             st.write("No labor categories found.")
+
+        #     with col2:
+        #         st.subheader("Vendor Types")
+        #         if all_vendors:
+        #             for vendor in sorted(all_vendors):
+        #                 st.markdown(f"- {vendor}")
+        #         else:
+        #             st.write("No vendor types found.")
+        # else:
+        #     st.info("No labor or vendor types found in this plan.") 
+        # Collect labor and vendor info
         all_labors = set()
         all_vendors = set()
 
         for phase in phases:
             all_labors.update(phase.get("LaborCategories", []))
             all_vendors.update(phase.get("Vendors", []))
-            
+
             for sub in phase.get("Subtasks", []):
                 all_labors.update(sub.get("LaborCategories", []))
                 all_vendors.update(sub.get("Vendors", []))
 
+        # Pill rendering function
+        def render_pills(title, items, color="#e0f0ff"):
+            st.markdown(
+                f"""
+                <div style="margin-top: 20px;">
+                    <h4 style="margin-bottom: 10px;">{title}</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        {''.join(f'<div style="padding: 6px 12px; background-color: {color}; border-radius: 20px; font-size: 14px; color: #333; border: 1px solid #ccc;">{item}</div>' for item in sorted(items))}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        # Display if any data found
         if all_labors or all_vendors:
-           
             st.markdown(
                 """
                 <div style="
@@ -678,7 +746,7 @@ if st.session_state.project_type == "new":
                     padding: 8px 20px;
                     border-top-left-radius: 10px;
                     border-top-right-radius: 10px;
-                    background-color: #0077b6;  /* nice blue tab color */
+                    background-color: #0077b6;
                     color: white;
                     font-size: 20px;
                     font-weight: bold;
@@ -695,22 +763,21 @@ if st.session_state.project_type == "new":
             col1, col2 = st.columns(2)
 
             with col1:
-                st.subheader("Labor Categories")
                 if all_labors:
-                    for labor in sorted(all_labors):
-                        st.markdown(f"- {labor}")
+                    render_pills("Labor Categories", all_labors, color="#d1e7dd")  # Light green
                 else:
+                    st.subheader("Labor Categories")
                     st.write("No labor categories found.")
 
             with col2:
-                st.subheader("Vendor Types")
                 if all_vendors:
-                    for vendor in sorted(all_vendors):
-                        st.markdown(f"- {vendor}")
+                    render_pills("Vendor Types", all_vendors, color="#fce3e0")  # Light coral
                 else:
+                    st.subheader("Vendor Types")
                     st.write("No vendor types found.")
         else:
-            st.info("No labor or vendor types found in this plan.")    
+            st.info("No labor or vendor types found in this plan.")
+   
     ####################################################################
         
     ##################################################
