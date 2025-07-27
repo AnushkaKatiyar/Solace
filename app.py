@@ -677,24 +677,25 @@ if st.session_state.project_type == "new":
                 title="Duration by Phase",
             )
             fig_line.update_layout(
-                xaxis_tickangle=-45,
-                yaxis_title="Duration (weeks)",
                 margin=dict(l=40, r=20, t=50, b=80),
                 xaxis=dict(
+                    tickangle=-45,                           # move tickangle here
+                    title="Phase",                           # add x-axis title here
+                    titlefont=dict(color='black', size=16), 
+                    tickfont=dict(color='black', size=14),
                     showline=True,
                     linecolor='black',
                     showgrid=True,
                     gridcolor='lightgrey',
-                    tickfont=dict(color='black', size=14),       # make x-axis ticks black and bigger
-                    titlefont=dict(color='black', size=16)       # make x-axis title black and bigger
                 ),
                 yaxis=dict(
+                    title="Duration (weeks)",                # add y-axis title here
+                    titlefont=dict(color='black', size=16),
+                    tickfont=dict(color='black', size=14),
                     showline=True,
                     linecolor='black',
-                    tickfont=dict(color='black', size=14),       # y-axis ticks black and bigger
-                    titlefont=dict(color='black', size=16)       # y-axis title black and bigger
                 )
-                )
+            )
             st.plotly_chart(fig_line, use_container_width=True)
         else:
             st.info("No construction phases data available.")
