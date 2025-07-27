@@ -1,27 +1,3 @@
-# import streamlit as st
-# from mistralai import Mistral, SystemMessage, UserMessage
-
-# st.title("Check Mistral Model Access")
-
-# api_key = st.secrets["mistral_api_key"]
-# client = Mistral(api_key=api_key)
-
-# models_to_test = ["mistral-tiny", "mistral-small", "mistral-medium"]
-
-# if st.button("Test Mistral Model Access"):
-#     for model_name in models_to_test:
-#         st.write(f"Testing access for model: **{model_name}** ...")
-#         try:
-#             response = client.chat.complete(
-#                 model=model_name,
-#                 messages=[
-#                     SystemMessage(content="You are a helpful assistant."),
-#                     UserMessage(content="Say hello!")
-#                 ],
-#             )
-#             st.success(f"✅ Access to **{model_name}** confirmed. Response:\n{response.choices[0].message.content}")
-#         except Exception as e:
-#             st.error(f"❌ Access to **{model_name}** denied or error: {e}")
 
 import pandas as pd
 import numpy as np
@@ -539,6 +515,35 @@ if st.session_state.project_type == "new":
     if "final_plan" in st.session_state and st.session_state.final_plan is not None:
         plan = st.session_state.final_plan
         phases = plan.get("ConstructionPhases", [])
+        st.divider()
+            st.subheader("🧮 ML-Based Cost & Schedule Estimates")
+
+            
+            description = st.session_state.collected_info.get("ProjectDescription", "") 
+            bucket = st.session_state.get("bucket", "high")  # fallback to high
+
+            if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
+                with st.spinner("Running prediction model..."):
+                    try:
+                        result_df = predict_cost_duration(description, bucket,ai_durations)
+
+                        total_cost = result_df["Predicted Cost (USD)"].sum()
+                        total_duration = result_df["Predicted Duration (weeks)"].sum()
+
+                        result_df["Predicted Cost (USD)"] = result_df["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
+                        result_df["Duration"] = result_df["Predicted Duration (weeks)"].apply(
+                            lambda w: f"{int(w)} weeks {int((w % 1) * 7)} days"
+                        )
+
+                        st.dataframe(result_df[["Phase", "Predicted Cost (USD)", "Duration"]], use_container_width=True)
+
+                        col1, col2 = st.columns(2)
+                        col1.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
+                        col2.metric("🕒 Total Estimated Duration", f"{total_duration:.1f} weeks")
+
+                    except Exception as e:
+                        st.error(f"Prediction failed: {e}")
+      
         st.subheader("📋 Construction Phases & Subtasks")
 
         for phase in phases:
@@ -701,34 +706,35 @@ if st.session_state.project_type == "new":
             st.markdown(
                 f"**Total Estimated Duration:** {int(round(total_duration))} weeks (~{int(round(total_duration / 4))} months)"
             )
-            st.divider()
-            st.subheader("🧮 ML-Based Cost & Schedule Estimates")
-###############################################################################
+###############################################################################            
+            # st.divider()
+            # st.subheader("🧮 ML-Based Cost & Schedule Estimates")
+
             
-            description = st.session_state.collected_info.get("ProjectDescription", "") 
-            bucket = st.session_state.get("bucket", "high")  # fallback to high
+            # description = st.session_state.collected_info.get("ProjectDescription", "") 
+            # bucket = st.session_state.get("bucket", "high")  # fallback to high
 
-            if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
-                with st.spinner("Running prediction model..."):
-                    try:
-                        result_df = predict_cost_duration(description, bucket,ai_durations)
+            # if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
+            #     with st.spinner("Running prediction model..."):
+            #         try:
+            #             result_df = predict_cost_duration(description, bucket,ai_durations)
 
-                        total_cost = result_df["Predicted Cost (USD)"].sum()
-                        total_duration = result_df["Predicted Duration (weeks)"].sum()
+            #             total_cost = result_df["Predicted Cost (USD)"].sum()
+            #             total_duration = result_df["Predicted Duration (weeks)"].sum()
 
-                        result_df["Predicted Cost (USD)"] = result_df["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
-                        result_df["Duration"] = result_df["Predicted Duration (weeks)"].apply(
-                            lambda w: f"{int(w)} weeks {int((w % 1) * 7)} days"
-                        )
+            #             result_df["Predicted Cost (USD)"] = result_df["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
+            #             result_df["Duration"] = result_df["Predicted Duration (weeks)"].apply(
+            #                 lambda w: f"{int(w)} weeks {int((w % 1) * 7)} days"
+            #             )
 
-                        st.dataframe(result_df[["Phase", "Predicted Cost (USD)", "Duration"]], use_container_width=True)
+            #             st.dataframe(result_df[["Phase", "Predicted Cost (USD)", "Duration"]], use_container_width=True)
 
-                        col1, col2 = st.columns(2)
-                        col1.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
-                        col2.metric("🕒 Total Estimated Duration", f"{total_duration:.1f} weeks")
+            #             col1, col2 = st.columns(2)
+            #             col1.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
+            #             col2.metric("🕒 Total Estimated Duration", f"{total_duration:.1f} weeks")
 
-                    except Exception as e:
-                        st.error(f"Prediction failed: {e}")
+            #         except Exception as e:
+            #             st.error(f"Prediction failed: {e}")
         else:
             st.info("No construction phases data available.")
 ###############################################################

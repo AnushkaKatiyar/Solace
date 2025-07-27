@@ -1,3 +1,31 @@
+# import streamlit as st
+# from mistralai import Mistral, SystemMessage, UserMessage
+
+# st.title("Check Mistral Model Access")
+
+# api_key = st.secrets["mistral_api_key"]
+# client = Mistral(api_key=api_key)
+
+# models_to_test = ["mistral-tiny", "mistral-small", "mistral-medium"]
+
+# if st.button("Test Mistral Model Access"):
+#     for model_name in models_to_test:
+#         st.write(f"Testing access for model: **{model_name}** ...")
+#         try:
+#             response = client.chat.complete(
+#                 model=model_name,
+#                 messages=[
+#                     SystemMessage(content="You are a helpful assistant."),
+#                     UserMessage(content="Say hello!")
+#                 ],
+#             )
+#             st.success(f"✅ Access to **{model_name}** confirmed. Response:\n{response.choices[0].message.content}")
+#         except Exception as e:
+#             st.error(f"❌ Access to **{model_name}** denied or error: {e}")
+
+
+
+
 import streamlit as st
 from mistralai import Mistral, UserMessage, SystemMessage
 import json
