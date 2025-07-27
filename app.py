@@ -679,17 +679,17 @@ if st.session_state.project_type == "new":
             fig_line.update_layout(
                 margin=dict(l=40, r=20, t=50, b=80),
                 xaxis=dict(
-                    tickangle=-45,                           # move tickangle here
-                    title="Phase",                           # add x-axis title here
-                    titlefont=dict(color='black', size=16), 
+                    tickangle=-45,
+                    title="Phase",
+                    titlefont=dict(color='black', size=16),
                     tickfont=dict(color='black', size=14),
                     showline=True,
                     linecolor='black',
                     showgrid=True,
                     gridcolor='lightgrey',
-                ),
+                ),  # <-- This comma is crucial!
                 yaxis=dict(
-                    title="Duration (weeks)",                # add y-axis title here
+                    title="Duration (weeks)",
                     titlefont=dict(color='black', size=16),
                     tickfont=dict(color='black', size=14),
                     showline=True,
