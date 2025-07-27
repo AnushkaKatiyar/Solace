@@ -492,7 +492,7 @@ if st.session_state.project_type == "new":
         plan = st.session_state.final_plan
         phases = plan.get("ConstructionPhases", [])
         st.divider()
-             st.markdown(
+            st.markdown(
                 """
                 <div style="
                     display: inline-block;
