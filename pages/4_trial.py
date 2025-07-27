@@ -516,35 +516,25 @@ if st.session_state.project_type == "new":
         plan = st.session_state.final_plan
         phases = plan.get("ConstructionPhases", [])
         st.divider()
-        st.subheader("🧮 ML-Based Cost & Schedule Estimates")
-
-            
+        st.subheader("🧮 ML-Based Cost & Schedule Estimates")            
         description = st.session_state.collected_info.get("ProjectDescription", "") 
         bucket = st.session_state.get("bucket", "high")  # fallback to high
-
-        if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
-            with st.spinner("Running prediction model..."):
-                try:
-                    result_df = predict_cost_duration(description, bucket,ai_durations)
-
-                    total_cost = result_df["Predicted Cost (USD)"].sum()
-                    total_duration = result_df["Predicted Duration (weeks)"].sum()
-
-                    result_df["Predicted Cost (USD)"] = result_df["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
-                    result_df["Duration"] = result_df["Predicted Duration (weeks)"].apply(
-                        lambda w: f"{int(w)} weeks {int((w % 1) * 7)} days"
-                    )
-
-                    st.dataframe(result_df[["Phase", "Predicted Cost (USD)", "Duration"]], use_container_width=True)
-
-                    col1, col2 = st.columns(2)
-                    col1.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
-                    col2.metric("🕒 Total Estimated Duration", f"{total_duration:.1f} weeks")
-
+        with st.spinner("Running prediction model..."):
+            try:
+                result_df = predict_cost_duration(description, bucket,ai_durations)
+                total_cost = result_df["Predicted Cost (USD)"].sum()
+                total_duration = result_df["Predicted Duration (weeks)"].sum()
+                result_df["Predicted Cost (USD)"] = result_df["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
+                result_df["Duration"] = result_df["Predicted Duration (weeks)"].apply(
+                    lambda w: f"{int(w)} weeks {int((w % 1) * 7)} days"
+                )
+                st.dataframe(result_df[["Phase", "Predicted Cost (USD)", "Duration"]], use_container_width=True)
+                col1, col2 = st.columns(2)
+                col1.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
+                col2.metric("🕒 Total Estimated Duration", f"{total_duration:.1f} weeks")
                 except Exception as e:
                     st.error(f"Prediction failed: {e}")
-            
-      
+                 
         st.subheader("📋 Construction Phases & Subtasks")
 
         for phase in phases:
