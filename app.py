@@ -512,7 +512,7 @@ if st.session_state.project_type == "new":
                 st.error(f"Prediction failed: {e}")
 #########################################################################                 
         st.subheader("Construction Phases & Subtasks")
-        for phase in phases:
+        for i, phase in enumerate(phases):
             phase_name = phase["PhaseName"]
             with st.expander(f"📌 {phase_name}", expanded=True):
                 rows = []
