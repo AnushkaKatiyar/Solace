@@ -519,26 +519,26 @@ if st.session_state.project_type == "new":
 
                 phase_cost = phase.get("EstimatedCost", 1e-6)  # Avoid divide-by-zero
                 phase_duration = phase.get("DurationEstimate", 1e-6)
-                ml_duration = phase.get("DurationEstimate", 0)
-                ml_cost = phase.get("EstimatedCost", 0)
-                
-                if 'result_df' in locals() and not result_df.empty:
-                    pred_row = result_df[result_df["Phase"] == phase_name]
-
-                if not pred_row.empty:
-                    ml_duration = pred_row["Predicted Duration (weeks)"].values[0]
-                    ml_cost = pred_row["Predicted Cost (USD)"].values[0]
+                # Fallback to default values
+                ml_duration = phase_duration
+                ml_cost = phase_cost
+                # ml_duration = phase.get("DurationEstimate", 0)
+                # ml_cost = phase.get("EstimatedCost", 0)
+             
+                if 'result_df' in locals() and not result_df.empty and i < len(result_df):
+                    ml_duration = result_df.iloc[i]["Predicted Duration (weeks)"]
+                    ml_cost = result_df.iloc[i]["Predicted Cost (USD)"]
                 
                     # Main phase task
-                    rows.append({
-                        "Task": f"{phase_name}",
-                        "Description": phase.get("Description", ""),
-                        "Duration (weeks)": f"{int(round(ml_duration))} weeks",
-                        "Estimated Cost ($)": "${:,.0f}".format(ml_cost),
-                        "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
-                        "Vendors": ", ".join(phase.get("Vendors", [])),
-                        "Permissions": ", ".join(phase.get("Permissions", [])),
-                    })
+                rows.append({
+                    "Task": f"{phase_name}",
+                    "Description": phase.get("Description", ""),
+                    "Duration (weeks)": f"{int(round(ml_duration))} weeks",
+                    "Estimated Cost ($)": "${:,.0f}".format(ml_cost),
+                    "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
+                    "Vendors": ", ".join(phase.get("Vendors", [])),
+                    "Permissions": ", ".join(phase.get("Permissions", [])),
+                })
 
                 # Subtasks (indented with arrow)
                 for sub in phase.get("Subtasks", []):
@@ -547,9 +547,6 @@ if st.session_state.project_type == "new":
 
                     cost_pct = (sub_cost / phase_cost) * 100
                     duration_pct = (sub_duration / phase_duration) * 100
-
-
-
                     rows.append({
                         "Task": f"  ↳ {sub.get('SubtaskName', '')}",
                         "Description": sub.get("Description", ""),
