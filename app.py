@@ -492,7 +492,7 @@ if st.session_state.project_type == "new":
         plan = st.session_state.final_plan
         phases = plan.get("ConstructionPhases", [])
         st.divider()
-            st.markdown(
+        st.markdown(
                 """
                 <div style="
                     display: inline-block;
@@ -511,7 +511,7 @@ if st.session_state.project_type == "new":
                 </div>
                 """,
                 unsafe_allow_html=True,
-            )           
+            )               
         description = st.session_state.collected_info.get("ProjectDescription", "") 
         bucket = st.session_state.get("bucket", "high")  # fallback to high
         with st.spinner("Running prediction model..."):
