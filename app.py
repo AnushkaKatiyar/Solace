@@ -764,7 +764,7 @@ if st.session_state.project_type == "new":
 
             with col1:
                 if all_labors:
-                    render_pills("Labor Categories", all_labors, color="#6495ED")  # Light green
+                    render_pills("Labor Categories", all_labors, color="#B0C4DE)  # Light green
                 else:
                     st.subheader("Labor Categories")
                     st.write("No labor categories found.")
