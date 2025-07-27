@@ -764,14 +764,14 @@ if st.session_state.project_type == "new":
 
             with col1:
                 if all_labors:
-                    render_pills("Labor Categories", all_labors, color="#d1e7dd")  # Light green
+                    render_pills("Labor Categories", all_labors, color="#6495ED")  # Light green
                 else:
                     st.subheader("Labor Categories")
                     st.write("No labor categories found.")
 
             with col2:
                 if all_vendors:
-                    render_pills("Vendor Types", all_vendors, color="#fce3e0")  # Light coral
+                    render_pills("Vendor Types", all_vendors, color="#ADD8E6")  # Light coral
                 else:
                     st.subheader("Vendor Types")
                     st.write("No vendor types found.")
