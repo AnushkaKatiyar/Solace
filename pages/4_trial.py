@@ -540,8 +540,6 @@ if st.session_state.project_type == "new":
         plan = st.session_state.final_plan
         phases = plan.get("ConstructionPhases", [])
         st.subheader("📋 Construction Phases & Subtasks")
-        
-        st.subheader("📋 Project Plan Overview (by Phase)")
 
         for phase in phases:
             phase_name = phase["PhaseName"]
