@@ -108,18 +108,6 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 # Load API key from Streamlit secrets
 mistral_api_key = st.secrets["mistral_api_key"]
 client = Mistral(api_key=mistral_api_key)
-
-# st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
-# st.markdown(
-#     """
-#     <div style='text-align: center; background-color: #E8F8FF; padding: 5px 3px; border-radius: 5px;'>
-#         <h3 style='color: #2C81C0; margin-bottom: 0;'> AI Assistant for NYC School Construction</h3>
-#         <h5 style='color: #2C81C0; margin-top: 0;'> What type of project are you planning?</h5>
-#     </div>
-#     """,
-#     unsafe_allow_html=True
-# )
-
 st.set_page_config(page_title="AI Chatbot Assistant", layout="wide")
 
 st.markdown("""
@@ -218,9 +206,6 @@ if st.session_state.project_type is None:
         st.image("assets/Repair.jpg", width=image_width)
         st.markdown('</div>', unsafe_allow_html=True)
 
-
-
-
 # Show content based on selection
 st.markdown("---")
 ###################################################################
@@ -316,6 +301,7 @@ if st.session_state.project_type == "new":
     {json.dumps(st.session_state.collected_info, indent=2)}
 
     Inform the user that all info is collected and ask if they want to generate the construction plan.
+    Ask each question only once, do not repeat the previous question, ask only the defined 10 questions.
     """
 
         # Compose messages to send to the model
@@ -344,7 +330,7 @@ if st.session_state.project_type == "new":
             summary_prompt = f"""
     Using the collected info, generate a detailed construction plan in JSON format with phases, subtasks, vendors, permissions, materials, and labor.
 
-    Output should be a list of 5-10 phases, depending on the user inputs. Each phase must include:
+    Output should be a list of 5 phases, depending on the user inputs. Each phase must include:
     - Phase: (string) e.g. "I. Scope",
     - Description: (string),a short description,
     - Subphases/subtaskes: 5-10 sub tasks within the phases
@@ -353,13 +339,13 @@ if st.session_state.project_type == "new":
     - Description(string)
     - Cost (USD): (number)
     - Labor Category
-    - Vendor: (list of strings),1–2 **actual NYC-based vendors or well-known relevant companies** (avoid placeholders like 'VendorX', 'VendorA'),
+    - Vendor: (list of strings),1–2 **actual NYC-based vendors or well-known relevant companies, not made up names** (avoid placeholders like 'VendorX', 'VendorA'),
     - Permission if needed: (list of strings),required NYC government permissions (e.g., SCA, DoE, FDNY),
     - Duration (weeks): (number)- Please predict realistic numbers
     - Resources & Material-Raw materials used in construction
     - Item-should have the name and describe for which phases and subtask it is needed
     - Quantity-number followed by correct units e.g-metric tonne, feet etc
-    - Cost (USD): (number)
+    - Cost (USD): (number), please predict realistic numbers
     
 
     Collected info:
@@ -441,9 +427,6 @@ if st.session_state.project_type == "new":
             messages=messages
         )
         response_text = response.choices[0].message.content.strip()
-        # st.subheader("AI Raw Duration Response:")
-        # st.code(response_text, language="json")
-        # Extract the JSON from between the backticks or use regex
         match = re.search(r"\{.*\}", response_text, re.DOTALL)
         if match:
             clean_json = match.group(0)
@@ -451,8 +434,6 @@ if st.session_state.project_type == "new":
         else:
             print("JSON not found in AI response")
             ai_durations = {}
-        # st.subheader("Parsed Durations Dictionary:")
-        # st.json(ai_durations)
         def predict_cost_duration(description, bucket, ai_durations):
             predictions = []
 
@@ -481,8 +462,6 @@ if st.session_state.project_type == "new":
             result_df = pd.DataFrame(predictions)
             return result_df
         
-    
-
     def clean_json_string(raw_json):
         return raw_json.strip().removeprefix("```json").removesuffix("```").strip()
 
@@ -494,7 +473,7 @@ if st.session_state.project_type == "new":
 
     if st.session_state.final_plan:
         # Optional: Add a header
-        st.subheader("📦 Final Construction Plan")
+        st.subheader("Final Construction Plan")
 
         # If it's still a string, clean and parse it
         if isinstance(st.session_state.final_plan, str):
@@ -516,7 +495,7 @@ if st.session_state.project_type == "new":
         plan = st.session_state.final_plan
         phases = plan.get("ConstructionPhases", [])
         st.divider()
-        st.subheader("🧮 ML-Based Cost & Schedule Estimates")            
+        st.subheader("ML-Based Cost & Schedule Estimates")            
         description = st.session_state.collected_info.get("ProjectDescription", "") 
         bucket = st.session_state.get("bucket", "high")  # fallback to high
         with st.spinner("Running prediction model..."):
@@ -530,24 +509,27 @@ if st.session_state.project_type == "new":
                 )
                 st.dataframe(result_df[["Phase", "Predicted Cost (USD)", "Duration"]], use_container_width=True)
                 col1, col2 = st.columns(2)
-                col1.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
-                col2.metric("🕒 Total Estimated Duration", f"{total_duration:.1f} weeks")
+                col1.metric("Total Estimated Cost", f"${total_cost:,.2f}")
+                col2.metric("Total Estimated Duration", f"{total_duration:.1f} weeks")
             except Exception as e:
                 st.error(f"Prediction failed: {e}")
-                 
-        st.subheader("📋 Construction Phases & Subtasks")
-
+#########################################################################                 
+        st.subheader("Construction Phases & Subtasks")
         for phase in phases:
             phase_name = phase["PhaseName"]
             with st.expander(f"📌 {phase_name}", expanded=True):
                 rows = []
 
+                phase_cost = phase.get("EstimatedCost", 1e-6)  # Avoid divide-by-zero
+                phase_duration = phase.get("DurationEstimate", 1e-6)
+
+
                 # Main phase task
                 rows.append({
                     "Task": f"{phase_name}",
                     "Description": phase.get("Description", ""),
-                    "Duration (weeks)": f"{int(round(phase.get('DurationEstimate', 0)))} weeks",
-                    "Estimated Cost ($)": "${:,.0f}".format(phase.get("EstimatedCost", 0)),
+                    "Duration (weeks)": f"{int(round(phase_duration))} weeks",
+                    "Estimated Cost ($)": "${:,.0f}".format(phase_cost),
                     "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
                     "Vendors": ", ".join(phase.get("Vendors", [])),
                     "Permissions": ", ".join(phase.get("Permissions", [])),
@@ -555,11 +537,19 @@ if st.session_state.project_type == "new":
 
                 # Subtasks (indented with arrow)
                 for sub in phase.get("Subtasks", []):
+                    sub_cost = sub.get("CostEstimate", 0)
+                    sub_duration = sub.get("DurationEstimate", 0)
+
+                    cost_pct = (sub_cost / phase_cost) * 100
+                    duration_pct = (sub_duration / phase_duration) * 100
+
+
+
                     rows.append({
                         "Task": f"  ↳ {sub.get('SubtaskName', '')}",
                         "Description": sub.get("Description", ""),
-                        "Duration (weeks)": f"{int(round(sub.get('DurationEstimate', 0)))} weeks",
-                        "Estimated Cost ($)": sub.get("CostEstimate", 0),
+                        "Duration (weeks)": f"{duration_pct:.1f}%",
+                        "Estimated Cost ($)": f"{cost_pct:.1f}%",
                         "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
                         "Vendors": ", ".join(sub.get("Vendors", [])),
                         "Permissions": ", ".join(sub.get("Permissions", [])),
@@ -572,7 +562,7 @@ if st.session_state.project_type == "new":
         
             
     ####################################################################    
-        st.subheader("🧱 Resources & Materials")
+        st.subheader("Resources & Materials")
         resources = plan.get("Resources & Materials", {})
         if resources:
             # Flatten data into rows with Category, Item, Quantity, Cost
@@ -609,12 +599,12 @@ if st.session_state.project_type == "new":
                 all_vendors.update(sub.get("Vendors", []))
 
         if all_labors or all_vendors:
-            st.subheader("🧰 Project Resources")
+            st.subheader("Project Resources")
 
             col1, col2 = st.columns(2)
 
             with col1:
-                st.markdown("### 👷 Labor Categories")
+                st.markdown("###Labor Categories")
                 if all_labors:
                     for labor in sorted(all_labors):
                         st.markdown(f"- {labor}")
@@ -622,7 +612,7 @@ if st.session_state.project_type == "new":
                     st.write("No labor categories found.")
 
             with col2:
-                st.markdown("### 🏢 Vendor Types")
+                st.markdown("###Vendor Types")
                 if all_vendors:
                     for vendor in sorted(all_vendors):
                         st.markdown(f"- {vendor}")
@@ -690,42 +680,6 @@ if st.session_state.project_type == "new":
                 margin=dict(l=40, r=20, t=50, b=80),
             )
             st.plotly_chart(fig_line, use_container_width=True)
-
-            # Summary Totals
-            st.subheader("📊 Summary Totals")
-            st.markdown(f"**Total Estimated Cost:** ${total_cost:,.0f}")
-            st.markdown(
-                f"**Total Estimated Duration:** {int(round(total_duration))} weeks (~{int(round(total_duration / 4))} months)"
-            )
-###############################################################################            
-            # st.divider()
-            # st.subheader("🧮 ML-Based Cost & Schedule Estimates")
-
-            
-            # description = st.session_state.collected_info.get("ProjectDescription", "") 
-            # bucket = st.session_state.get("bucket", "high")  # fallback to high
-
-            # if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
-            #     with st.spinner("Running prediction model..."):
-            #         try:
-            #             result_df = predict_cost_duration(description, bucket,ai_durations)
-
-            #             total_cost = result_df["Predicted Cost (USD)"].sum()
-            #             total_duration = result_df["Predicted Duration (weeks)"].sum()
-
-            #             result_df["Predicted Cost (USD)"] = result_df["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
-            #             result_df["Duration"] = result_df["Predicted Duration (weeks)"].apply(
-            #                 lambda w: f"{int(w)} weeks {int((w % 1) * 7)} days"
-            #             )
-
-            #             st.dataframe(result_df[["Phase", "Predicted Cost (USD)", "Duration"]], use_container_width=True)
-
-            #             col1, col2 = st.columns(2)
-            #             col1.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
-            #             col2.metric("🕒 Total Estimated Duration", f"{total_duration:.1f} weeks")
-
-            #         except Exception as e:
-            #             st.error(f"Prediction failed: {e}")
         else:
             st.info("No construction phases data available.")
 ###############################################################
@@ -739,258 +693,258 @@ if st.session_state.project_type == "new":
 elif st.session_state.project_type == "upgrade":
     st.subheader("Upgrade Project Planning")
     st.info("🚧 We're here to help you upgrade existing facilities.")
-    def animated_typing(message, delay=0.03):
-        placeholder = st.empty()
-        full_text = ""
-        for char in message:
-            full_text += char
-            placeholder.markdown(f"**{full_text}**")
-            time.sleep(delay)
-    if "has_seen_upgrade_welcome" not in st.session_state:
-        st.session_state.has_seen_upgrade_welcome = True
-        with st.chat_message("assistant"):
-            animated_typing("Hey there 👋\n\nLet's plan your school upgrade project! Here are some examples to inspire you:")
-            st.markdown("""
-            **Examples:**
-            - Smart Board or AV System Installations  
-            - HVAC System Upgrade  
-            - Bathroom Modernization  
-            - Security System Upgrades  
-            - Solar Panel Installation  
-            - LED Lighting Retrofit  
-            - Accessibility Improvements  
-            - IT Infrastructure Overhaul  
-            - Library Renovation  
-            - Playground Equipment Upgrade  
-            - Kitchen/Cafeteria Modernization  
-            - Fire Suppression System Upgrades  
-            """)
+#     def animated_typing(message, delay=0.03):
+#         placeholder = st.empty()
+#         full_text = ""
+#         for char in message:
+#             full_text += char
+#             placeholder.markdown(f"**{full_text}**")
+#             time.sleep(delay)
+#     if "has_seen_upgrade_welcome" not in st.session_state:
+#         st.session_state.has_seen_upgrade_welcome = True
+#         with st.chat_message("assistant"):
+#             animated_typing("Hey there 👋\n\nLet's plan your school upgrade project! Here are some examples to inspire you:")
+#             st.markdown("""
+#             **Examples:**
+#             - Smart Board or AV System Installations  
+#             - HVAC System Upgrade  
+#             - Bathroom Modernization  
+#             - Security System Upgrades  
+#             - Solar Panel Installation  
+#             - LED Lighting Retrofit  
+#             - Accessibility Improvements  
+#             - IT Infrastructure Overhaul  
+#             - Library Renovation  
+#             - Playground Equipment Upgrade  
+#             - Kitchen/Cafeteria Modernization  
+#             - Fire Suppression System Upgrades  
+#             """)
 
-    # Define upgrade-specific questions
-    upgrade_questions = [
-        ("UpgradeDescription", "What kind of upgrade are you planning?"),
-        ("TargetArea", "Which part of the school is being upgraded (e.g., library, HVAC, playground)?"),
-        ("ImprovementGoal", "What is the intended benefit or goal of this upgrade (e.g., energy savings, accessibility)?"),
-        ("OccupiedStatus", "Is the building currently in use during the upgrade?"),
-        ("InfrastructureLimitations", "Are there infrastructure or power limitations to consider?"),
-        ("Timeline", "What is your desired completion timeline (in weeks)?"),
-    ]
+#     # Define upgrade-specific questions
+#     upgrade_questions = [
+#         ("UpgradeDescription", "What kind of upgrade are you planning?"),
+#         ("TargetArea", "Which part of the school is being upgraded (e.g., library, HVAC, playground)?"),
+#         ("ImprovementGoal", "What is the intended benefit or goal of this upgrade (e.g., energy savings, accessibility)?"),
+#         ("OccupiedStatus", "Is the building currently in use during the upgrade?"),
+#         ("InfrastructureLimitations", "Are there infrastructure or power limitations to consider?"),
+#         ("Timeline", "What is your desired completion timeline (in weeks)?"),
+#     ]
 
-    # Init state
-    if "upgrade_info" not in st.session_state:
-        st.session_state.upgrade_info = {key: None for key, _ in upgrade_questions}
-    if "upgrade_chat" not in st.session_state:
-        st.session_state.upgrade_chat = []
-    if "upgrade_last_q" not in st.session_state:
-        st.session_state.upgrade_last_q = None
-    if "upgrade_plan" not in st.session_state:
-        st.session_state.upgrade_plan = None
+#     # Init state
+#     if "upgrade_info" not in st.session_state:
+#         st.session_state.upgrade_info = {key: None for key, _ in upgrade_questions}
+#     if "upgrade_chat" not in st.session_state:
+#         st.session_state.upgrade_chat = []
+#     if "upgrade_last_q" not in st.session_state:
+#         st.session_state.upgrade_last_q = None
+#     if "upgrade_plan" not in st.session_state:
+#         st.session_state.upgrade_plan = None
 
-    def get_next_upgrade_question():
-        for key, q in upgrade_questions:
-            if st.session_state.upgrade_info[key] in [None, ""]:
-                return key, q
-        return None, None
+#     def get_next_upgrade_question():
+#         for key, q in upgrade_questions:
+#             if st.session_state.upgrade_info[key] in [None, ""]:
+#                 return key, q
+#         return None, None
 
-    upgrade_input = st.chat_input("Describe your upgrade project...")
+#     upgrade_input = st.chat_input("Describe your upgrade project...")
 
-    if upgrade_input:
-        if st.session_state.upgrade_last_q:
-            st.session_state.upgrade_info[st.session_state.upgrade_last_q] = upgrade_input
-        st.session_state.upgrade_chat.append(UserMessage(content=upgrade_input))
-        next_key, next_q = get_next_upgrade_question()
-        st.session_state.upgrade_last_q = next_key
+#     if upgrade_input:
+#         if st.session_state.upgrade_last_q:
+#             st.session_state.upgrade_info[st.session_state.upgrade_last_q] = upgrade_input
+#         st.session_state.upgrade_chat.append(UserMessage(content=upgrade_input))
+#         next_key, next_q = get_next_upgrade_question()
+#         st.session_state.upgrade_last_q = next_key
 
-        if next_q:
-            prompt = f"""
-            You are an expert NYC school **upgrade** planner.
-            Ask only the defined upgrade questions.
-            Collected so far:
-            {json.dumps(st.session_state.upgrade_info, indent=2)}
+#         if next_q:
+#             prompt = f"""
+#             You are an expert NYC school **upgrade** planner.
+#             Ask only the defined upgrade questions.
+#             Collected so far:
+#             {json.dumps(st.session_state.upgrade_info, indent=2)}
 
-            Ask only the next missing question:
-            {next_q}
-            """
-        else:
-            prompt = f"""
-            All necessary upgrade info collected:
-            {json.dumps(st.session_state.upgrade_info, indent=2)}
+#             Ask only the next missing question:
+#             {next_q}
+#             """
+#         else:
+#             prompt = f"""
+#             All necessary upgrade info collected:
+#             {json.dumps(st.session_state.upgrade_info, indent=2)}
 
-            Inform the user and ask if you'd like to generate a detailed upgrade plan with phases, subtasks, vendors, costs, labor, and materials.
-            """
+#             Inform the user and ask if you'd like to generate a detailed upgrade plan with phases, subtasks, vendors, costs, labor, and materials.
+#             """
 
-        messages = [SystemMessage(content=prompt)] + st.session_state.upgrade_chat
-        reply = client.chat.complete(model="mistral-small", messages=messages)
-        reply_text = reply.choices[0].message.content.strip()
-        st.session_state.upgrade_chat.append(SystemMessage(content=reply_text))
+#         messages = [SystemMessage(content=prompt)] + st.session_state.upgrade_chat
+#         reply = client.chat.complete(model="mistral-small", messages=messages)
+#         reply_text = reply.choices[0].message.content.strip()
+#         st.session_state.upgrade_chat.append(SystemMessage(content=reply_text))
 
-    for msg in st.session_state.upgrade_chat:
-        role = "user" if isinstance(msg, UserMessage) else "assistant"
-        with st.chat_message(role):
-            st.markdown(msg.content)
+#     for msg in st.session_state.upgrade_chat:
+#         role = "user" if isinstance(msg, UserMessage) else "assistant"
+#         with st.chat_message(role):
+#             st.markdown(msg.content)
 
-    next_key, _ = get_next_upgrade_question()
-    if next_key is None:
-        st.session_state.collected_info = st.session_state.upgrade_info.copy()
-        if st.button("⚙️ Generate Upgrade Plan"):
-            upgrade_summary_prompt = f"""
-            Using the collected info, generate a detailed upgrade construction plan in **valid JSON format only**. Follow the structure exactly.
+#     next_key, _ = get_next_upgrade_question()
+#     if next_key is None:
+#         st.session_state.collected_info = st.session_state.upgrade_info.copy()
+#         if st.button("⚙️ Generate Upgrade Plan"):
+#             upgrade_summary_prompt = f"""
+#             Using the collected info, generate a detailed upgrade construction plan in **valid JSON format only**. Follow the structure exactly.
 
-            Your JSON must include:
-            1. "ConstructionPhases": array of 5–10 phases with:
-                - "PhaseName", "Description", "EstimatedCost", "DurationEstimate"
-                - "Subtasks": each with SubtaskName, Description, CostEstimate, DurationEstimate, LaborCategories, Vendors, Permissions
-                - "LaborCategories", "Vendors", "Permissions Required"
+#             Your JSON must include:
+#             1. "ConstructionPhases": array of 5–10 phases with:
+#                 - "PhaseName", "Description", "EstimatedCost", "DurationEstimate"
+#                 - "Subtasks": each with SubtaskName, Description, CostEstimate, DurationEstimate, LaborCategories, Vendors, Permissions
+#                 - "LaborCategories", "Vendors", "Permissions Required"
 
-            2. "ResourcesAndMaterials": array of materials with:
-                - "Category", "Item", "QuantityEstimate", "EstimatedCost"
+#             2. "ResourcesAndMaterials": array of materials with:
+#                 - "Category", "Item", "QuantityEstimate", "EstimatedCost"
 
-            ❗ JSON ONLY. No explanation or markdown.
+#             ❗ JSON ONLY. No explanation or markdown.
 
-            User Info:
-            {json.dumps(st.session_state.collected_info, indent=2)}
+#             User Info:
+#             {json.dumps(st.session_state.collected_info, indent=2)}
 
-            Respond with just the JSON:
-            {{
-            "ConstructionPhases": [...],
-            "ResourcesAndMaterials": [...]
-            }}
-            """
-            messages = [
-                SystemMessage(content="You generate upgrade plans in JSON."),
-                UserMessage(content=upgrade_summary_prompt),
-            ]
-            response = client.chat.complete(model="mistral-small", messages=messages)
-            response_str = response.choices[0].message.content.strip()
-            st.session_state.upgrade_plan_raw = response_str
-            st.session_state.upgrade_plan = response_str
-            st.session_state.upgrade_plan_parsed = None
+#             Respond with just the JSON:
+#             {{
+#             "ConstructionPhases": [...],
+#             "ResourcesAndMaterials": [...]
+#             }}
+#             """
+#             messages = [
+#                 SystemMessage(content="You generate upgrade plans in JSON."),
+#                 UserMessage(content=upgrade_summary_prompt),
+#             ]
+#             response = client.chat.complete(model="mistral-small", messages=messages)
+#             response_str = response.choices[0].message.content.strip()
+#             st.session_state.upgrade_plan_raw = response_str
+#             st.session_state.upgrade_plan = response_str
+#             st.session_state.upgrade_plan_parsed = None
 
-    if st.session_state.upgrade_plan:
-        if "upgrade_plan_parsed" not in st.session_state:
-            st.session_state.upgrade_plan_parsed = None
+#     if st.session_state.upgrade_plan:
+#         if "upgrade_plan_parsed" not in st.session_state:
+#             st.session_state.upgrade_plan_parsed = None
 
-        if st.session_state.upgrade_plan_raw and st.session_state.upgrade_plan_parsed is None:
-            raw_json_str = st.session_state.upgrade_plan_raw.strip().removeprefix("```json").removesuffix("```").strip()
-            try:
-                parsed = json.loads(raw_json_str)
-                st.session_state.upgrade_plan_parsed = parsed
-            except Exception as e:
-                st.error("Invalid JSON: " + str(e))
-                st.stop()
+#         if st.session_state.upgrade_plan_raw and st.session_state.upgrade_plan_parsed is None:
+#             raw_json_str = st.session_state.upgrade_plan_raw.strip().removeprefix("```json").removesuffix("```").strip()
+#             try:
+#                 parsed = json.loads(raw_json_str)
+#                 st.session_state.upgrade_plan_parsed = parsed
+#             except Exception as e:
+#                 st.error("Invalid JSON: " + str(e))
+#                 st.stop()
 
-        if st.session_state.upgrade_plan_parsed:
-            final = st.session_state.upgrade_plan_parsed
-        else:
-            st.info("No valid upgrade plan found.")
+#         if st.session_state.upgrade_plan_parsed:
+#             final = st.session_state.upgrade_plan_parsed
+#         else:
+#             st.info("No valid upgrade plan found.")
 
-        st.subheader("📈 Final Upgrade Plan")
+#         st.subheader("📈 Final Upgrade Plan")
 
-        def safe_format_cost(cost):
-            try:
-                return f"${float(cost):,.2f}"
-            except (ValueError, TypeError):
-                return "N/A"
+#         def safe_format_cost(cost):
+#             try:
+#                 return f"${float(cost):,.2f}"
+#             except (ValueError, TypeError):
+#                 return "N/A"
 
-        phases = final.get("ConstructionPhases", [])
-        for phase in phases:
-            with st.expander(f"📌 {phase['PhaseName']}", expanded=True):
-                rows = [{
-                    "Task": phase["PhaseName"],
-                    "Description": phase.get("Description", ""),
-                    "Estimated Cost ($)": safe_format_cost(phase.get("EstimatedCost", 0)),
-                    "Duration (weeks)": phase.get("DurationEstimate", 0),
-                    "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
-                    "Vendors": ", ".join(phase.get("Vendors", [])),
-                    "Permissions": ", ".join(phase.get("Permissions Required", [])),
-                }]
-                for sub in phase.get("Subtasks", []):
-                    rows.append({
-                        "Task": f"  ↳ {sub.get('SubtaskName', '')}",
-                        "Description": sub.get("Description", ""),
-                        "Estimated Cost ($)": safe_format_cost(sub.get("CostEstimate", 0)),
-                        "Duration (weeks)": sub.get("DurationEstimate", 0),
-                        "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
-                        "Vendors": ", ".join(sub.get("Vendors", [])),
-                        "Permissions": ", ".join(sub.get("Permissions", [])),
-                    })
-                st.dataframe(pd.DataFrame(rows), use_container_width=True)
+#         phases = final.get("ConstructionPhases", [])
+#         for phase in phases:
+#             with st.expander(f"📌 {phase['PhaseName']}", expanded=True):
+#                 rows = [{
+#                     "Task": phase["PhaseName"],
+#                     "Description": phase.get("Description", ""),
+#                     "Estimated Cost ($)": safe_format_cost(phase.get("EstimatedCost", 0)),
+#                     "Duration (weeks)": phase.get("DurationEstimate", 0),
+#                     "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
+#                     "Vendors": ", ".join(phase.get("Vendors", [])),
+#                     "Permissions": ", ".join(phase.get("Permissions Required", [])),
+#                 }]
+#                 for sub in phase.get("Subtasks", []):
+#                     rows.append({
+#                         "Task": f"  ↳ {sub.get('SubtaskName', '')}",
+#                         "Description": sub.get("Description", ""),
+#                         "Estimated Cost ($)": safe_format_cost(sub.get("CostEstimate", 0)),
+#                         "Duration (weeks)": sub.get("DurationEstimate", 0),
+#                         "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
+#                         "Vendors": ", ".join(sub.get("Vendors", [])),
+#                         "Permissions": ", ".join(sub.get("Permissions", [])),
+#                     })
+#                 st.dataframe(pd.DataFrame(rows), use_container_width=True)
 
-        st.subheader("🧱 Upgrade Resources & Materials")
-        resources = final.get("ResourcesAndMaterials", [])
-        mat_rows = [{
-            "Category": item.get("Category", ""),
-            "Item": item.get("Item", ""),
-            "Quantity Estimate": item.get("QuantityEstimate", ""),
-            "Estimated Cost": safe_format_cost(item.get("EstimatedCost", 0)),
-        } for item in resources]
-        st.dataframe(pd.DataFrame(mat_rows))
+#         st.subheader("🧱 Upgrade Resources & Materials")
+#         resources = final.get("ResourcesAndMaterials", [])
+#         mat_rows = [{
+#             "Category": item.get("Category", ""),
+#             "Item": item.get("Item", ""),
+#             "Quantity Estimate": item.get("QuantityEstimate", ""),
+#             "Estimated Cost": safe_format_cost(item.get("EstimatedCost", 0)),
+#         } for item in resources]
+#         st.dataframe(pd.DataFrame(mat_rows))
 
-        df_chart = pd.DataFrame({
-            "Phase": [p["PhaseName"] for p in phases],
-            "Cost": [p.get("EstimatedCost", 0) for p in phases],
-            "Duration": [p.get("DurationEstimate", 0) for p in phases],
-        })
+#         df_chart = pd.DataFrame({
+#             "Phase": [p["PhaseName"] for p in phases],
+#             "Cost": [p.get("EstimatedCost", 0) for p in phases],
+#             "Duration": [p.get("DurationEstimate", 0) for p in phases],
+#         })
 
-        st.subheader("💰 Cost by Upgrade Phase")
-        st.plotly_chart(px.pie(df_chart, names="Phase", values="Cost", title="Cost Distribution", hole=0.4), use_container_width=True)
+#         st.subheader("💰 Cost by Upgrade Phase")
+#         st.plotly_chart(px.pie(df_chart, names="Phase", values="Cost", title="Cost Distribution", hole=0.4), use_container_width=True)
 
-        st.subheader("⏱ Timeline by Phase")
-        fig = px.line(df_chart, x="Phase", y="Duration", markers=True)
-        fig.update_layout(yaxis_title="Weeks", xaxis_tickangle=-45)
-        st.plotly_chart(fig, use_container_width=True)
+#         st.subheader("⏱ Timeline by Phase")
+#         fig = px.line(df_chart, x="Phase", y="Duration", markers=True)
+#         fig.update_layout(yaxis_title="Weeks", xaxis_tickangle=-45)
+#         st.plotly_chart(fig, use_container_width=True)
 
         
 
-        st.markdown(f"**Total Estimated Cost:** ${int(df_chart['Cost'].sum()):,}")
-        def parse_duration_to_weeks(duration_str):
-            if isinstance(duration_str, str):
-                match = re.search(r"(\d+)", duration_str)
-                if match:
-                    num = int(match.group(1))
-                    if "month" in duration_str.lower():
-                        return num * 4
-                    elif "week" in duration_str.lower():
-                        return num
-                    elif "day" in duration_str.lower():
-                        return round(num / 7, 2)
-            return None
-        df_chart["Duration_Weeks"] = df_chart["Duration"].apply(parse_duration_to_weeks)
-        valid_durations = df_chart["Duration_Weeks"].dropna()
+#         st.markdown(f"**Total Estimated Cost:** ${int(df_chart['Cost'].sum()):,}")
+#         def parse_duration_to_weeks(duration_str):
+#             if isinstance(duration_str, str):
+#                 match = re.search(r"(\d+)", duration_str)
+#                 if match:
+#                     num = int(match.group(1))
+#                     if "month" in duration_str.lower():
+#                         return num * 4
+#                     elif "week" in duration_str.lower():
+#                         return num
+#                     elif "day" in duration_str.lower():
+#                         return round(num / 7, 2)
+#             return None
+#         df_chart["Duration_Weeks"] = df_chart["Duration"].apply(parse_duration_to_weeks)
+#         valid_durations = df_chart["Duration_Weeks"].dropna()
         
-################################################################################
-        st.divider()
-        st.subheader("🧮 ML-Based Cost & Schedule Estimates")
+# ################################################################################
+#         st.divider()
+#         st.subheader("🧮 ML-Based Cost & Schedule Estimates")
 
-        description = st.session_state.collected_info.get("UpgradeDescription", "")  
-        bucket = st.session_state.get("bucket", "mid")  # fallback to mid
+#         description = st.session_state.collected_info.get("UpgradeDescription", "")  
+#         bucket = st.session_state.get("bucket", "mid")  # fallback to mid
 
-        if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
-            with st.spinner("Running prediction model..."):
-                try:
-                    result_df = predict_cost_duration(description, bucket,ai_durations)
+#         if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
+#             with st.spinner("Running prediction model..."):
+#                 try:
+#                     result_df = predict_cost_duration(description, bucket,ai_durations)
 
-                    total_cost = result_df["Predicted Cost (USD)"].sum()
-                    total_duration = result_df["Predicted Duration (weeks)"].sum()
+#                     total_cost = result_df["Predicted Cost (USD)"].sum()
+#                     total_duration = result_df["Predicted Duration (weeks)"].sum()
 
-                    result_df["Predicted Cost (USD)"] = result_df["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
-                    result_df["Duration"] = result_df["Predicted Duration (weeks)"].apply(
-                        lambda w: f"{int(w)} weeks {int((w % 1) * 7)} days"
-                    )
+#                     result_df["Predicted Cost (USD)"] = result_df["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
+#                     result_df["Duration"] = result_df["Predicted Duration (weeks)"].apply(
+#                         lambda w: f"{int(w)} weeks {int((w % 1) * 7)} days"
+#                     )
 
-                    st.dataframe(result_df[["Phase", "Predicted Cost (USD)", "Duration"]], use_container_width=True)
+#                     st.dataframe(result_df[["Phase", "Predicted Cost (USD)", "Duration"]], use_container_width=True)
 
-                    col1, col2 = st.columns(2)
-                    col1.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
-                    col2.metric("🕒 Total Estimated Duration", f"{total_duration:.1f} weeks")
+#                     col1, col2 = st.columns(2)
+#                     col1.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
+#                     col2.metric("🕒 Total Estimated Duration", f"{total_duration:.1f} weeks")
 
-                except Exception as e:
-                    st.error(f"Prediction failed: {e}")
+#                 except Exception as e:
+#                     st.error(f"Prediction failed: {e}")
 
-        if not valid_durations.empty:
-            st.markdown(f"**Total Estimated Duration:** {int(valid_durations.sum())} weeks")
-        else:
-            st.warning("⚠️ No valid duration data found.")
+#         if not valid_durations.empty:
+#             st.markdown(f"**Total Estimated Duration:** {int(valid_durations.sum())} weeks")
+#         else:
+#             st.warning("⚠️ No valid duration data found.")
 
 
        
@@ -1006,310 +960,310 @@ elif st.session_state.project_type == "repair":
     st.subheader("Repair & Maintenance Planning")
     st.info("🛠 Let’s get those repairs underway!")
 
-    def animated_typing(message, delay=0.03):
-        placeholder = st.empty()
-        full_text = ""
-        for char in message:
-            full_text += char
-            placeholder.markdown(f"**{full_text}**")
-            time.sleep(delay)
+#     def animated_typing(message, delay=0.03):
+#         placeholder = st.empty()
+#         full_text = ""
+#         for char in message:
+#             full_text += char
+#             placeholder.markdown(f"**{full_text}**")
+#             time.sleep(delay)
 
-    if "has_seen_repair_welcome" not in st.session_state:
-        st.session_state.has_seen_repair_welcome = True
-        with st.chat_message("assistant"):
-            animated_typing("Hi there 👋\n\nI'm here to help you plan your school repair or maintenance project.\n\nHere are a few examples to get you started:")
+#     if "has_seen_repair_welcome" not in st.session_state:
+#         st.session_state.has_seen_repair_welcome = True
+#         with st.chat_message("assistant"):
+#             animated_typing("Hi there 👋\n\nI'm here to help you plan your school repair or maintenance project.\n\nHere are a few examples to get you started:")
 
-            st.markdown("""
-            **Examples:**
-            - Boiler Repair (leaking or outdated)
-            - Roof Leak Repair
-            - Mold Remediation
-            - Broken Window Replacement
-            - Fire Alarm System Fix
-            - Pest Control
-            - Elevator Repair
-            - Emergency Plumbing (e.g., burst pipes)
-            - Lead Paint Stabilization
-            - Cracked Sidewalk Repair
-            - Ceiling Tile Replacement
-            - Lighting Fixture Repairs
-            - HVAC Maintenance
-            - Asbestos Abatement
-            """)
+#             st.markdown("""
+#             **Examples:**
+#             - Boiler Repair (leaking or outdated)
+#             - Roof Leak Repair
+#             - Mold Remediation
+#             - Broken Window Replacement
+#             - Fire Alarm System Fix
+#             - Pest Control
+#             - Elevator Repair
+#             - Emergency Plumbing (e.g., burst pipes)
+#             - Lead Paint Stabilization
+#             - Cracked Sidewalk Repair
+#             - Ceiling Tile Replacement
+#             - Lighting Fixture Repairs
+#             - HVAC Maintenance
+#             - Asbestos Abatement
+#             """)
 
-    # Define repair questions
-    repair_questions = [
-        ("RepairDescription", "What kind of repair or maintenance is needed?"),
-        ("Location", "Which area of the school is affected (e.g., cafeteria, roof, classroom)?"),
-        ("Urgency", "Is this an emergency repair or scheduled maintenance?"),
-        ("BuildingStatus", "Is the building currently occupied or vacant?"),
-        ("AccessConstraints", "Are there access or safety concerns (e.g., asbestos, confined spaces)?"),
-        ("Timeline", "What is your desired timeline (in weeks)?"),
-    ]
+#     # Define repair questions
+#     repair_questions = [
+#         ("RepairDescription", "What kind of repair or maintenance is needed?"),
+#         ("Location", "Which area of the school is affected (e.g., cafeteria, roof, classroom)?"),
+#         ("Urgency", "Is this an emergency repair or scheduled maintenance?"),
+#         ("BuildingStatus", "Is the building currently occupied or vacant?"),
+#         ("AccessConstraints", "Are there access or safety concerns (e.g., asbestos, confined spaces)?"),
+#         ("Timeline", "What is your desired timeline (in weeks)?"),
+#     ]
 
-    # Init state
-    if "repair_info" not in st.session_state:
-        st.session_state.repair_info = {key: None for key, _ in repair_questions}
-    if "repair_chat" not in st.session_state:
-        st.session_state.repair_chat = []
-    if "repair_last_q" not in st.session_state:
-        st.session_state.repair_last_q = None
-    if "repair_plan" not in st.session_state:
-        st.session_state.repair_plan = None
+#     # Init state
+#     if "repair_info" not in st.session_state:
+#         st.session_state.repair_info = {key: None for key, _ in repair_questions}
+#     if "repair_chat" not in st.session_state:
+#         st.session_state.repair_chat = []
+#     if "repair_last_q" not in st.session_state:
+#         st.session_state.repair_last_q = None
+#     if "repair_plan" not in st.session_state:
+#         st.session_state.repair_plan = None
 
-    # Ask next unanswered question
-    def get_next_repair_question():
-        for key, q in repair_questions:
-            if st.session_state.repair_info[key] in [None, ""]:
-                return key, q
-        return None, None
+#     # Ask next unanswered question
+#     def get_next_repair_question():
+#         for key, q in repair_questions:
+#             if st.session_state.repair_info[key] in [None, ""]:
+#                 return key, q
+#         return None, None
 
-    # Chat input
-    repair_input = st.chat_input("Describe your repair project...")
+#     # Chat input
+#     repair_input = st.chat_input("Describe your repair project...")
 
-    if repair_input:
-        if st.session_state.repair_last_q:
-            st.session_state.repair_info[st.session_state.repair_last_q] = repair_input
-        st.session_state.repair_chat.append(UserMessage(content=repair_input))
-        next_key, next_q = get_next_repair_question()
-        st.session_state.repair_last_q = next_key
+#     if repair_input:
+#         if st.session_state.repair_last_q:
+#             st.session_state.repair_info[st.session_state.repair_last_q] = repair_input
+#         st.session_state.repair_chat.append(UserMessage(content=repair_input))
+#         next_key, next_q = get_next_repair_question()
+#         st.session_state.repair_last_q = next_key
 
-        if next_q:
-            prompt = f"""
-            You are an expert NYC school repair planner.
+#         if next_q:
+#             prompt = f"""
+#             You are an expert NYC school repair planner.
 
-            Collected so far:
-            {json.dumps(st.session_state.repair_info, indent=2)}
+#             Collected so far:
+#             {json.dumps(st.session_state.repair_info, indent=2)}
 
-            Ask only the next missing question:
-            {next_q}
-            """
-        else:
-            prompt = f"""
-            All necessary repair info collected:
-            {json.dumps(st.session_state.repair_info, indent=2)}
+#             Ask only the next missing question:
+#             {next_q}
+#             """
+#         else:
+#             prompt = f"""
+#             All necessary repair info collected:
+#             {json.dumps(st.session_state.repair_info, indent=2)}
 
-            Inform the user and ask if you'd like to generate a detailed plan with phases, subtasks, vendors, costs, labor, and materials.
-            """
+#             Inform the user and ask if you'd like to generate a detailed plan with phases, subtasks, vendors, costs, labor, and materials.
+#             """
 
-        messages = [SystemMessage(content=prompt)] + st.session_state.repair_chat
-        reply = client.chat.complete(model="mistral-small", messages=messages)
-        reply_text = reply.choices[0].message.content.strip()
-        st.session_state.repair_chat.append(SystemMessage(content=reply_text))
+#         messages = [SystemMessage(content=prompt)] + st.session_state.repair_chat
+#         reply = client.chat.complete(model="mistral-small", messages=messages)
+#         reply_text = reply.choices[0].message.content.strip()
+#         st.session_state.repair_chat.append(SystemMessage(content=reply_text))
 
-    # Render chat
-    for msg in st.session_state.repair_chat:
-        role = "user" if isinstance(msg, UserMessage) else "assistant"
-        with st.chat_message(role):
-            st.markdown(msg.content)
+#     # Render chat
+#     for msg in st.session_state.repair_chat:
+#         role = "user" if isinstance(msg, UserMessage) else "assistant"
+#         with st.chat_message(role):
+#             st.markdown(msg.content)
 
-    # Plan generation
-    next_key, _ = get_next_repair_question()
-    if next_key is None:
-        st.session_state.collected_info = st.session_state.repair_info.copy()
-        if st.button("🛠 Generate Repair Plan"):
-            if "collected_info" not in st.session_state:
-                st.session_state.collected_info = {}
-            repair_summary_prompt = f"""
-        Using the collected info, generate a detailed construction plan in **valid JSON format only**. Follow the exact structure described below.
+#     # Plan generation
+#     next_key, _ = get_next_repair_question()
+#     if next_key is None:
+#         st.session_state.collected_info = st.session_state.repair_info.copy()
+#         if st.button("🛠 Generate Repair Plan"):
+#             if "collected_info" not in st.session_state:
+#                 st.session_state.collected_info = {}
+#             repair_summary_prompt = f"""
+#         Using the collected info, generate a detailed construction plan in **valid JSON format only**. Follow the exact structure described below.
 
-        Your JSON must include:
-        1. "ConstructionPhases" — a JSON array (not a dict) of 5–10 phases.
-        2. Each phase should have:
-        - "PhaseName": string (e.g., "I. Scope")
-        - "Description": string
-        - "EstimatedCost": number (USD)
-        - "DurationEstimate": number (weeks)
-        - "Subtasks": a JSON array of 5–10 objects. Each subtask must include:
-            - "SubtaskName": string
-            - "Description": string
-            - "CostEstimate": number (USD)
-            - "DurationEstimate": number (weeks)
-            - "LaborCategories": JSON array of strings
-            - "Vendors": JSON array of 1–2 real NYC-based vendors (not placeholders)
-            - "Permissions": JSON array of NYC government permissions (e.g., SCA, DOE, FDNY)
-        - "LaborCategories": JSON array of strings
-        - "Vendors": JSON array of strings
-        - "Permissions Required": JSON array of strings
+#         Your JSON must include:
+#         1. "ConstructionPhases" — a JSON array (not a dict) of 5–10 phases.
+#         2. Each phase should have:
+#         - "PhaseName": string (e.g., "I. Scope")
+#         - "Description": string
+#         - "EstimatedCost": number (USD)
+#         - "DurationEstimate": number (weeks)
+#         - "Subtasks": a JSON array of 5–10 objects. Each subtask must include:
+#             - "SubtaskName": string
+#             - "Description": string
+#             - "CostEstimate": number (USD)
+#             - "DurationEstimate": number (weeks)
+#             - "LaborCategories": JSON array of strings
+#             - "Vendors": JSON array of 1–2 real NYC-based vendors (not placeholders)
+#             - "Permissions": JSON array of NYC government permissions (e.g., SCA, DOE, FDNY)
+#         - "LaborCategories": JSON array of strings
+#         - "Vendors": JSON array of strings
+#         - "Permissions Required": JSON array of strings
 
-        3. "ResourcesAndMaterials" — a JSON array of raw materials. Each item must include:
-        - "Category": string (Name the phase in which material will be used)
-        - "Item": string (ONLY include relevant items based on user request. eg. if user mentions minor electrical repairs, DO NOT include unrelated construction materials like steel, concrete, or wood)
-        - "QuantityEstimate": string (include units, e.g., "5 metric tonnes" or quantity whatever relevant, eg. if its light fixtre then estimate how many will be needed based on user prompt)
-        - "EstimatedCost": number (USD) (estimate based on material and quantity)
+#         3. "ResourcesAndMaterials" — a JSON array of raw materials. Each item must include:
+#         - "Category": string (Name the phase in which material will be used)
+#         - "Item": string (ONLY include relevant items based on user request. eg. if user mentions minor electrical repairs, DO NOT include unrelated construction materials like steel, concrete, or wood)
+#         - "QuantityEstimate": string (include units, e.g., "5 metric tonnes" or quantity whatever relevant, eg. if its light fixtre then estimate how many will be needed based on user prompt)
+#         - "EstimatedCost": number (USD) (estimate based on material and quantity)
 
-        ❗ JSON Formatting Rules:
-        - DO NOT use numeric keys like "0": {{...}}, "1": {{...}}. Use JSON arrays (square brackets []) instead.
-        - DO NOT include any text, explanation, or markdown outside the JSON.
-        - The output must be valid, parseable JSON and match this structure **exactly**.
+#         ❗ JSON Formatting Rules:
+#         - DO NOT use numeric keys like "0": {{...}}, "1": {{...}}. Use JSON arrays (square brackets []) instead.
+#         - DO NOT include any text, explanation, or markdown outside the JSON.
+#         - The output must be valid, parseable JSON and match this structure **exactly**.
 
-        Here is the user-provided context:
-        {json.dumps(st.session_state.collected_info, indent=2)}
+#         Here is the user-provided context:
+#         {json.dumps(st.session_state.collected_info, indent=2)}
 
-        Respond with only the JSON:
-        {{
-        "ConstructionPhases": [
-            {{
-            "PhaseName": "string",
-            "Description": "string",
-            "EstimatedCost": number,
-            "DurationEstimate": number,
-            "Subtasks": [
-                {{
-                "SubtaskName": "string",
-                "Description": "string",
-                "CostEstimate": number,
-                "DurationEstimate": number,
-                "LaborCategories": ["string"],
-                "Vendors": ["string"],
-                "Permissions": ["string"]
-                }}
-            ],
-            "LaborCategories": ["string"],
-            "Vendors": ["string"],
-            "Permissions Required": ["string"]
-            }}
-        ],
-        "ResourcesAndMaterials": [
-            {{
-            "Category": "string",
-            "Item": "string",
-            "QuantityEstimate": "string",
-            "EstimatedCost": number
-            }}
-        ]
-        }}
-        """
+#         Respond with only the JSON:
+#         {{
+#         "ConstructionPhases": [
+#             {{
+#             "PhaseName": "string",
+#             "Description": "string",
+#             "EstimatedCost": number,
+#             "DurationEstimate": number,
+#             "Subtasks": [
+#                 {{
+#                 "SubtaskName": "string",
+#                 "Description": "string",
+#                 "CostEstimate": number,
+#                 "DurationEstimate": number,
+#                 "LaborCategories": ["string"],
+#                 "Vendors": ["string"],
+#                 "Permissions": ["string"]
+#                 }}
+#             ],
+#             "LaborCategories": ["string"],
+#             "Vendors": ["string"],
+#             "Permissions Required": ["string"]
+#             }}
+#         ],
+#         "ResourcesAndMaterials": [
+#             {{
+#             "Category": "string",
+#             "Item": "string",
+#             "QuantityEstimate": "string",
+#             "EstimatedCost": number
+#             }}
+#         ]
+#         }}
+#         """
 
-            messages = [
-                SystemMessage(content="You summarize the project info and generate the final JSON plan."),
-                UserMessage(content=repair_summary_prompt),
-            ]
-            response = client.chat.complete(model="mistral-small", messages=messages)
-            # st.session_state.repair_plan = response.choices[0].message.content.strip()
-            # Extract assistant message content
-            response_str = response.choices[0].message.content.strip()
+#             messages = [
+#                 SystemMessage(content="You summarize the project info and generate the final JSON plan."),
+#                 UserMessage(content=repair_summary_prompt),
+#             ]
+#             response = client.chat.complete(model="mistral-small", messages=messages)
+#             # st.session_state.repair_plan = response.choices[0].message.content.strip()
+#             # Extract assistant message content
+#             response_str = response.choices[0].message.content.strip()
 
-            # Save the raw response for reference
-            st.session_state.repair_plan_raw = response_str     
-            st.session_state.repair_plan = response_str 
-            st.session_state.repair_plan_parsed = None      
+#             # Save the raw response for reference
+#             st.session_state.repair_plan_raw = response_str     
+#             st.session_state.repair_plan = response_str 
+#             st.session_state.repair_plan_parsed = None      
 
-    # Render final plan if exists
-    if st.session_state.repair_plan:
-        # Clean and parse
-        # One-time parser to avoid reparsing every rerun
-        if "repair_plan_parsed" not in st.session_state:
-            st.session_state.repair_plan_parsed = None
+#     # Render final plan if exists
+#     if st.session_state.repair_plan:
+#         # Clean and parse
+#         # One-time parser to avoid reparsing every rerun
+#         if "repair_plan_parsed" not in st.session_state:
+#             st.session_state.repair_plan_parsed = None
 
-        if st.session_state.repair_plan_raw and st.session_state.repair_plan_parsed is None:
-            raw_json_str = st.session_state.repair_plan_raw.strip().removeprefix("```json").removesuffix("```").strip()
-            try:
-                parsed = json.loads(raw_json_str)
-                st.session_state.repair_plan_parsed = parsed
-            except Exception as e:
-                st.error("Invalid JSON: " + str(e))
-                st.stop()
+#         if st.session_state.repair_plan_raw and st.session_state.repair_plan_parsed is None:
+#             raw_json_str = st.session_state.repair_plan_raw.strip().removeprefix("```json").removesuffix("```").strip()
+#             try:
+#                 parsed = json.loads(raw_json_str)
+#                 st.session_state.repair_plan_parsed = parsed
+#             except Exception as e:
+#                 st.error("Invalid JSON: " + str(e))
+#                 st.stop()
 
-        # Now safely reference parsed JSON
-        if st.session_state.repair_plan_parsed:
-            final = st.session_state.repair_plan_parsed
-            # Render tables, charts, etc. using `final`
-        else:
-            st.info("No valid repair plan found.")
-        st.subheader("🧰 Final Repair Plan")
-        # st.json(final)
-        def safe_format_cost(cost):
-            try:
-                return f"${float(cost):,.2f}"
-            except (ValueError, TypeError):
-                return "N/A"
-        # --- Phases Table ---
-        phases = final.get("ConstructionPhases", [])
-        for phase in phases:
-            with st.expander(f"📌 {phase['PhaseName']}", expanded=True):
-                rows = [{
-                    "Task": phase["PhaseName"],
-                    "Description": phase.get("Description", ""),
-                    "Estimated Cost ($)": safe_format_cost(phase.get("EstimatedCost", 0)),
-                    "Duration (weeks)": phase.get("DurationEstimate", 0),
-                    "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
-                    "Vendors": ", ".join(phase.get("Vendors", [])),
-                    "Permissions": ", ".join(phase.get("Permissions", [])),
-                }]
-                for sub in phase.get("Subtasks", []):
-                    rows.append({
-                        "Task": f"  ↳ {sub.get('SubtaskName', '')}",
-                        "Description": sub.get("Description", ""),
-                        "Estimated Cost ($)": safe_format_cost(sub.get("CostEstimate", 0)),
-                        "Duration (weeks)": sub.get("DurationEstimate", 0),
-                        "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
-                        "Vendors": ", ".join(sub.get("Vendors", [])),
-                        "Permissions": ", ".join(phase.get("Permissions", [])),
-                    })
-                st.dataframe(pd.DataFrame(rows), use_container_width=True)
+#         # Now safely reference parsed JSON
+#         if st.session_state.repair_plan_parsed:
+#             final = st.session_state.repair_plan_parsed
+#             # Render tables, charts, etc. using `final`
+#         else:
+#             st.info("No valid repair plan found.")
+#         st.subheader("🧰 Final Repair Plan")
+#         # st.json(final)
+#         def safe_format_cost(cost):
+#             try:
+#                 return f"${float(cost):,.2f}"
+#             except (ValueError, TypeError):
+#                 return "N/A"
+#         # --- Phases Table ---
+#         phases = final.get("ConstructionPhases", [])
+#         for phase in phases:
+#             with st.expander(f"📌 {phase['PhaseName']}", expanded=True):
+#                 rows = [{
+#                     "Task": phase["PhaseName"],
+#                     "Description": phase.get("Description", ""),
+#                     "Estimated Cost ($)": safe_format_cost(phase.get("EstimatedCost", 0)),
+#                     "Duration (weeks)": phase.get("DurationEstimate", 0),
+#                     "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
+#                     "Vendors": ", ".join(phase.get("Vendors", [])),
+#                     "Permissions": ", ".join(phase.get("Permissions", [])),
+#                 }]
+#                 for sub in phase.get("Subtasks", []):
+#                     rows.append({
+#                         "Task": f"  ↳ {sub.get('SubtaskName', '')}",
+#                         "Description": sub.get("Description", ""),
+#                         "Estimated Cost ($)": safe_format_cost(sub.get("CostEstimate", 0)),
+#                         "Duration (weeks)": sub.get("DurationEstimate", 0),
+#                         "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
+#                         "Vendors": ", ".join(sub.get("Vendors", [])),
+#                         "Permissions": ", ".join(phase.get("Permissions", [])),
+#                     })
+#                 st.dataframe(pd.DataFrame(rows), use_container_width=True)
 
-        # --- Materials Table ---
-        st.subheader("🧱 Resources & Materials")
-        resources = final.get("ResourcesAndMaterials", [])
-        mat_rows = []
-        for item in resources:
-            mat_rows.append({
-                "Category": item.get("Category", ""),
-                "Item": item.get("Item", ""),
-                "Quantity Estimate": item.get("QuantityEstimate", "N/A"),
-                "Estimated Cost": safe_format_cost(item.get("EstimatedCost", 0)),
-            })
-        st.dataframe(pd.DataFrame(mat_rows))
+#         # --- Materials Table ---
+#         st.subheader("🧱 Resources & Materials")
+#         resources = final.get("ResourcesAndMaterials", [])
+#         mat_rows = []
+#         for item in resources:
+#             mat_rows.append({
+#                 "Category": item.get("Category", ""),
+#                 "Item": item.get("Item", ""),
+#                 "Quantity Estimate": item.get("QuantityEstimate", "N/A"),
+#                 "Estimated Cost": safe_format_cost(item.get("EstimatedCost", 0)),
+#             })
+#         st.dataframe(pd.DataFrame(mat_rows))
 
-        # --- Summary Chart ---
-        df_chart = pd.DataFrame({
-            "Phase": [p["PhaseName"] for p in phases],
-            "Cost": [p.get("EstimatedCost", 0) for p in phases],
-            "Duration": [p.get("DurationEstimate", 0) for p in phases],
-        })
+#         # --- Summary Chart ---
+#         df_chart = pd.DataFrame({
+#             "Phase": [p["PhaseName"] for p in phases],
+#             "Cost": [p.get("EstimatedCost", 0) for p in phases],
+#             "Duration": [p.get("DurationEstimate", 0) for p in phases],
+#         })
 
-        st.subheader("💰 Cost Distribution")
-        fig = px.pie(df_chart, names="Phase", values="Cost", title="Cost by Phase", hole=0.4)
-        fig.update_traces(textposition="outside", textinfo="percent+label")
-        st.plotly_chart(fig, use_container_width=True)
+#         st.subheader("💰 Cost Distribution")
+#         fig = px.pie(df_chart, names="Phase", values="Cost", title="Cost by Phase", hole=0.4)
+#         fig.update_traces(textposition="outside", textinfo="percent+label")
+#         st.plotly_chart(fig, use_container_width=True)
 
-        st.subheader("⏱ Duration by Phase")
-        fig2 = px.line(df_chart, x="Phase", y="Duration", markers=True)
-        fig2.update_layout(yaxis_title="Weeks", xaxis_tickangle=-45)
-        st.plotly_chart(fig2, use_container_width=True)
+#         st.subheader("⏱ Duration by Phase")
+#         fig2 = px.line(df_chart, x="Phase", y="Duration", markers=True)
+#         fig2.update_layout(yaxis_title="Weeks", xaxis_tickangle=-45)
+#         st.plotly_chart(fig2, use_container_width=True)
 
-        st.markdown(f"**Total Estimated Cost:** ${int(df_chart['Cost'].sum()):,}")
-        st.markdown(f"**Total Estimated Duration:** {int(df_chart['Duration'].sum())} weeks")
+#         st.markdown(f"**Total Estimated Cost:** ${int(df_chart['Cost'].sum()):,}")
+#         st.markdown(f"**Total Estimated Duration:** {int(df_chart['Duration'].sum())} weeks")
 
-################################################################        
-        st.divider()
-        st.subheader("🧮 ML-Based Cost & Schedule Estimates")
+# ################################################################        
+#         st.divider()
+#         st.subheader("🧮 ML-Based Cost & Schedule Estimates")
 
-        description = st.session_state.collected_info.get("ProjectDescription", "")  
-        bucket = st.session_state.get("bucket", "low")  # fallback to low
+#         description = st.session_state.collected_info.get("ProjectDescription", "")  
+#         bucket = st.session_state.get("bucket", "low")  # fallback to low
 
-        if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
-            with st.spinner("Running prediction model..."):
-                try:
-                    result_df = predict_cost_duration(description, bucket,ai_durations)
+#         if st.button("Estimate Cost and Schedule (ML)", key="ml_estimate_button"):
+#             with st.spinner("Running prediction model..."):
+#                 try:
+#                     result_df = predict_cost_duration(description, bucket,ai_durations)
 
-                    total_cost = result_df["Predicted Cost (USD)"].sum()
-                    total_duration = result_df["Predicted Duration (weeks)"].sum()
+#                     total_cost = result_df["Predicted Cost (USD)"].sum()
+#                     total_duration = result_df["Predicted Duration (weeks)"].sum()
 
-                    result_df["Predicted Cost (USD)"] = result_df["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
-                    result_df["Duration"] = result_df["Predicted Duration (weeks)"].apply(
-                        lambda w: f"{int(w)} weeks {int((w % 1) * 7)} days"
-                    )
+#                     result_df["Predicted Cost (USD)"] = result_df["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
+#                     result_df["Duration"] = result_df["Predicted Duration (weeks)"].apply(
+#                         lambda w: f"{int(w)} weeks {int((w % 1) * 7)} days"
+#                     )
 
-                    st.dataframe(result_df[["Phase", "Predicted Cost (USD)", "Duration"]], use_container_width=True)
+#                     st.dataframe(result_df[["Phase", "Predicted Cost (USD)", "Duration"]], use_container_width=True)
 
-                    col1, col2 = st.columns(2)
-                    col1.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
-                    col2.metric("🕒 Total Estimated Duration", f"{total_duration:.1f} weeks")
+#                     col1, col2 = st.columns(2)
+#                     col1.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
+#                     col2.metric("🕒 Total Estimated Duration", f"{total_duration:.1f} weeks")
 
-                except Exception as e:
-                    st.error(f"Prediction failed: {e}")
+#                 except Exception as e:
+#                     st.error(f"Prediction failed: {e}")
 
 # # Add a back/reset button
 # if st.button("🔙 Go Back"):
