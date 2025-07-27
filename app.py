@@ -472,9 +472,6 @@ if st.session_state.project_type == "new":
             return str(x)
 
     if st.session_state.final_plan:
-        # Optional: Add a header
-        st.subheader("Final Construction Plan")
-
         # If it's still a string, clean and parse it
         if isinstance(st.session_state.final_plan, str):
             def clean_json_string(raw_json):
@@ -522,18 +519,39 @@ if st.session_state.project_type == "new":
 
                 phase_cost = phase.get("EstimatedCost", 1e-6)  # Avoid divide-by-zero
                 phase_duration = phase.get("DurationEstimate", 1e-6)
+                
+                pred_row = None
+                if 'result_df' in locals() and not result_df.empty:
+                    pred_row = result_df[result_df["Phase"] == phase_name]
 
+                if pred_row is not None and not pred_row.empty:
+                    ml_duration = pred_row["Predicted Duration (weeks)"].values[0]
+                    ml_cost = pred_row["Predicted Cost (USD)"].values[0]
+                
+                    # Main phase task
+                    rows.append({
+                        "Task": f"{phase_name}",
+                        "Description": phase.get("Description", ""),
+                        "Duration (weeks)": f"{int(round(ml_duration))} weeks",
+                        "Estimated Cost ($)": "${:,.0f}".format(ml_cost),
+                        "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
+                        "Vendors": ", ".join(phase.get("Vendors", [])),
+                        "Permissions": ", ".join(phase.get("Permissions", [])),
+                    })
+                else:
+                    # fallback to original values if ML prediction not available
+                    phase_cost = phase.get("EstimatedCost", 1e-6)
+                    phase_duration = phase.get("DurationEstimate", 1e-6)
 
-                # Main phase task
-                rows.append({
-                    "Task": f"{phase_name}",
-                    "Description": phase.get("Description", ""),
-                    "Duration (weeks)": f"{int(round(phase_duration))} weeks",
-                    "Estimated Cost ($)": "${:,.0f}".format(phase_cost),
-                    "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
-                    "Vendors": ", ".join(phase.get("Vendors", [])),
-                    "Permissions": ", ".join(phase.get("Permissions", [])),
-                })
+                    rows.append({
+                        "Task": f"{phase_name}",
+                        "Description": phase.get("Description", ""),
+                        "Duration (weeks)": f"{int(round(phase_duration))} weeks",
+                        "Estimated Cost ($)": "${:,.0f}".format(phase_cost),
+                        "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
+                        "Vendors": ", ".join(phase.get("Vendors", [])),
+                        "Permissions": ", ".join(phase.get("Permissions", [])),
+                    })
 
                 # Subtasks (indented with arrow)
                 for sub in phase.get("Subtasks", []):
