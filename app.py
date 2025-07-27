@@ -606,7 +606,7 @@ if st.session_state.project_type == "new":
             col1, col2 = st.columns(2)
 
             with col1:
-                st.markdown("Labor Categories")
+                st.subheader("Labor Categories")
                 if all_labors:
                     for labor in sorted(all_labors):
                         st.markdown(f"- {labor}")
@@ -614,7 +614,7 @@ if st.session_state.project_type == "new":
                     st.write("No labor categories found.")
 
             with col2:
-                st.markdown("Vendor Types")
+                st.subheader("Vendor Types")
                 if all_vendors:
                     for vendor in sorted(all_vendors):
                         st.markdown(f"- {vendor}")
@@ -680,6 +680,8 @@ if st.session_state.project_type == "new":
                 xaxis_tickangle=-45,
                 yaxis_title="Duration (weeks)",
                 margin=dict(l=40, r=20, t=50, b=80),
+                xaxis=dict(showline=True, linecolor='black', showgrid=True, gridcolor='lightgrey'),
+                yaxis=dict(showline=True, linecolor='black')
             )
             st.plotly_chart(fig_line, use_container_width=True)
         else:
