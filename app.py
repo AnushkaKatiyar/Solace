@@ -534,7 +534,7 @@ if st.session_state.project_type == "new":
                     "Task": f"{phase_name}",
                     "Description": phase.get("Description", ""),
                     "Duration (weeks)": f"{int(round(ml_duration))} weeks",
-                    "Estimated Cost ($)": "${:,.0f}".format(float(ml_cost) if isinstance(ml_cost, str) else ml_cost),
+                    "Estimated Cost ($)": ml_cost,
                     "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
                     "Vendors": ", ".join(phase.get("Vendors", [])),
                     "Permissions": ", ".join(phase.get("Permissions", [])),
