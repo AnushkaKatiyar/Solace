@@ -664,7 +664,21 @@ if st.session_state.project_type == "new":
                 title="Cost Distribution by Phase",
                 hole=0.4,
             )
-            fig_pie.update_traces(textposition="outside", textinfo="percent+label")
+            # Increase font size and make label text black
+            fig_pie.update_traces(
+                textposition="outside",
+                textinfo="percent+label",
+                textfont=dict(size=18, color='black')  # Bigger and black font for labels
+            )
+
+            # Make title bigger and black
+            fig_pie.update_layout(
+                title=dict(
+                    text="Cost Distribution by Phase",
+                    font=dict(size=20, color='black')
+                )
+            )
+
             st.plotly_chart(fig_pie, use_container_width=True)
 
             # Duration Line Chart
@@ -682,9 +696,9 @@ if st.session_state.project_type == "new":
                 tickangle=-45,
                 title=dict(
                     text="Phase",
-                    font=dict(color='black', size=16)
+                    font=dict(color='black', size=20)
                 ),
-                tickfont=dict(color='black', size=14),
+                tickfont=dict(color='black', size=18),
                 showline=True,
                 linecolor='black',
                 showgrid=True,
@@ -693,9 +707,9 @@ if st.session_state.project_type == "new":
             yaxis=dict(
                 title=dict(
                     text="Duration (weeks)",
-                    font=dict(color='black', size=16)
+                    font=dict(color='black', size=20)
                 ),
-                tickfont=dict(color='black', size=14),
+                tickfont=dict(color='black', size=18),
                 showline=True,
                 linecolor='black',
             )
