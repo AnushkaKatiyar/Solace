@@ -492,7 +492,26 @@ if st.session_state.project_type == "new":
         plan = st.session_state.final_plan
         phases = plan.get("ConstructionPhases", [])
         st.divider()
-        st.subheader("ML-Based Cost & Schedule Estimates")            
+             st.markdown(
+                """
+                <div style="
+                    display: inline-block;
+                    padding: 8px 20px;
+                    border-top-left-radius: 10px;
+                    border-top-right-radius: 10px;
+                    background-color: #4a90e2;  /* nice blue tab color */
+                    color: white;
+                    font-size: 20px;
+                    font-weight: bold;
+                    font-family: sans-serif;
+                    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+                    margin-bottom: -2px;
+                ">
+                    ML-Based Cost & Schedule Estimates
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )           
         description = st.session_state.collected_info.get("ProjectDescription", "") 
         bucket = st.session_state.get("bucket", "high")  # fallback to high
         with st.spinner("Running prediction model..."):
@@ -511,7 +530,26 @@ if st.session_state.project_type == "new":
             except Exception as e:
                 st.error(f"Prediction failed: {e}")
 #########################################################################                 
-        st.subheader("Construction Phases & Subtasks")
+        st.markdown(
+                """
+                <div style="
+                    display: inline-block;
+                    padding: 8px 20px;
+                    border-top-left-radius: 10px;
+                    border-top-right-radius: 10px;
+                    background-color: #4a90e2;  /* nice blue tab color */
+                    color: white;
+                    font-size: 20px;
+                    font-weight: bold;
+                    font-family: sans-serif;
+                    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+                    margin-bottom: -2px;
+                ">
+                    Construction Phases & Subtasks
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
         for i, phase in enumerate(phases):
             phase_name = phase["PhaseName"]
             with st.expander(f"📌 {phase_name}", expanded=True):
@@ -564,7 +602,27 @@ if st.session_state.project_type == "new":
         
             
     ####################################################################    
-        st.subheader("Resources & Materials")
+ 
+        st.markdown(
+                """
+                <div style="
+                    display: inline-block;
+                    padding: 8px 20px;
+                    border-top-left-radius: 10px;
+                    border-top-right-radius: 10px;
+                    background-color: #4a90e2;  /* nice blue tab color */
+                    color: white;
+                    font-size: 20px;
+                    font-weight: bold;
+                    font-family: sans-serif;
+                    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+                    margin-bottom: -2px;
+                ">
+                    Resources & Materials
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
         resources = plan.get("Resources & Materials", {})
         if resources:
             # Flatten data into rows with Category, Item, Quantity, Cost
@@ -601,7 +659,27 @@ if st.session_state.project_type == "new":
                 all_vendors.update(sub.get("Vendors", []))
 
         if all_labors or all_vendors:
-            st.subheader("Project Resources")
+           
+            st.markdown(
+                """
+                <div style="
+                    display: inline-block;
+                    padding: 8px 20px;
+                    border-top-left-radius: 10px;
+                    border-top-right-radius: 10px;
+                    background-color: #4a90e2;  /* nice blue tab color */
+                    color: white;
+                    font-size: 20px;
+                    font-weight: bold;
+                    font-family: sans-serif;
+                    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+                    margin-bottom: -2px;
+                ">
+                    Project Resources
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
             col1, col2 = st.columns(2)
 
@@ -701,7 +779,26 @@ if st.session_state.project_type == "new":
             st.plotly_chart(fig_pie, use_container_width=True)
 
             # Duration Line Chart
-            st.subheader("⏱ Duration by Phase")
+            st.markdown(
+                """
+                <div style="
+                    display: inline-block;
+                    padding: 8px 20px;
+                    border-top-left-radius: 10px;
+                    border-top-right-radius: 10px;
+                    background-color: #4a90e2;  /* nice blue tab color */
+                    color: white;
+                    font-size: 20px;
+                    font-weight: bold;
+                    font-family: sans-serif;
+                    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+                    margin-bottom: -2px;
+                ">
+                    ⏱ Duration by Phase 
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
             fig_line = px.line(
                 df,
                 x="Phase",
