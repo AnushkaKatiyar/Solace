@@ -42,8 +42,8 @@ model_dict = {'low': model_low, 'mid': model_mid, 'high': model_high}
 
 # === Phase Mapping ===
 phase_mapping = {
-    "I. Scope": "I. Scope",
-    "II. Design": "II. Design",
+    "I. Scope": "I. Site Preperation",
+    "II. Design": "II. Foundation",
     "III. Commissioning": "III. Commissioning",
     "IV. Purch & Install": "IV. Purch & Install",
     "V. Construction": "V. Construction"
