@@ -532,8 +532,8 @@ if st.session_state.project_type == "new":
                 col1, col2 = st.columns(2)
                 col1.metric("💰 Total Estimated Cost", f"${total_cost:,.2f}")
                 col2.metric("🕒 Total Estimated Duration", f"{total_duration:.1f} weeks")
-                except Exception as e:
-                    st.error(f"Prediction failed: {e}")
+            except Exception as e:
+                st.error(f"Prediction failed: {e}")
                  
         st.subheader("📋 Construction Phases & Subtasks")
 
