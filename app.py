@@ -331,7 +331,7 @@ if st.session_state.project_type == "new":
     Using the collected info, generate a detailed construction plan in JSON format with phases, subtasks, vendors, permissions, materials, and labor.
 
     Output should be a list of 5 phases, depending on the user inputs. Each phase must include:
-    - Phase: (string) e.g. "I. Scope",
+    - Phase: (string) e.g. "I. Site Preperation", "II. Foundation", "III. Comissioning", "IV. Purchase & Install", "V. Construction",
     - Description: (string),a short description,
     - Subphases/subtaskes: 5-10 sub tasks within the phases
     - Subphase Breakdown: (list of phases and subtasks(5-10 phases and 5-10 subtasks) from above as dicts). Each dict must have:
