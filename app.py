@@ -656,7 +656,34 @@ if st.session_state.project_type == "new":
             })
 
             # Cost Pie Chart
-            st.subheader("💰 Cost Distribution")
+            st.markdown(
+                """
+                <div style="
+                    display: inline-block;
+                    padding: 8px 20px;
+                    border-top-left-radius: 10px;
+                    border-top-right-radius: 10px;
+                    background-color: #4a90e2;  /* nice blue tab color */
+                    color: white;
+                    font-size: 20px;
+                    font-weight: bold;
+                    font-family: sans-serif;
+                    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+                    margin-bottom: -2px;
+                ">
+                    💰 Cost Distribution
+                </div>
+                <div style="
+                    border: 1px solid #4a90e2;
+                    border-top: none;
+                    padding: 15px;
+                    border-radius: 0 0 10px 10px;
+                ">
+                    <!-- Your chart or content goes here -->
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
             fig_pie = px.pie(
                 df,
                 names="Phase",
