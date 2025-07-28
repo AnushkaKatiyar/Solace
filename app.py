@@ -15,6 +15,7 @@ import requests
 import io
 from sentence_transformers import SentenceTransformer
 import pickle
+import copy
 
 # --- Load Models ---
 MODEL_DIR = "models"
@@ -640,83 +641,71 @@ if st.session_state.project_type == "new":
                 """,
                 unsafe_allow_html=True,
             )
+        # --- STEP 1: Calculate ML model total cost ---
+        ml_total_cost = 0
+        for i in range(len(phases)):
+            if 'result_df' in locals() and not result_df.empty and i < len(result_df):
+                ml_total_cost += result_df.iloc[i]["Predicted Cost (USD)"]
+            else:
+                ml_total_cost += phases[i].get("EstimatedCost", 0)
+        # --- STEP 2: Collect resource/materials and calculate total cost ---
         resources = plan.get("Resources & Materials", {})
-        if resources:
-            # Flatten data into rows with Category, Item, Quantity, Cost
-            materials_rows = []
-            for category, items in resources.items():
-                for item in items:
-                    cost = item.get("EstimatedCost", "N/A")
-                    if isinstance(cost, (int, float)):
-                        cost_str = f"${cost:,.2f}"  # Format as currency with commas and 2 decimals
-                    else:
-                        cost_str = cost 
-                    materials_rows.append({
-                        "Category": category,
-                        "Item": item.get("Item", ""),
-                        "Quantity Estimate": item.get("QuantityEstimate", "N/A"),
-                        "Estimated Cost": cost_str
-                    })
+        materials_rows = []
+        raw_costs = []  # to store raw numeric costs for logic
 
-            materials_df = pd.DataFrame(materials_rows)
-            st.table(materials_df)
-        else:
-            st.info("No resources or materials specified.")
+        for category, items in resources.items():
+            for item in items:
+                cost = item.get("EstimatedCost", 0)
+                raw_costs.append(cost)
+                materials_rows.append({
+                    "Category": category,
+                    "Item": item.get("Item", ""),
+                    "Quantity Estimate": item.get("QuantityEstimate", "N/A"),
+                    "Estimated Cost": cost  # keep as number for now
+                })
+
+        resource_total_cost = sum(raw_costs)
+        threshold = 0.6 * ml_total_cost
+
+        # --- STEP 3: Adjust if necessary ---
+        if resource_total_cost > threshold:
+            delta = resource_total_cost - threshold
+            adjustment_per_item = delta / len(materials_rows)
+
+            # Subtract equally
+            for row in materials_rows:
+                new_cost = max(0, row["Estimated Cost"] - adjustment_per_item)
+                row["Estimated Cost"] = new_cost  # update
+        # --- STEP 4: Format costs and display ---
+        for row in materials_rows:
+            row["Estimated Cost"] = f"${row['Estimated Cost']:,.0f}"
+
+        materials_df = pd.DataFrame(materials_rows)
+        st.table(materials_df)        
+# #########################################################################
+#         resources = plan.get("Resources & Materials", {})
+#         if resources:
+#             # Flatten data into rows with Category, Item, Quantity, Cost
+#             materials_rows = []
+#             for category, items in resources.items():
+#                 for item in items:
+#                     cost = item.get("EstimatedCost", "N/A")
+#                     if isinstance(cost, (int, float)):
+#                         cost_str = f"${cost:,.2f}"  # Format as currency with commas and 2 decimals
+#                     else:
+#                         cost_str = cost 
+#                     materials_rows.append({
+#                         "Category": category,
+#                         "Item": item.get("Item", ""),
+#                         "Quantity Estimate": item.get("QuantityEstimate", "N/A"),
+#                         "Estimated Cost": cost_str
+#                     })
+
+#             materials_df = pd.DataFrame(materials_rows)
+#             st.table(materials_df)
+#         else:
+#             st.info("No resources or materials specified.")
     ####################################################################
-        
-        # all_labors = set()
-        # all_vendors = set()
-
-        # for phase in phases:
-        #     all_labors.update(phase.get("LaborCategories", []))
-        #     all_vendors.update(phase.get("Vendors", []))
-            
-        #     for sub in phase.get("Subtasks", []):
-        #         all_labors.update(sub.get("LaborCategories", []))
-        #         all_vendors.update(sub.get("Vendors", []))
-
-        # if all_labors or all_vendors:
-           
-        #     st.markdown(
-        #         """
-        #         <div style="
-        #             display: inline-block;
-        #             padding: 8px 20px;
-        #             border-top-left-radius: 10px;
-        #             border-top-right-radius: 10px;
-        #             background-color: #0077b6;  /* nice blue tab color */
-        #             color: white;
-        #             font-size: 20px;
-        #             font-weight: bold;
-        #             font-family: sans-serif;
-        #             box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-        #             margin-bottom: -2px;
-        #         ">
-        #             Project Resources
-        #         </div>
-        #         """,
-        #         unsafe_allow_html=True,
-        #     )
-
-        #     col1, col2 = st.columns(2)
-
-        #     with col1:
-        #         st.subheader("Labor Categories")
-        #         if all_labors:
-        #             for labor in sorted(all_labors):
-        #                 st.markdown(f"- {labor}")
-        #         else:
-        #             st.write("No labor categories found.")
-
-        #     with col2:
-        #         st.subheader("Vendor Types")
-        #         if all_vendors:
-        #             for vendor in sorted(all_vendors):
-        #                 st.markdown(f"- {vendor}")
-        #         else:
-        #             st.write("No vendor types found.")
-        # else:
-        #     st.info("No labor or vendor types found in this plan.") 
         # Collect labor and vendor info
         all_labors = set()
         all_vendors = set()
