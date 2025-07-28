@@ -96,7 +96,7 @@ with st.sidebar:
         st_lottie(lottie_anim, speed=1, width=150, height=150, key="sidebar_anim")
 
     st.title("Solace")
-    st.markdown("🚧 *NYC School Construction Estimator*")
+    st.markdown("🚧 *Project Management made easy*")
     st.markdown("---")
     st.markdown("Created for Solace Technologies")
     st.markdown("🔗 [GitHub Repo](https://github.com/AnushkaKatiyar)")
@@ -122,7 +122,7 @@ st.markdown("""
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 ">
     <h1 style="color: #004080; margin-bottom: 8px; font-weight: 700; font-size: 2.8rem;">
-        🤖 AI Assistant for NYC School Construction
+        🤖 AI Assistant for Project Management
     </h1>
     <h4 style="color: #004080; margin-top: 0; font-weight: 400;">
         What type of project are you planning?
@@ -176,7 +176,7 @@ if st.session_state.project_type is None:
     # Row 1: Buttons
     spacer1, col1, col2, col3, spacer2 = st.columns([0.5, 2, 2, 2, 0.5])
     with col1:
-        if st.button(" New Construction", key="new"):
+        if st.button(" New Project", key="new"):
             st.session_state.project_type = "new"
             st.session_state.cost_bucket = "high"
         
@@ -213,7 +213,7 @@ st.markdown("---")
 ###################################################################
 ###################################################################
 if st.session_state.project_type == "new":
-    st.subheader("New Construction Planning")
+    st.subheader("New Project Planning")
     # your existing pipeline goes here (assistant, model predictions, etc.)
 
     def animated_typing(message, delay=0.03):
@@ -227,7 +227,7 @@ if st.session_state.project_type == "new":
     if "has_seen_welcome" not in st.session_state:
         st.session_state.has_seen_welcome = True
         with st.chat_message("assistant"):
-            animated_typing("Hi, Welcome to Solace NYC School Construction Demo 👋\n\nI'm your project manager assistant. Can I help you create a plan for school construction in NYC?")
+            animated_typing("Hi, Welcome to Solace AI Assistant Demo 👋\n\nI'm your project manager assistant. Can I help you create a plan?")
 
     # Define the questions to ask sequentially
     questions = [
