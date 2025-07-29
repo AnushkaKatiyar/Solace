@@ -292,7 +292,8 @@ if st.session_state.project_type == "new":
     Current collected info:
     {json.dumps(st.session_state.collected_info, indent=2)}
 
-    Ask only the questions defined (they have been predefined and i have created a loop, so you will get the questions, no need to add too much) and wait for user response, do not repeat question. Do not display unnecessary information or the previous questions asked.
+    Ask only the questions defined (they have been predefined , so you will get the questions, no need to add too much) and wait for user response, do not repeat question. Do not display unnecessary information or the previous questions asked.
+    Do not display json to the user.
     Next question:
     {next_question}
     """
@@ -300,7 +301,7 @@ if st.session_state.project_type == "new":
             system_prompt = f"""
     You have collected all the necessary project information:
     {json.dumps(st.session_state.collected_info, indent=2)}
-
+    Display in formatted way, not json
     Inform the user that all info is collected and ask if they want to generate the construction plan.
     Ask each question only once, do not repeat the previous question, ask only the defined 10 questions.
     """
@@ -373,7 +374,7 @@ if st.session_state.project_type == "new":
         ],
         "LaborCategories": [],
         "Vendors": [],
-        "Permissions Required": []
+        "Permissions": []
         }}
     ],
     "Resources & Materials": {{
