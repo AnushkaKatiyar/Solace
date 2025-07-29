@@ -580,43 +580,85 @@ if st.session_state.project_type == "new":
                 ml_cost = phase_cost
                 # ml_duration = phase.get("DurationEstimate", 0)
                 # ml_cost = phase.get("EstimatedCost", 0)
-             
-                if 'result_df' in locals() and not result_df.empty and i < len(result_df):
-                    ml_duration = result_df.iloc[i]["Predicted Duration (weeks)"]
-                    ml_cost = result_df.iloc[i]["Predicted Cost (USD)"]
+                total_predicted_cost = 0
+                total_predicted_duration = 0
+                if 'result_df' in locals() and not result_df.empty:
+                    total_predicted_cost = result_df["Predicted Cost (USD)"].sum()
+                    total_predicted_duration = result_df["Predicted Duration (weeks)"].sum()
+                else:
+                    total_predicted_cost = sum(phase.get("EstimatedCost", 0) for phase in phases)
+                    total_predicted_duration = sum(phase.get("DurationEstimate", 0) for phase in phases)
+                # Loop over phases and calculate percentages
+                for i, phase in enumerate(phases):
+                    phase_name = phase["PhaseName"]
+                    with st.expander(f"📌 {phase_name}", expanded=True):
+                        rows = []
+
+                        phase_cost = phase.get("EstimatedCost", 1e-6)  # avoid div zero
+                        phase_duration = phase.get("DurationEstimate", 1e-6)
+
+                        ml_duration = phase_duration
+                        ml_cost = phase_cost
+
+                        if 'result_df' in locals() and not result_df.empty and i < len(result_df):
+                            ml_duration = result_df.iloc[i]["Predicted Duration (weeks)"]
+                            ml_cost = result_df.iloc[i]["Predicted Cost (USD)"]
+
+                        # Convert to percentages of total
+                        cost_pct = (ml_cost / total_predicted_cost) * 100 if total_predicted_cost else 0
+                        duration_pct = (ml_duration / total_predicted_duration) * 100 if total_predicted_duration else 0
+
+                        rows.append({
+                            "Task": f"{phase_name}",
+                            "Description": phase.get("Description", ""),
+                            "Duration (%)": f"{duration_pct:.1f}%",
+                            "Estimated Cost (%)": f"{cost_pct:.1f}%",
+                            "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
+                            "Vendors": ", ".join(phase.get("Vendors", [])),
+                            "Permissions": ", ".join(phase.get("Permissions", [])),
+                        })
+
+                        # Build and display DataFrame as usual
+                        df_phase = pd.DataFrame(rows)
+                        st.dataframe(df_phase, use_container_width=True)
+
+##############################################################################################################             
+                # if 'result_df' in locals() and not result_df.empty and i < len(result_df):
+                #     ml_duration = result_df.iloc[i]["Predicted Duration (weeks)"]
+                #     ml_cost = result_df.iloc[i]["Predicted Cost (USD)"]
                 
-                    # Main phase task
-                rows.append({
-                    "Task": f"{phase_name}",
-                    "Description": phase.get("Description", ""),
-                    "Duration (weeks)": f"{int(round(ml_duration))} weeks",
-                    "Estimated Cost ($)": ml_cost,
-                    "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
-                    "Vendors": ", ".join(phase.get("Vendors", [])),
-                    "Permissions": ", ".join(phase.get("Permissions", [])),
-                })
+                #     # Main phase task
+                # rows.append({
+                #     "Task": f"{phase_name}",
+                #     "Description": phase.get("Description", ""),
+                #     "Duration (weeks)": f"{int(round(ml_duration))} weeks",
+                #     "Estimated Cost ($)": ml_cost,
+                #     "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
+                #     "Vendors": ", ".join(phase.get("Vendors", [])),
+                #     "Permissions": ", ".join(phase.get("Permissions", [])),
+                # })
 
-                # Subtasks (indented with arrow)
-                for sub in phase.get("Subtasks", []):
-                    sub_cost = sub.get("CostEstimate", 0)
-                    sub_duration = sub.get("DurationEstimate", 0)
+                # # Subtasks (indented with arrow)
+                # for sub in phase.get("Subtasks", []):
+                #     sub_cost = sub.get("CostEstimate", 0)
+                #     sub_duration = sub.get("DurationEstimate", 0)
 
-                    cost_pct = (sub_cost / phase_cost) * 100
-                    duration_pct = (sub_duration / phase_duration) * 100
-                    rows.append({
-                        "Task": f"  ↳ {sub.get('SubtaskName', '')}",
-                        "Description": sub.get("Description", ""),
-                        "Duration (weeks)": f"{duration_pct:.1f}%",
-                        "Estimated Cost ($)": f"{cost_pct:.1f}%",
-                        "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
-                        "Vendors": ", ".join(sub.get("Vendors", [])),
-                        "Permissions": ", ".join(sub.get("Permissions", [])),
-                    })
+                #     cost_pct = (sub_cost / phase_cost) * 100
+                #     duration_pct = (sub_duration / phase_duration) * 100
+                #     rows.append({
+                #         "Task": f"  ↳ {sub.get('SubtaskName', '')}",
+                #         "Description": sub.get("Description", ""),
+                #         "Duration (weeks)": f"{duration_pct:.1f}%",
+                #         "Estimated Cost ($)": f"{cost_pct:.1f}%",
+                #         "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
+                #         "Vendors": ", ".join(sub.get("Vendors", [])),
+                #         "Permissions": ", ".join(sub.get("Permissions", [])),
+                #     })
 
-                df_phase = pd.DataFrame(rows)
-                df_phase["Estimated Cost ($)"] = df_phase["Estimated Cost ($)"].apply(safe_format_cost)
+                # df_phase = pd.DataFrame(rows)
+                # df_phase["Estimated Cost ($)"] = df_phase["Estimated Cost ($)"].apply(safe_format_cost)
 
-                st.dataframe(df_phase, use_container_width=True)
+                # st.dataframe(df_phase, use_container_width=True)
         
             
     ####################################################################    
