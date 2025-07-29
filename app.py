@@ -619,9 +619,9 @@ if st.session_state.project_type == "new":
                             "Permissions": ", ".join(phase.get("Permissions", [])),
                         })
 
-                        # Build and display DataFrame as usual
-                        df_phase = pd.DataFrame(rows)
-                        st.dataframe(df_phase, use_container_width=True)
+                        # # Build and display DataFrame as usual
+                        # df_phase = pd.DataFrame(rows)
+                        # st.dataframe(df_phase, use_container_width=True)
 
 ##############################################################################################################             
                 # if 'result_df' in locals() and not result_df.empty and i < len(result_df):
@@ -639,27 +639,27 @@ if st.session_state.project_type == "new":
                 #     "Permissions": ", ".join(phase.get("Permissions", [])),
                 # })
 
-                # # Subtasks (indented with arrow)
-                # for sub in phase.get("Subtasks", []):
-                #     sub_cost = sub.get("CostEstimate", 0)
-                #     sub_duration = sub.get("DurationEstimate", 0)
+                # Subtasks (indented with arrow)
+                for sub in phase.get("Subtasks", []):
+                    sub_cost = sub.get("CostEstimate", 0)
+                    sub_duration = sub.get("DurationEstimate", 0)
 
-                #     cost_pct = (sub_cost / phase_cost) * 100
-                #     duration_pct = (sub_duration / phase_duration) * 100
-                #     rows.append({
-                #         "Task": f"  ↳ {sub.get('SubtaskName', '')}",
-                #         "Description": sub.get("Description", ""),
-                #         "Duration (weeks)": f"{duration_pct:.1f}%",
-                #         "Estimated Cost ($)": f"{cost_pct:.1f}%",
-                #         "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
-                #         "Vendors": ", ".join(sub.get("Vendors", [])),
-                #         "Permissions": ", ".join(sub.get("Permissions", [])),
-                #     })
+                    cost_pct = (sub_cost / phase_cost) * 100
+                    duration_pct = (sub_duration / phase_duration) * 100
+                    rows.append({
+                        "Task": f"  ↳ {sub.get('SubtaskName', '')}",
+                        "Description": sub.get("Description", ""),
+                        "Duration (weeks)": f"{duration_pct:.1f}%",
+                        "Estimated Cost ($)": f"{cost_pct:.1f}%",
+                        "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
+                        "Vendors": ", ".join(sub.get("Vendors", [])),
+                        "Permissions": ", ".join(sub.get("Permissions", [])),
+                    })
 
-                # df_phase = pd.DataFrame(rows)
-                # df_phase["Estimated Cost ($)"] = df_phase["Estimated Cost ($)"].apply(safe_format_cost)
+                df_phase = pd.DataFrame(rows)
+                df_phase["Estimated Cost ($)"] = df_phase["Estimated Cost ($)"].apply(safe_format_cost)
 
-                # st.dataframe(df_phase, use_container_width=True)
+                st.dataframe(df_phase, use_container_width=True)
         
             
     ####################################################################    
