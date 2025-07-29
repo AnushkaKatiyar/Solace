@@ -520,6 +520,7 @@ if st.session_state.project_type == "new":
                 result_df = predict_cost_duration(description, bucket,ai_durations)
                 total_cost = result_df["Predicted Cost (USD)"].sum()
                 total_duration = result_df["Predicted Duration (weeks)"].sum()
+                result_df["Predicted Cost Raw"] = result_df["Predicted Cost (USD)"]
                 result_df["Predicted Cost (USD)"] = result_df["Predicted Cost (USD)"].apply(lambda x: f"${x:,.2f}")
                 result_df["Duration"] = result_df["Predicted Duration (weeks)"].apply(
                     lambda w: f"{int(w)} weeks {int((w % 1) * 7)} days"
@@ -583,7 +584,7 @@ if st.session_state.project_type == "new":
                 total_predicted_cost = 0
                 total_predicted_duration = 0
                 if 'result_df' in locals() and not result_df.empty:
-                    total_predicted_cost = result_df["Predicted Cost (USD)"].sum()
+                    total_predicted_cost = result_df["Predicted Cost Raw"].sum()
                     total_predicted_duration = result_df["Predicted Duration (weeks)"].sum()
                 else:
                     total_predicted_cost = sum(phase.get("EstimatedCost", 0) for phase in phases)
@@ -602,7 +603,7 @@ if st.session_state.project_type == "new":
 
                         if 'result_df' in locals() and not result_df.empty and i < len(result_df):
                             ml_duration = result_df.iloc[i]["Predicted Duration (weeks)"]
-                            ml_cost = result_df.iloc[i]["Predicted Cost (USD)"]
+                            ml_cost = result_df.iloc[i]["Predicted Cost Raw"]
 
                         # Convert to percentages of total
                         cost_pct = (ml_cost / total_predicted_cost) * 100 if total_predicted_cost else 0
