@@ -175,37 +175,37 @@ if st.session_state.project_type is None:
     image_width = 100
 
     # Row 1: Buttons
-    spacer1, col1, col2, col3, spacer2 = st.columns([0.5, 2, 2, 2, 0.5])
+    spacer1, col1, spacer2 = st.columns([0.5, 2, 0.5])
     with col1:
         if st.button(" New Project", key="new"):
             st.session_state.project_type = "new"
             st.session_state.cost_bucket = "high"
         
-    with col2:
-        if st.button(" Upgrades", key="upgrade"):
-            st.session_state.project_type = "upgrade"
-            st.session_state.cost_bucket = "mid"
+    # with col2:
+    #     if st.button(" Upgrades", key="upgrade"):
+    #         st.session_state.project_type = "upgrade"
+    #         st.session_state.cost_bucket = "mid"
         
-    with col3:
-        if st.button(" Repair & Maintenance", key="repair"):
-            st.session_state.project_type = "repair"
-            st.session_state.cost_bucket = "low"
+    # with col3:
+    #     if st.button(" Repair & Maintenance", key="repair"):
+    #         st.session_state.project_type = "repair"
+    #         st.session_state.cost_bucket = "low"
         
 
-    # Row 2: Images (center aligned)
-    spacer1_img, img_col1, img_col2, img_col3, spacer2_img = st.columns([1, 2, 2, 1.3, 0.4])
-    with img_col1:
-        st.markdown('<div class="image-container">', unsafe_allow_html=True)
-        st.image("assets/New_Construction.jpg", width=image_width)
-        st.markdown('</div>', unsafe_allow_html=True)
-    with img_col2:
-        st.markdown('<div class="image-container">', unsafe_allow_html=True)
-        st.image("assets/Upgrade.png", width=image_width)
-        st.markdown('</div>', unsafe_allow_html=True)
-    with img_col3:
-        st.markdown('<div class="image-container">', unsafe_allow_html=True)
-        st.image("assets/Repair.jpg", width=image_width)
-        st.markdown('</div>', unsafe_allow_html=True)
+    # # Row 2: Images (center aligned)
+    # spacer1_img, img_col1, img_col2, img_col3, spacer2_img = st.columns([1, 2, 2, 1.3, 0.4])
+    # with img_col1:
+    #     st.markdown('<div class="image-container">', unsafe_allow_html=True)
+    #     st.image("assets/New_Construction.jpg", width=image_width)
+    #     st.markdown('</div>', unsafe_allow_html=True)
+    # with img_col2:
+    #     st.markdown('<div class="image-container">', unsafe_allow_html=True)
+    #     st.image("assets/Upgrade.png", width=image_width)
+    #     st.markdown('</div>', unsafe_allow_html=True)
+    # with img_col3:
+    #     st.markdown('<div class="image-container">', unsafe_allow_html=True)
+    #     st.image("assets/Repair.jpg", width=image_width)
+    #     st.markdown('</div>', unsafe_allow_html=True)
 
 # Show content based on selection
 st.markdown("---")
@@ -1049,9 +1049,9 @@ if st.session_state.project_type == "new":
 ###############################################################
 # elif project_type == "🚧 Upgrades":
 #     st.subheader("Upgrade Planning")
-elif st.session_state.project_type == "upgrade":
-    st.subheader("Upgrade Project Planning")
-    st.info("🚧 We're here to help you upgrade existing facilities.")
+# elif st.session_state.project_type == "upgrade":
+#     st.subheader("Upgrade Project Planning")
+#     st.info("🚧 We're here to help you upgrade existing facilities.")
 #     def animated_typing(message, delay=0.03):
 #         placeholder = st.empty()
 #         full_text = ""
@@ -1315,9 +1315,9 @@ elif st.session_state.project_type == "upgrade":
 ###############################################################
 # elif project_type == "🛠 Repair & Maintenance":
 #     st.subheader("Repair / Maintenance Planning")
-elif st.session_state.project_type == "repair":
-    st.subheader("Repair & Maintenance Planning")
-    st.info("🛠 Let’s get those repairs underway!")
+# elif st.session_state.project_type == "repair":
+#     st.subheader("Repair & Maintenance Planning")
+#     st.info("🛠 Let’s get those repairs underway!")
 
 #     def animated_typing(message, delay=0.03):
 #         placeholder = st.empty()
