@@ -642,6 +642,7 @@ if st.session_state.project_type == "new":
 
                         # Build and display DataFrame as usual
                         df_phase = pd.DataFrame(rows)
+                        df_phase["Estimated Cost ($)"] = df_phase["Estimated Cost ($)"].apply(safe_format_cost)
                         st.dataframe(df_phase, use_container_width=True)
 
 ##############################################################################################################             
