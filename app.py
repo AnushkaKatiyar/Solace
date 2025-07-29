@@ -642,12 +642,7 @@ if st.session_state.project_type == "new":
                 unsafe_allow_html=True,
             )
         # --- STEP 1: Calculate ML model total cost ---
-        ml_total_cost = 0
-        for i in range(len(phases)):
-            if 'result_df' in locals() and not result_df.empty and i < len(result_df):
-                ml_total_cost += result_df.iloc[i]["Predicted Cost (USD)"]
-            else:
-                ml_total_cost += phases[i].get("EstimatedCost", 0)
+        ml_total_cost = total_cost
         # --- STEP 2: Collect resource/materials and calculate total cost ---
         resources = plan.get("Resources & Materials", {})
         materials_rows = []
