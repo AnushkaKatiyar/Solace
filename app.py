@@ -238,10 +238,10 @@ if st.session_state.project_type == "new":
         ("StudentsPerClass", "What is the average number of students per class?"),
         ("Timeline", "What is the expected construction timeline (in months)?"),
         ("SpecialReqs", "Are there any special facilities or requirements needed?"),
-        ("SquareFootage", "What is the square footage of the construction?"),
-        ("Floors", "How many floors will the building have?"),
-        ("DemolitionNeeded", "Is demolition needed?"),
-        ("Basement", "Is a basement needed?"),
+        # ("SquareFootage", "What is the square footage of the construction?"),
+        # ("Floors", "How many floors will the building have?"),
+        # ("DemolitionNeeded", "Is demolition needed?"),
+        # ("Basement", "Is a basement needed?"),
     ]
 
     # Initialize session state for collected info and chat history
