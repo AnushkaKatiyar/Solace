@@ -621,8 +621,8 @@ if st.session_state.project_type == "new":
                     rows.append({
                         "Task": f"  ↳ {sub.get('SubtaskName', '')}",
                         "Description": sub.get("Description", ""),
-                        "Duration (weeks)": f"{duration_pct:.1f}%",
-                        "Estimated Cost ($)": f"{cost_pct:.1f}%",
+                        "Duration (%)": f"{duration_pct:.1f}%",
+                        "Estimated Cost (%)": f"{cost_pct:.1f}%",
                         "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
                         "Vendors": ", ".join(sub.get("Vendors", [])),
                         "Permissions": ", ".join(sub.get("Permissions", [])),
@@ -630,10 +630,8 @@ if st.session_state.project_type == "new":
 
                 # Build and display DataFrame as usual
                 df_phase = pd.DataFrame(rows)
-                df_phase["Estimated Cost ($)"] = df_phase["Estimated Cost ($)"].apply(safe_format_cost)
+                df_phase["Estimated Cost (%)"] = df_phase["Estimated Cost (%)"].apply(safe_format_cost)
                 st.dataframe(df_phase, use_container_width=True)
-
-
 #########################################################################                 
         # st.markdown(
         #         """
