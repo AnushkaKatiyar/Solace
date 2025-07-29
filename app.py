@@ -328,7 +328,7 @@ if st.session_state.project_type == "new":
     # When all questions answered, show button to generate plan
     next_key, next_question = get_next_question()
     if next_key is None:
-        if st.button("🚧 Generate Construction Plan"):
+        if st.button("🚧 Generate Project Plan"):
             summary_prompt = f"""
     Using the collected info, generate a detailed construction plan in JSON format with phases, subtasks, vendors, permissions, materials, and labor.
 
