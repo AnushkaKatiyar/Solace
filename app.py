@@ -292,7 +292,7 @@ if st.session_state.project_type == "new":
     Current collected info:
     {json.dumps(st.session_state.collected_info, indent=2)}
 
-    Ask only the questions defined and wait for user response, do not repeat question. Do not display unnecessary information.
+    Ask only the questions defined (they have been predefined and i have created a loop, so you will get the questions, no need to add too much) and wait for user response, do not repeat question. Do not display unnecessary information or the previous questions asked.
     Next question:
     {next_question}
     """
@@ -342,7 +342,7 @@ if st.session_state.project_type == "new":
     - Labor Category
     - Vendor: (list of strings),1–2 **actual NYC-based vendors or well-known relevant companies, not made up names** (avoid placeholders like 'VendorX', 'VendorA'),
     - Permission if needed: (list of strings),required NYC government permissions (e.g., SCA, DoE, FDNY),
-    - Duration (weeks): (number)- Please predict realistic numbers
+    - Duration (weeks): (number)- Please predict realistic numbers based on actual construction timelines
     - Resources & Material-Raw materials used in construction
     - Item-should have the name and describe for which phases and subtask it is needed
     - Quantity-number followed by correct units e.g-metric tonne, feet etc
