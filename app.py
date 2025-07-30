@@ -292,7 +292,8 @@ if st.session_state.project_type == "new":
     Current collected info:
     {json.dumps(st.session_state.collected_info, indent=2)}
 
-    Ask only the questions defined (they have been predefined , so you will get the questions, no need to add too much) and wait for user response, do not repeat question. Do not display unnecessary information or the previous questions asked.
+    Ask only the questions defined (they have been predefined, so you will get the questions, no need to add too much) and wait for user response, do not repeat question. 
+    Do not display unnecessary information or the previous questions asked. Do provide like the average for each value, like average square foot required for a school construction and average class size etc.
     Do not display json to the user.
     Also tell the user that they are advised to answer the questions asked and can provide more information for context but they will be asked the guided questions.
     Next question:
@@ -676,7 +677,7 @@ if st.session_state.project_type == "new":
                 })
 
         resource_total_cost = sum(raw_costs)
-        threshold = 0.6 * ml_total_cost
+        threshold = 0.5 * ml_total_cost
 
         # --- STEP 3: Adjust if necessary ---
         if resource_total_cost > threshold:
