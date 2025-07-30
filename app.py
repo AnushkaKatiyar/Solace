@@ -343,13 +343,13 @@ if st.session_state.project_type == "new":
     - Description(string)
     - Cost (USD): (number)
     - Labor Category
-    - Vendor: (list of strings),1–2 **actual NYC-based vendors or well-known relevant companies, not made up names** (avoid placeholders like 'VendorX', 'VendorA'),
+    - Vendor: (list of strings),1–2 **only actual NYC-based vendors or well-known relevant companies, not made up names** (avoid placeholders like 'VendorX', 'VendorA'),
     - Permission if needed: (list of strings),required NYC government permissions (e.g., SCA, DoE, FDNY),
     - Duration (weeks): (number)- Please predict realistic numbers based on actual construction timelines and if the user has provided a timeline, try to get the values in that ballpark but if they are unrealistic, then predict normal values,
     - Resources & Material-Raw materials used in construction
     - Item-should have the name and describe for which phases and subtask it is needed
     - Quantity-number followed by correct units e.g-metric tonne, feet etc
-    - Cost (USD): (number), please predict realistic numbers
+    - Cost (USD): (number), please predict realistic numbers and should not exceed 60% of the total estimated cost(the total of all the resources should be under 12 million)
     
 
     Collected info:
@@ -677,23 +677,30 @@ if st.session_state.project_type == "new":
                 })
 
         resource_total_cost = sum(raw_costs)
-        threshold = 0.5 * ml_total_cost
+        threshold = 0.6 * ml_total_cost
+
 
         # --- STEP 3: Adjust if necessary ---
         if resource_total_cost > threshold:
             delta = resource_total_cost - threshold
-            adjustment_per_item = delta / len(materials_rows)
-
-            # Subtract equally
+            original_total = sum(row["Estimated Cost"] for row in materials_rows)
             for row in materials_rows:
-                new_cost = max(0, row["Estimated Cost"] - adjustment_per_item)
-                row["Estimated Cost"] = new_cost  # update
+                original_cost = row["Estimated Cost"]
+                if original_total > 0:
+                    adjustment = (original_cost / original_total) * delta
+                else:
+                    adjustment = 0
+                new_cost = max(1, original_cost - adjustment)  # Enforce minimum $1
+                row["Estimated Cost"] = new_cost
         # --- STEP 4: Format costs and display ---
+        final_total = sum(row["Estimated Cost"] for row in materials_rows)
+
         for row in materials_rows:
             row["Estimated Cost"] = f"${row['Estimated Cost']:,.0f}"
 
         materials_df = pd.DataFrame(materials_rows)
-        st.table(materials_df)        
+        st.table(materials_df)   
+        st.markdown(f"**Total Materials Cost:** ${final_total:,.0f}")     
 
     ####################################################################
         # Collect labor and vendor info
