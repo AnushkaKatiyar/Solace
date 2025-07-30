@@ -238,8 +238,7 @@ if st.session_state.project_type == "new":
         ("StudentsPerClass", "What is the average number of students per class?"),
         ("Timeline", "What is the expected construction timeline (in months)?"),
         ("SquareFootage", "What is the square footage of the construction?"),
-        ("SpecialReqs", "Are there any special facilities or requirements needed?"),
-        
+        ("SpecialReqs", "Are there any special facilities or requirements needed?"),       
         # ("Floors", "How many floors will the building have?"),
         # ("DemolitionNeeded", "Is demolition needed?"),
         # ("Basement", "Is a basement needed?"),
@@ -295,6 +294,7 @@ if st.session_state.project_type == "new":
 
     Ask only the questions defined (they have been predefined , so you will get the questions, no need to add too much) and wait for user response, do not repeat question. Do not display unnecessary information or the previous questions asked.
     Do not display json to the user.
+    Also tell the user that they are advised to answer the questions asked and can provide more information for context but they will be asked the guided questions.
     Next question:
     {next_question}
     """
@@ -304,7 +304,7 @@ if st.session_state.project_type == "new":
     {json.dumps(st.session_state.collected_info, indent=2)}
     Display in formatted way, not json
     Inform the user that all info is collected and ask if they want to generate the construction plan.
-    Ask each question only once, do not repeat the previous question, ask only the defined 10 questions.
+    Ask each question only once, do not repeat the previous question, ask only the defined 7 questions.
     """
 
         # Compose messages to send to the model
@@ -344,7 +344,7 @@ if st.session_state.project_type == "new":
     - Labor Category
     - Vendor: (list of strings),1–2 **actual NYC-based vendors or well-known relevant companies, not made up names** (avoid placeholders like 'VendorX', 'VendorA'),
     - Permission if needed: (list of strings),required NYC government permissions (e.g., SCA, DoE, FDNY),
-    - Duration (weeks): (number)- Please predict realistic numbers based on actual construction timelines
+    - Duration (weeks): (number)- Please predict realistic numbers based on actual construction timelines and if the user has provided a timeline, try to get the values in that ballpark but if they are unrealistic, then predict normal values,
     - Resources & Material-Raw materials used in construction
     - Item-should have the name and describe for which phases and subtask it is needed
     - Quantity-number followed by correct units e.g-metric tonne, feet etc
@@ -634,132 +634,7 @@ if st.session_state.project_type == "new":
                 df_phase = pd.DataFrame(rows)
                 df_phase["Estimated Cost (%)"] = df_phase["Estimated Cost (%)"].apply(safe_format_cost)
                 st.dataframe(df_phase, use_container_width=True)
-#########################################################################                 
-        # st.markdown(
-        #         """
-        #         <div style="
-        #             display: inline-block;
-        #             padding: 8px 20px;
-        #             border-top-left-radius: 10px;
-        #             border-top-right-radius: 10px;
-        #             background-color: #0077b6;  /* nice blue tab color */
-        #             color: white;
-        #             font-size: 20px;
-        #             font-weight: bold;
-        #             font-family: sans-serif;
-        #             box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-        #             margin-bottom: -2px;
-        #         ">
-        #             Construction Phases & Subtasks
-        #         </div>
-        #         """,
-        #         unsafe_allow_html=True,
-        #     )
-        #     total_predicted_cost = 0
-        #     total_predicted_duration = 0
-        #     if 'result_df' in locals() and not result_df.empty:
-        #             total_predicted_cost = result_df["Predicted Cost Raw"].sum()
-        #             total_predicted_duration = result_df["Predicted Duration (weeks)"].sum()
-        #     else:
-        #             total_predicted_cost = sum(phase.get("EstimatedCost", 0) for phase in phases)
-        #             total_predicted_duration = sum(phase.get("DurationEstimate", 0) for phase in phases)
-        #     # Loop over phases and calculate percentages
-        #     for i, phase in enumerate(phases):
-        #         phase_name = phase["PhaseName"]
-        #         with st.expander(f"📌 {phase_name}", expanded=True):
-        #                 rows = []
-
-        #                 phase_cost = phase.get("EstimatedCost", 1e-6)  # avoid div zero
-        #                 phase_duration = phase.get("DurationEstimate", 1e-6)
-
-        #                 ml_duration = phase_duration
-        #                 ml_cost = phase_cost
-
-        #                 if 'result_df' in locals() and not result_df.empty and i < len(result_df):
-        #                     ml_duration = result_df.iloc[i]["Predicted Duration (weeks)"]
-        #                     ml_cost = result_df.iloc[i]["Predicted Cost Raw"]
-
-        #                 # Convert to percentages of total
-        #                 cost_pct = (ml_cost / total_predicted_cost) * 100 if total_predicted_cost else 0
-        #                 duration_pct = (ml_duration / total_predicted_duration) * 100 if total_predicted_duration else 0
-
-        #                 rows.append({
-        #                     "Task": f"{phase_name}",
-        #                     "Description": phase.get("Description", ""),
-        #                     "Duration (%)": f"{duration_pct:.1f}%",
-        #                     "Estimated Cost (%)": f"{cost_pct:.1f}%",
-        #                     "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
-        #                     "Vendors": ", ".join(phase.get("Vendors", [])),
-        #                     "Permissions": ", ".join(phase.get("Permissions", [])),
-        #                 })
-        #                 # Subtasks (indented with arrow)
-        #                 for sub in phase.get("Subtasks", []):
-        #                     sub_cost = sub.get("CostEstimate", 0)
-        #                     sub_duration = sub.get("DurationEstimate", 0)
-
-        #                     cost_pct = (sub_cost / phase_cost) * 100
-        #                     duration_pct = (sub_duration / phase_duration) * 100
-        #                     rows.append({
-        #                         "Task": f"  ↳ {sub.get('SubtaskName', '')}",
-        #                         "Description": sub.get("Description", ""),
-        #                         "Duration (weeks)": f"{duration_pct:.1f}%",
-        #                         "Estimated Cost ($)": f"{cost_pct:.1f}%",
-        #                         "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
-        #                         "Vendors": ", ".join(sub.get("Vendors", [])),
-        #                         "Permissions": ", ".join(sub.get("Permissions", [])),
-        #                     })
-
-        #                 # Build and display DataFrame as usual
-        #                 df_phase = pd.DataFrame(rows)
-        #                 df_phase["Estimated Cost ($)"] = df_phase["Estimated Cost ($)"].apply(safe_format_cost)
-        #                 st.dataframe(df_phase, use_container_width=True)    
-                            
-##############################################################################################################             
-                # for i, phase in enumerate(phases):
-                    #     phase_name = phase["PhaseName"]
-                    #     with st.expander(f"📌 {phase_name}", expanded=True):
-                    #         rows = []
-
-                    #         phase_cost = phase.get("EstimatedCost", 1e-6)  # Avoid divide-by-zero
-                    #         phase_duration = phase.get("DurationEstimate", 1e-6)                
-                # if 'result_df' in locals() and not result_df.empty and i < len(result_df):
-                #     ml_duration = result_df.iloc[i]["Predicted Duration (weeks)"]
-                #     ml_cost = result_df.iloc[i]["Predicted Cost (USD)"]
-                
-                #     # Main phase task
-                # rows.append({
-                #     "Task": f"{phase_name}",
-                #     "Description": phase.get("Description", ""),
-                #     "Duration (weeks)": f"{int(round(ml_duration))} weeks",
-                #     "Estimated Cost ($)": ml_cost,
-                #     "Labor Categories": ", ".join(phase.get("LaborCategories", [])),
-                #     "Vendors": ", ".join(phase.get("Vendors", [])),
-                #     "Permissions": ", ".join(phase.get("Permissions", [])),
-                # })
-
-                # # Subtasks (indented with arrow)
-                # for sub in phase.get("Subtasks", []):
-                #     sub_cost = sub.get("CostEstimate", 0)
-                #     sub_duration = sub.get("DurationEstimate", 0)
-
-                #     cost_pct = (sub_cost / phase_cost) * 100
-                #     duration_pct = (sub_duration / phase_duration) * 100
-                #     rows.append({
-                #         "Task": f"  ↳ {sub.get('SubtaskName', '')}",
-                #         "Description": sub.get("Description", ""),
-                #         "Duration (weeks)": f"{duration_pct:.1f}%",
-                #         "Estimated Cost ($)": f"{cost_pct:.1f}%",
-                #         "Labor Categories": ", ".join(sub.get("LaborCategories", [])),
-                #         "Vendors": ", ".join(sub.get("Vendors", [])),
-                #         "Permissions": ", ".join(sub.get("Permissions", [])),
-                #     })
-
-                # df_phase = pd.DataFrame(rows)
-                # df_phase["Estimated Cost ($)"] = df_phase["Estimated Cost ($)"].apply(safe_format_cost)
-
-                # st.dataframe(df_phase, use_container_width=True)
-        
-            
+     
     ####################################################################    
  
         st.markdown(
@@ -818,29 +693,7 @@ if st.session_state.project_type == "new":
 
         materials_df = pd.DataFrame(materials_rows)
         st.table(materials_df)        
-# #########################################################################
-#         resources = plan.get("Resources & Materials", {})
-#         if resources:
-#             # Flatten data into rows with Category, Item, Quantity, Cost
-#             materials_rows = []
-#             for category, items in resources.items():
-#                 for item in items:
-#                     cost = item.get("EstimatedCost", "N/A")
-#                     if isinstance(cost, (int, float)):
-#                         cost_str = f"${cost:,.2f}"  # Format as currency with commas and 2 decimals
-#                     else:
-#                         cost_str = cost 
-#                     materials_rows.append({
-#                         "Category": category,
-#                         "Item": item.get("Item", ""),
-#                         "Quantity Estimate": item.get("QuantityEstimate", "N/A"),
-#                         "Estimated Cost": cost_str
-#                     })
 
-#             materials_df = pd.DataFrame(materials_rows)
-#             st.table(materials_df)
-#         else:
-#             st.info("No resources or materials specified.")
     ####################################################################
         # Collect labor and vendor info
         all_labors = set()
