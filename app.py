@@ -228,7 +228,7 @@ if st.session_state.project_type == "new":
     if "has_seen_welcome" not in st.session_state:
         st.session_state.has_seen_welcome = True
         with st.chat_message("assistant"):
-            animated_typing("Hi, Welcome to Solace AI Assistant Demo 👋\n\nI'm your project manager assistant. Can I help you create a plan?")
+            animated_typing("Hi, Welcome to Solace AI Project Manager Demo 👋\n\nI can generate project plan for a new school development in New York City based on your requirements. This is the scope of the demo.\n\n Can I please help make the plan for you? ")
 
     # Define the questions to ask sequentially
     questions = [
@@ -237,8 +237,9 @@ if st.session_state.project_type == "new":
         ("Grades", "How many grades will the school have?"),
         ("StudentsPerClass", "What is the average number of students per class?"),
         ("Timeline", "What is the expected construction timeline (in months)?"),
+        ("SquareFootage", "What is the square footage of the construction?"),
         ("SpecialReqs", "Are there any special facilities or requirements needed?"),
-        # ("SquareFootage", "What is the square footage of the construction?"),
+        
         # ("Floors", "How many floors will the building have?"),
         # ("DemolitionNeeded", "Is demolition needed?"),
         # ("Basement", "Is a basement needed?"),
@@ -311,7 +312,7 @@ if st.session_state.project_type == "new":
 
         # Call the Mistral model
         response = client.chat.complete(
-            model="mistral-small",
+            model="mistral-medium",
             messages=messages,
         )
         assistant_reply = response.choices[0].message.content.strip()
@@ -394,7 +395,7 @@ if st.session_state.project_type == "new":
                 UserMessage(content=summary_prompt),
             ]
             response = client.chat.complete(
-                model="mistral-small",
+                model="mistral-medium",
                 messages=messages,
             )
             final_json = response.choices[0].message.content.strip()
@@ -425,7 +426,7 @@ if st.session_state.project_type == "new":
             UserMessage(content=ai_input)
         ]
         response = client.chat.complete(
-            model="mistral-small",
+            model="mistral-medium",
             messages=messages
         )
         response_text = response.choices[0].message.content.strip()
@@ -565,7 +566,7 @@ if st.session_state.project_type == "new":
                 box-shadow: 0 3px 6px rgba(0,0,0,0.1);
                 margin-bottom: -2px;
             ">
-                Construction Phases & Subtasks
+                Project Phases & Subtasks
             </div>
             """,
             unsafe_allow_html=True,
